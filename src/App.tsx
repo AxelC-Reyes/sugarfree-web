@@ -6,6 +6,7 @@ import RegistroDatos from './pages/RegistroDatos';
 import Verificacion from './pages/Verificacion';
 import SubirFotos from './pages/SubirFotos';
 import Feed from './pages/Feed';
+import ProfileWall from './pages/ProfileWall';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/perfil/fotos" element={<SubirFotos />} />
         <Route path="/feed" element={<h1>Feed principal (próximamente)</h1>} />
         <Route path="/feed" element={<Feed />} />
+        <Route path="/feed" element={<ProfileWall />} />
       </Routes>
     </BrowserRouter>
   );
