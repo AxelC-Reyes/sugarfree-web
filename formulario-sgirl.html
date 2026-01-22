@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sugar-Baby Girl - Completa tu perfil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #FF4D8D;
+            --secondary-color: #9C27B0;
+            --accent-color: #FF9800;
+            --dark-color: #1A1A2E;
+            --light-color: #F8F9FA;
+            --transition: all 0.3s ease;
+            --border-radius: 16px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
+            color: var(--light-color);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 36px;
+            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+
+        .header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary-color), transparent);
+            transform: scaleX(0);
+            transition: transform 0.6s ease;
+        }
+
+        .header:hover h1::after {
+            transform: scaleX(1);
+        }
+
+        .form-section {
+            margin-bottom: 40px;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-section h2 {
+            font-size: 22px;
+            margin-bottom: 20px;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            transition: var(--transition);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(255, 77, 141, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .form-control:hover {
+            border-color: rgba(255, 77, 141, 0.5);
+        }
+
+        .select-wrapper {
+            position: relative;
+        }
+
+        .select-wrapper::after {
+            content: '▼';
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+        }
+
+        select.form-control {
+            appearance: none;
+            cursor: pointer;
+        }
+
+        /* Fotos upload */
+        .photos-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .photo-upload {
+            aspect-ratio: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .photo-upload:hover {
+            border-color: var(--primary-color);
+            background: rgba(255, 77, 141, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .photo-upload i {
+            font-size: 32px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 10px;
+            transition: var(--transition);
+        }
+
+        .photo-upload:hover i {
+            color: var(--primary-color);
+            transform: scale(1.2);
+        }
+
+        .photo-upload span {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .photo-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
+            display: none;
+        }
+
+        /* Botón */
+        .btn {
+            padding: 16px 40px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 30px auto 0;
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.7s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 15px 30px rgba(156, 39, 176, 0.4);
+        }
+
+        /* Validación de edad */
+        .age-note {
+            background: rgba(255, 152, 0, 0.1);
+            border-left: 4px solid var(--accent-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+            
+            .photos-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .photos-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-crown"></i> Sugar Girl</h1>
+            <p>Completa tu perfil para encontrar tu Sugar ideal</p>
+        </div>
+
+        <form id="profileForm">
+            <!-- Información Básica -->
+            <div class="form-section">
+                <h2><i class="fas fa-user-circle"></i> Información Básica</h2>
+                
+                <div class="form-group">
+                    <label for="edad">Edad *</label>
+                    <input type="number" id="edad" class="form-control" min="18" max="30" required>
+                    <div class="age-note">
+                        <i class="fas fa-info-circle"></i> Para Sugar Babies, la edad máxima es 30 años
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="altura">Altura (cm) *</label>
+                    <input type="number" id="altura" class="form-control" min="140" max="220" step="0.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="peso">Peso (kg) *</label>
+                    <input type="number" id="peso" class="form-control" min="40" max="200" step="0.1" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="complexion">Complexión *</label>
+                    <div class="select-wrapper">
+                        <select id="complexion" class="form-control" required>
+                            <option value="">Selecciona tu complexión</option>
+                            <option value="delgada">Delgada</option>
+                            <option value="atletica">Atlética</option>
+                            <option value="media">Media</option>
+                            <option value="robusta">Robusta</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="tono-piel">Tono de Piel *</label>
+                    <div class="select-wrapper">
+                        <select id="tono-piel" class="form-control" required>
+                            <option value="">Selecciona tu tono</option>
+                            <option value="muy-clara">Muy Clara</option>
+                            <option value="clara">Clara</option>
+                            <option value="morena-clara">Morena Clara</option>
+                            <option value="morena">Morena</option>
+                            <option value="morena-oscura">Morena Oscura</option>
+                            <option value="negra">Negra</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Fotos -->
+            <div class="form-section">
+                <h2><i class="fas fa-camera"></i> Fotos Recientes *</h2>
+                <p style="margin-bottom: 20px; color: rgba(255,255,255,0.7);">
+                    Sube 3 fotos recientes donde se te vea claramente
+                </p>
+                
+                <div class="photos-container">
+                    <div class="photo-upload" id="photo1">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Foto 1</span>
+                        <input type="file" accept="image/*" class="photo-input" style="display: none;">
+                        <img class="photo-preview" alt="Preview">
+                    </div>
+                    
+                    <div class="photo-upload" id="photo2">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Foto 2</span>
+                        <input type="file" accept="image/*" class="photo-input" style="display: none;">
+                        <img class="photo-preview" alt="Preview">
+                    </div>
+                    
+                    <div class="photo-upload" id="photo3">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Foto 3</span>
+                        <input type="file" accept="image/*" class="photo-input" style="display: none;">
+                        <img class="photo-preview" alt="Preview">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preferencias -->
+            <div class="form-section">
+                <h2><i class="fas fa-heart"></i> Preferencias</h2>
+                
+                <div class="form-group">
+                    <label for="busco">Busco a un Sugar Baby *</label>
+                    <div class="select-wrapper">
+                        <select id="busco" class="form-control" required>
+                            <option value="">Tipo de Sugar</option>
+                            <option value="mujer">Sugar Mommy (Mujer)</option>
+                            <option value="hombre">Sugar Daddy (Hombre)</option>
+                            <option value="ambos">Ambos</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="expectativas">¿Qué esperas de esta relación?</label>
+                    <textarea id="expectativas" class="form-control" rows="4" placeholder="Comparte tus expectativas e intereses..."></textarea>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">
+                <i class="fas fa-check-circle"></i> Completar Perfil
+            </button>
+        </form>
+    </div>
+
+    <script>
+        // Manejo de subida de fotos
+        document.querySelectorAll('.photo-upload').forEach((upload, index) => {
+            const input = upload.querySelector('.photo-input');
+            const preview = upload.querySelector('.photo-preview');
+            
+            upload.addEventListener('click', () => input.click());
+            
+            input.addEventListener('change', function(e) {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        upload.querySelector('i').style.display = 'none';
+                        upload.querySelector('span').style.display = 'none';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+        });
+
+        // Validación del formulario
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const edad = parseInt(document.getElementById('edad').value);
+            const fotos = document.querySelectorAll('.photo-preview[style*="display: block"]').length;
+            
+            // Validar edad mínima
+            if (edad < 30) {
+                showNotification('⚠️ Para Sugar Daddies, la edad mínima es 30 años', 'error');
+                document.getElementById('edad').focus();
+                return;
+            }
+            
+            // Validar fotos
+            if (fotos < 3) {
+                showNotification('⚠️ Por favor sube las 3 fotos requeridas', 'error');
+                return;
+            }
+            
+            // Animación de éxito
+            const btn = this.querySelector('.btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+            btn.disabled = true;
+            
+            // Simular envío
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-check"></i> ¡Perfil Completado!';
+                btn.style.background = 'linear-gradient(to right, #4CAF50, #2E7D32)';
+                
+                // Redirigir al dashboard
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1500);
+            }, 2000);
+        });
+
+        // Notificación
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'rgba(76, 175, 80, 0.9)' : 
+                           type === 'error' ? 'rgba(244, 67, 54, 0.9)' : 
+                           'rgba(33, 150, 243, 0.9)'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 12px;
+                font-family: 'Poppins', sans-serif;
+                font-size: 14px;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+                z-index: 10000;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                backdrop-filter: blur(10px);
+                max-width: 300px;
+            `;
+            
+            notification.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                                  type === 'error' ? 'exclamation-circle' : 
+                                  'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
