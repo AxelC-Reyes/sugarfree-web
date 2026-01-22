@@ -385,10 +385,9 @@
                 <h2><i class="fas fa-heart"></i> Preferencias</h2>
                 
                 <div class="form-group">
-                    <label for="busco">Busco a un Sugar Baby *</label>
+                    <label for="busco">Busco a un Sugar *</label>
                     <div class="select-wrapper">
                         <select id="busco" class="form-control" required>
-                            <option value="">Tipo de Sugar</option>
                             <option value="mujer">Sugar Mommy (Mujer)</option>
                             <option value="hombre">Sugar Daddy (Hombre)</option>
                             <option value="ambos">Ambos</option>
@@ -439,8 +438,8 @@
             const fotos = document.querySelectorAll('.photo-preview[style*="display: block"]').length;
             
             // Validar edad mínima
-            if (edad < 30) {
-                showNotification('⚠️ Para Sugar Daddies, la edad mínima es 30 años', 'error');
+            if (edad < 18, 30 < edad) {
+                showNotification('⚠️ Para Sugar Babies, la edad min. es 18 y max. 30 años', 'error');
                 document.getElementById('edad').focus();
                 return;
             }
