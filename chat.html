@@ -1346,6 +1346,9 @@
         // Guardar automáticamente cada 30 segundos
         setInterval(saveChatsToLocalStorage, 30000);
     </script>
+
+    <script src="navigation.js"></script>
+<script>
     // Si el usuario ya tiene perfil, redirigir automáticamente
 document.addEventListener('DOMContentLoaded', function() {
     const userProfile = JSON.parse(localStorage.getItem('userProfile') || 'null');
@@ -1385,5 +1388,6 @@ function goToDashboard() {
         }
     }
 }
+<script>
 </body>
 </html>

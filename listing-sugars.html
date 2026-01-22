@@ -925,7 +925,9 @@
             }, 3000);
         }
     </script>
-    // Si el usuario ya tiene perfil, redirigir automáticamente
+    <script src="navigation.js"></script>
+<script>
+// Si el usuario ya tiene perfil, redirigir automáticamente
 document.addEventListener('DOMContentLoaded', function() {
     const userProfile = JSON.parse(localStorage.getItem('userProfile') || 'null');
     
@@ -964,5 +966,6 @@ function goToDashboard() {
         }
     }
 }
+</script>
 </body>
 </html>
