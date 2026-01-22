@@ -1326,5 +1326,44 @@
             }, 3000);
         }
     </script>
+    // Si el usuario ya tiene perfil, redirigir automáticamente
+document.addEventListener('DOMContentLoaded', function() {
+    const userProfile = JSON.parse(localStorage.getItem('userProfile') || 'null');
+    
+    if (userProfile && userProfile.completed) {
+        // Mostrar opción de ir directamente al dashboard
+        const googleBtn = document.getElementById('googleSignIn');
+        if (googleBtn) {
+            googleBtn.insertAdjacentHTML('afterend', `
+                <div style="margin: 20px 0; text-align: center;">
+                    <button onclick="goToDashboard()" style="
+                        background: rgba(255, 255, 255, 0.1);
+                        border: 1px solid rgba(255, 255, 255, 0.2);
+                        color: white;
+                        padding: 12px 25px;
+                        border-radius: var(--border-radius);
+                        cursor: pointer;
+                        font-family: 'Poppins', sans-serif;
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-rocket"></i> Ir a mi Dashboard
+                    </button>
+                </div>
+            `);
+        }
+    }
+});
+
+function goToDashboard() {
+    const userProfile = JSON.parse(localStorage.getItem('userProfile') || 'null');
+    
+    if (userProfile) {
+        if (userProfile.type === 'daddy' || userProfile.type === 'mommy') {
+            window.location.href = 'listing-sugars.html';
+        } else if (userProfile.type === 'baby') {
+            window.location.href = 'listing-babies.html';
+        }
+    }
+}
 </body>
 </html>
