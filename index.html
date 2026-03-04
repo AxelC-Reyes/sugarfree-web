@@ -1,583 +1,464 @@
-<!DOCTYPE html>
+
+        <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Sugar-Free - Conexiones Premium</title>
+    <meta name="theme-color" content="#0f0f14">
+    <title>Sugar-Free · Conexiones Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary-color: #FF4D8D;
-            --secondary-color: #9C27B0;
-            --accent-color: #FF9800;
-            --dark-color: #1A1A2E;
-            --light-color: #F8F9FA;
-            --gray-color: #6C757D;
-            --transition: all 0.3s ease;
-            --shadow: 0 8px 30px rgba(0,0,0,0.08);
-            --border-radius: 16px;
-            --safe-area-inset-top: env(safe-area-inset-top);
-            --safe-area-inset-bottom: env(safe-area-inset-bottom);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
+        *, *::before, *::after {
+            margin: 0; padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
 
-        html {
-            scroll-behavior: smooth;
+        :root {
+            --bg:      #0f0f14;
+            --rose:    #FF3B7F;
+            --rose-d:  rgba(255,59,127,0.15);
+            --rose-l:  rgba(255,59,127,0.1);
+            --white:   #ffffff;
+            --w70:     rgba(255,255,255,0.7);
+            --w40:     rgba(255,255,255,0.4);
+            --w12:     rgba(255,255,255,0.12);
+            --w06:     rgba(255,255,255,0.06);
+            --ease:    cubic-bezier(0.16,1,0.3,1);
+            --safe-top:    env(safe-area-inset-top,    0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
+        html { overflow-x: hidden; }
+
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #1A1A2E 0%, #16213E 100%);
-            color: var(--light-color);
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--white);
             min-height: 100vh;
-            min-height: -webkit-fill-available;
-            overflow-x: hidden;
-            padding-top: var(--safe-area-inset-top);
-            padding-bottom: var(--safe-area-inset-bottom);
+            min-height: 100dvh;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ── FONDO SUTIL ──────────────────────────────────── */
+        .bg-glow {
+            position: fixed; inset: 0;
+            z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 70% 50% at 50% -10%, rgba(255,59,127,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 100% 100%, rgba(255,59,127,0.04) 0%, transparent 60%);
+        }
+
+        /* ── LAYOUT ───────────────────────────────────────── */
+        .page {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 440px;
             margin: 0 auto;
-            padding: 0 20px;
+            padding: 0 24px;
+            width: 100%;
         }
 
-        /* Header con animación pícara */
+        /* ── HEADER ───────────────────────────────────────── */
         header {
-            padding: 20px 0;
+            padding: calc(20px + var(--safe-top)) 0 0;
+        }
+        header .container {
             display: flex;
+            align-items: center;
             justify-content: space-between;
-            align-items: center;
-            position: relative;
         }
 
-        .logo-container {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            transition: var(--transition);
-            gap: 12px;
+        .logo {
+            display: flex; align-items: center;
+            text-decoration: none;
+            touch-action: manipulation;
         }
-
-        /* Animación pícara del logo */
-        @keyframes playfulBounce {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            25% { transform: translateY(-5px) rotate(2deg); }
-            50% { transform: translateY(0) rotate(0deg); }
-            75% { transform: translateY(-3px) rotate(-2deg); }
-        }
-
-        .logo-container:hover .sucrose-img {
-            animation: playfulBounce 0.6s ease;
-        }
-
-        .sucrose-img {
-            width: 50px;
-            height: 50px;
-            border-radius: 12px;
-            object-fit: contain;
-            transition: var(--transition);
-            filter: drop-shadow(0 4px 10px rgba(255, 77, 141, 0.3));
+        .logo-img {
+            height: 130px;
+            width: auto;
+            display: block;
+            transition: transform 0.35s var(--ease), opacity 0.25s;
             -webkit-user-drag: none;
             user-select: none;
         }
-
-        .logo-text {
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(24px, 5vw, 32px);
-            font-weight: 600;
-            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            white-space: nowrap;
-            position: relative;
-            display: inline-block;
+        .logo:active .logo-img {
+            transform: scale(0.9);
+            opacity: 0.8;
+        }
+        @media (hover:hover) {
+            .logo:hover .logo-img {
+                transform: scale(1.06);
+                opacity: 0.9;
+            }
         }
 
-        /* Efecto de brillo en el texto */
-        .logo-text::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.7s ease;
+        .header-badge {
+            font-size: 11px; color: var(--w40);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 5px 11px; border-radius: 50px;
+            letter-spacing: 0.5px;
         }
 
-        .logo-container:hover .logo-text::after {
-            left: 100%;
-        }
-
-        /* Hero Section */
+        /* ── HERO ─────────────────────────────────────────── */
         .hero {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            min-height: calc(100vh - 100px);
-            padding: 40px 0;
-            gap: 40px;
-        }
-
-        .hero-content {
             flex: 1;
-            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 48px 0 32px;
+        }
+        .hero .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .hero-content h1 {
-            font-size: clamp(32px, 6vw, 48px);
+        .hero-tagline {
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
             font-weight: 700;
-            line-height: 1.2;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--rose);
             margin-bottom: 20px;
-            font-family: 'Playfair Display', serif;
+            opacity: 0.85;
         }
 
-        .hero-content h1 span {
-            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            position: relative;
-            display: inline-block;
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(28px, 7vw, 40px);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+        .hero h1 em { font-style: normal; color: var(--rose); }
+
+        .hero p {
+            font-size: 15px; color: var(--w70);
+            line-height: 1.6; max-width: 300px;
+            margin-bottom: 34px;
         }
 
-        /* Efecto de brillo en el span */
-        .hero-content h1 span::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
-            transform: scaleX(0);
-            transition: transform 0.6s ease;
-        }
-
-        .hero-content h1:hover span::after {
-            transform: scaleX(1);
-        }
-
-        .hero-content p {
-            font-size: clamp(16px, 2vw, 18px);
-            line-height: 1.6;
-            margin-bottom: 25px;
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        .highlight {
-            color: var(--accent-color);
-            font-weight: 600;
-            position: relative;
-        }
-
-        .highlight::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            width: 100%;
-            height: 1px;
-            background: currentColor;
-            transform: scaleX(0);
-            transition: transform 0.3s ease;
-        }
-
-        .highlight:hover::after {
-            transform: scaleX(1);
-        }
-
-        /* Botón de Google OAuth con animación */
+        /* ── BOTÓN GOOGLE ─────────────────────────────────── */
         .google-btn {
-            background-color: white;
-            color: #444;
-            border-radius: var(--border-radius);
-            padding: clamp(14px, 3vw, 16px) clamp(20px, 4vw, 30px);
-            font-weight: 600;
-            font-size: clamp(16px, 2vw, 18px);
-            border: none;
+            width: 100%; max-width: 320px;
+            padding: 15px 24px;
+            background: var(--white);
+            border: none; border-radius: 14px;
+            color: #333;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px; font-weight: 600;
             cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            max-width: 350px;
-            margin: 30px 0 15px;
-            box-shadow: var(--shadow);
-            transition: var(--transition);
-            -webkit-appearance: none;
-            appearance: none;
-            position: relative;
-            overflow: hidden;
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            transition: all 0.25s var(--ease);
+            min-height: 52px; touch-action: manipulation;
+            margin-bottom: 0;
         }
+        @media (hover:hover) { .google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); } }
+        .google-btn:active { transform: scale(0.97); }
 
-        .google-btn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-            transition: left 0.7s ease;
+        /* ── DIVIDER ──────────────────────────────────────── */
+        .divider {
+            width: 100%; max-width: 320px;
+            display: flex; align-items: center; gap: 12px;
+            margin: 20px 0;
         }
+        .divider-line { flex: 1; height: 1px; background: var(--w12); }
+        .divider span { font-size: 12px; color: var(--w40); white-space: nowrap; }
 
-        .google-btn:hover::before {
-            left: 100%;
-        }
-
-        .google-btn:hover, .google-btn:active {
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
-        }
-
-        /* Sección de perfiles */
-        .profile-selection {
-            display: none;
-            padding: clamp(30px, 5vw, 60px) 0;
-            text-align: center;
-            position: relative;
-            animation: fadeIn 0.5s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .profile-selection h2 {
-            font-size: clamp(28px, 4vw, 36px);
-            margin-bottom: 30px;
-            font-family: 'Playfair Display', serif;
-            position: relative;
-            display: inline-block;
-        }
-
-        .profile-selection h2::after {
-            content: '';
-            position: absolute;
-            bottom: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
-            background: linear-gradient(to right, var(--primary-color), var(--accent-color));
-            border-radius: 2px;
-        }
-
-        .profile-cards {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr));
-            gap: clamp(20px, 3vw, 30px);
-            margin-top: 30px;
-        }
-
-        .profile-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border-radius: var(--border-radius);
-            padding: clamp(20px, 3vw, 30px);
-            transition: var(--transition);
+        /* ── BOTÓN PREMIUM ────────────────────────────────── */
+        .premium-btn {
+            width: 100%; max-width: 320px;
+            padding: 15px 24px;
+            background: var(--rose);
+            border: 2px solid #C9A96E;
+            border-radius: 14px;
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px; font-weight: 600;
             cursor: pointer;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            -webkit-tap-highlight-color: transparent;
-            position: relative;
-            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+            gap: 0;
             text-decoration: none;
-            color: inherit;
-            display: block;
+            min-height: 52px;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s var(--ease);
+            letter-spacing: 0.2px;
         }
-
-        .profile-card::before {
+        /* Shimmer dorado al hacer hover/tap */
+        .premium-btn::after {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 77, 141, 0.1), transparent);
-            transition: left 0.6s ease;
+            top: 0; left: -100%;
+            width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(201,169,110,0.25), transparent);
+            transition: left 0.55s var(--ease);
+        }
+        @media (hover:hover) {
+            .premium-btn:hover {
+                background: #ff2070;
+                border-color: #e0c080;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 28px rgba(255,59,127,0.35);
+            }
+            .premium-btn:hover::after { left: 140%; }
+        }
+        .premium-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 3px 14px rgba(255,59,127,0.3);
         }
 
-        .profile-card:hover::before {
-            left: 100%;
+        /* ── SELECCIÓN DE PERFIL (post-login) ─────────────── */
+        #profileSection {
+            display: none;
+            flex: 1;
+            padding: 48px 0 32px;
+        }
+        #profileSection .container {
+            display: flex; flex-direction: column;
+            align-items: center; text-align: center;
+        }
+        #profileSection h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px; font-weight: 700;
+            margin-bottom: 6px;
+        }
+        #profileSection > .container > p {
+            font-size: 14px; color: var(--w40);
+            margin-bottom: 28px;
         }
 
-        .profile-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary-color);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%; max-width: 320px;
         }
 
-        .profile-icon {
-            width: clamp(60px, 10vw, 80px);
-            height: clamp(60px, 10vw, 80px);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 15px;
-            font-size: clamp(24px, 3vw, 32px);
+        .profile-opt {
+            background: var(--w06);
+            border: 1px solid var(--w12);
+            border-radius: 16px;
+            padding: 20px 14px;
+            text-align: center; text-decoration: none;
+            color: var(--white); cursor: pointer;
+            transition: all 0.25s var(--ease);
+            touch-action: manipulation;
+        }
+        @media (hover:hover) {
+            .profile-opt:hover { border-color: var(--rose); background: var(--rose-l); }
+        }
+        .profile-opt:active { transform: scale(0.96); border-color: var(--rose); }
+
+        .profile-opt-icon {
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; margin: 0 auto 10px;
+            background: var(--rose-d); color: var(--rose);
+            border: 1px solid rgba(255,59,127,0.2);
+        }
+        .profile-opt span {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px; font-weight: 600;
+            display: block; margin-bottom: 3px;
+        }
+        .profile-opt small {
+            font-size: 10px; color: var(--w40);
+            line-height: 1.3; display: block;
         }
 
-        .daddy-icon {
-            background: linear-gradient(135deg, #FF4D8D, #9C27B0);
-        }
-
-        .mommy-icon {
-            background: linear-gradient(135deg, #9C27B0, #673AB7);
-        }
-
-        .baby-m-icon {
-            background: linear-gradient(135deg, #2196F3, #03A9F4);
-        }
-
-        .baby-f-icon {
-            background: linear-gradient(135deg, #FF4D8D, #FF4081);
-        }
-
-        .profile-card h3 {
-            font-size: clamp(18px, 2.5vw, 22px);
-            margin-bottom: 10px;
-        }
-
-        .profile-card p {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: clamp(13px, 1.5vw, 14px);
-            line-height: 1.5;
-        }
-
-        /* Footer */
+        /* ── FOOTER ───────────────────────────────────────── */
         footer {
-            text-align: center;
-            padding: clamp(20px, 3vw, 30px) 0;
-            margin-top: 40px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            color: var(--gray-color);
-            font-size: clamp(12px, 1.5vw, 14px);
+            padding: 18px 0 calc(18px + var(--safe-bottom));
+            border-top: 1px solid var(--w12);
+            margin-top: auto;
+        }
+        footer .container {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .footer-copy { font-size: 11px; color: var(--w40); }
+        .footer-links { display: flex; gap: 16px; }
+        .footer-links a {
+            font-size: 11px; color: var(--w40);
+            text-decoration: none;
+            min-height: 44px; display: flex; align-items: center;
+            transition: color 0.2s;
+        }
+        .footer-links a:active { color: var(--rose); }
+        @media (hover:hover) { .footer-links a:hover { color: var(--rose); } }
+
+        /* ── TOAST ────────────────────────────────────────── */
+        .toast {
+            position: fixed; z-index: 9999;
+            font-family: 'DM Sans', sans-serif; font-size: 14px;
+            background: rgba(8,8,15,0.97);
+            border-radius: 50px; padding: 12px 20px;
+            display: flex; align-items: center; gap: 9px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+            transition: transform 0.4s var(--ease), opacity 0.4s;
+            max-width: calc(100vw - 32px);
+        }
+        .toast.success { border: 1px solid rgba(46,204,113,0.4); }
+        .toast.success i { color: #2ecc71; }
+        @media (min-width: 481px) {
+            .toast { top: 24px; right: 20px; }
+            .toast.hidden { transform: translateX(120%); opacity: 0; }
+        }
+        @media (max-width: 480px) {
+            .toast { bottom: calc(20px + var(--safe-bottom)); left: 16px; right: 16px; border-radius: 14px; }
+            .toast.hidden { transform: translateY(120%); opacity: 0; }
         }
 
-        /* Responsive */
-        @media (max-width: 992px) {
-            .hero {
-                flex-direction: column;
-                text-align: center;
-                gap: 30px;
-            }
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
-
-        @media (max-width: 768px) {
-            .profile-cards {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 576px) {
-            .profile-cards {
-                grid-template-columns: 1fr;
-            }
-        }
+        .anim-in { animation: fadeUp 0.45s var(--ease) both; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
+
+    <div class="bg-glow"></div>
+
+    <div class="page">
+
         <header>
-            <div class="logo-container" id="logoButton">
-                <img src="caramelo.png" alt="Logo Sugar-Free" class="sucrose-img">
-                <div class="logo-text">Sugar-Free</div>
+            <div class="container">
+                <a href="index-premium.html" class="logo">
+                    <img src="logosugarblanco.png" alt="Sugar-Free" class="logo-img">
+                </a>
+                <span class="header-badge">Free</span>
             </div>
         </header>
 
-        <!-- Sección Principal -->
+        <!-- HERO -->
         <section class="hero" id="heroSection">
-            <div class="hero-content">
-                <h1>Encuentra tu <span>conexión perfecta</span> en Sugar-Free</h1>
-                <p>Una plataforma exclusiva donde <span class="highlight">Sugar Daddies, Mommies y Babies</span> pueden conectar de manera segura y discreta. Todas las cuentas están verificadas para garantizar autenticidad.</p>
-                
+            <div class="container">
+
+                <div class="hero-tagline">literalmente sugar FREE</div>
+
+                <h1>Conecta.<br><em>g r a t i s :)</em></h1>
+                <p>Entra con Google y elige tu perfil para empezar.</p>
+
                 <button class="google-btn" id="googleSignIn">
-                    <i class="fab fa-google"></i> Registrarme con Google
+                    <svg width="18" height="18" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    Continuar con Google
                 </button>
-                
-                <p class="terms">Al registrarte, aceptas nuestros <a href="#">Términos de Servicio</a> y <a href="#">Política de Privacidad</a>.</p>
+
+                <div class="divider">
+                    <div class="divider-line"></div>
+                    <span>¿Quieres más?</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <a href="index-premium.html" class="premium-btn">
+                    Premium
+                </a>
+
             </div>
         </section>
 
-        <!-- Selección de Perfil -->
-        <section class="profile-selection" id="profileSelection">
-            <h2>¿Qué tipo de perfil eres?</h2>
-            <p>Selecciona tu categoría para continuar con tu registro</p>
-            
-            <div class="profile-cards">
-                <a href="formulario-daddy.html" class="profile-card">
-                    <div class="profile-icon daddy-icon">
-                        <i class="fas fa-crown"></i>
-                    </div>
-                    <h3>Sugar Daddy</h3>
-                    <p>Hombre exitoso ≥30 años que busca compartir experiencias con un sugar baby.</p>
-                </a>
-                
-                <a href="formulario-mommy.html" class="profile-card">
-                    <div class="profile-icon mommy-icon">
-                        <i class="fas fa-gem"></i>
-                    </div>
-                    <h3>Sugar Mommy</h3>
-                    <p>Mujer exitosa ≥30 años que desea disfrutar de compañía con un sugar baby.</p>
-                </a>
-                
-                <a href="formulario-sboy.html" class="profile-card">
-                    <div class="profile-icon baby-m-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <h3>Sugar Boy</h3>
-                    <p>Hombre joven &lt;30 años que busca compartir momentos especiales.</p>
-                </a>
-                
-                <a href="formulario-sgirl.html" class="profile-card">
-                    <div class="profile-icon baby-f-icon">
-                        <i class="fas fa-user-heart"></i>
-                    </div>
-                    <h3>Sugar Girl</h3>
-                    <p>Mujer joven &lt;30 años que busca compartir momentos especiales.</p>
-                </a>
+        <!-- SELECCIÓN DE PERFIL (post-login) -->
+        <section id="profileSection">
+            <div class="container">
+                <h2>¿Cuál es tu perfil?</h2>
+                <p>Elige tu categoría para continuar</p>
+
+                <div class="profile-grid">
+                    <a href="formulario-daddy-premium.html" class="profile-opt">
+                        <div class="profile-opt-icon"><i class="fas fa-crown"></i></div>
+                        <span>Sugar Daddy</span>
+                        <small>≥ 30 años</small>
+                    </a>
+                    <a href="formulario-mommy-premium.html" class="profile-opt">
+                        <div class="profile-opt-icon"><i class="fas fa-gem"></i></div>
+                        <span>Sugar Mommy</span>
+                        <small>≥ 30 años</small>
+                    </a>
+                    <a href="formulario-sboy-premium.html" class="profile-opt">
+                        <div class="profile-opt-icon"><i class="fas fa-user-tie"></i></div>
+                        <span>Sugar Boy</span>
+                        <small>&lt; 30 años</small>
+                    </a>
+                    <a href="formulario-sgirl-premium.html" class="profile-opt">
+                        <div class="profile-opt-icon"><i class="fas fa-user-heart"></i></div>
+                        <span>Sugar Girl</span>
+                        <small>&lt; 30 años</small>
+                    </a>
+                </div>
             </div>
         </section>
+
+        <footer>
+            <div class="container">
+                <span class="footer-copy">© 2026 Sugar-Free · +18</span>
+                <div class="footer-links">
+                    <a href="#">Términos</a>
+                    <a href="#">Privacidad</a>
+                    <a href="#">Contacto</a>
+                </div>
+            </div>
+        </footer>
+
     </div>
 
-    <footer>
-        <div class="footer-links">
-            <a href="#">Términos de Uso</a>
-            <a href="#">Política de Privacidad</a>
-            <a href="#">Seguridad</a>
-            <a href="#">Contacto</a>
-        </div>
-        <p>&copy; 2023 Sugar-Free. Plataforma exclusiva para mayores de 18 años.</p>
-    </footer>
-
     <script>
-        // OAuth simulado
-        document.getElementById('googleSignIn').addEventListener('click', function() {
-            const originalText = this.innerHTML;
-            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
-            this.disabled = true;
+    document.getElementById('googleSignIn').addEventListener('click', function() {
+        if (this.disabled) return;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#FF3B7F"></i> Conectando…';
+        this.disabled = true;
+
+        setTimeout(() => {
+            const hero    = document.getElementById('heroSection');
+            const section = document.getElementById('profileSection');
+
+            hero.style.transition = 'opacity 0.3s ease';
+            hero.style.opacity = '0';
 
             setTimeout(() => {
-                // Ocultar hero y mostrar selección de perfiles
-                document.getElementById('heroSection').style.display = 'none';
-                document.getElementById('profileSelection').style.display = 'block';
-                
-                // Restaurar botón
-                setTimeout(() => {
-                    this.innerHTML = originalText;
-                    this.disabled = false;
-                }, 500);
-                
-                // Scroll suave
+                hero.style.display = 'none';
+                section.style.display = 'block';
+                section.classList.add('anim-in');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                
-                // Notificación
-                showNotification('¡Autenticación exitosa! Elige tu perfil.', 'success');
-            }, 1500);
-        });
+                toast('¡Bienvenido! Elige tu perfil.', 'success');
+            }, 300);
+        }, 1400);
+    });
 
-        // Función para mostrar notificaciones
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'success' ? 'rgba(76, 175, 80, 0.9)' : 
-                           type === 'error' ? 'rgba(244, 67, 54, 0.9)' : 
-                           'rgba(33, 150, 243, 0.9)'};
-                color: white;
-                padding: 15px 20px;
-                border-radius: 12px;
-                font-family: 'Poppins', sans-serif;
-                font-size: 14px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-                z-index: 10000;
-                transform: translateX(100%);
-                transition: transform 0.3s ease;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                backdrop-filter: blur(10px);
-                max-width: 300px;
-            `;
-            
-            notification.innerHTML = `
-                <i class="fas fa-${type === 'success' ? 'check-circle' : 
-                                  type === 'error' ? 'exclamation-circle' : 
-                                  'info-circle'}"></i>
-                <span>${message}</span>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 10);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    notification.remove();
-                }, 300);
-            }, 4000);
-        }
+    function toast(msg, type = 'info') {
+        document.querySelectorAll('.toast').forEach(t => t.remove());
+        const t = document.createElement('div');
+        t.className = `toast ${type} hidden`;
+        t.innerHTML = `<i class="fas fa-check-circle"></i><span>${msg}</span>`;
+        document.body.appendChild(t);
+        requestAnimationFrame(() => requestAnimationFrame(() => t.classList.remove('hidden')));
+        setTimeout(() => {
+            t.classList.add('hidden');
+            setTimeout(() => t.remove(), 420);
+        }, 4000);
+    }
     </script>
-    <script src="navigation.js"></script>
-<script>
-    // Si el usuario ya tiene perfil, redirigir automáticamente
-document.addEventListener('DOMContentLoaded', function() {
-    const userProfile = JSON.parse(localStorage.getItem('userProfile') || 'null');
-    
-    if (userProfile && userProfile.completed) {
-        // Mostrar opción de ir directamente al dashboard
-        const googleBtn = document.getElementById('googleSignIn');
-        if (googleBtn) {
-            googleBtn.insertAdjacentHTML('afterend', `
-                <div style="margin: 20px 0; text-align: center;">
-                    <button onclick="goToDashboard()" style="
-                        background: rgba(255, 255, 255, 0.1);
-                        border: 1px solid rgba(255, 255, 255, 0.2);
-                        color: white;
-                        padding: 12px 25px;
-                        border-radius: var(--border-radius);
-                        cursor: pointer;
-                        font-family: 'Poppins', sans-serif;
-                        transition: all 0.3s ease;
-                    ">
-                        <i class="fas fa-rocket"></i> Ir a mi Dashboard
-                    </button>
-                </div>
-            `);
-        }
-    }
-});
 
-function goToDashboard() {
-    const userProfile = JSON.parse(localStorage.getItem('userProfile') || 'null');
-    
-    if (userProfile) {
-        if (userProfile.type === 'daddy' || userProfile.type === 'mommy') {
-            window.location.href = 'listing-sugars.html';
-        } else if (userProfile.type === 'baby') {
-            window.location.href = 'listing-babies.html';
-        }
-    }
-}
-<script>
 </body>
 </html>
