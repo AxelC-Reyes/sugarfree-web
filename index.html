@@ -1,3 +1,7 @@
+
+Fiesta · HTML
+Copiar
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -98,6 +102,8 @@
     .logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 10px; padding: 8px 14px; font-size: 0.78rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
     .logout-btn:hover { border-color: rgba(255,45,120,0.4); color: var(--neon-pink); }
     .stats-row { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+    .ig-btn { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; border: none; border-radius: 8px; padding: 5px 10px; font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity 0.2s; letter-spacing: 0.3px; }
+    .ig-btn:hover { opacity: 0.85; }
     #login-screen { display: block; }
     #main-screen { display: none; }
   </style>
@@ -109,8 +115,8 @@
   <!-- LOGIN -->
   <div id="login-screen" class="app">
     <div class="header">
-      <span class="header-logo">BARB´S PARTY MATCH 🚀</span>
-      <span class="header-pill">Live 🔴</span>
+      <span class="header-logo">Barb´s party match</span>
+      <span class="header-pill">L I V E</span>
     </div>
     <div class="section">
       <div class="profile-card">
@@ -124,6 +130,13 @@
         <div class="form-group">
           <label class="form-label">Tu nombre</label>
           <input class="form-input" type="text" id="input-name" placeholder="Ej: María" maxlength="20" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Instagram <span style="color:var(--muted);font-size:0.7rem;text-transform:none;letter-spacing:0">(opcional)</span></label>
+          <div style="position:relative">
+            <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1rem">@</span>
+            <input class="form-input" type="text" id="input-ig" placeholder="tuusuario" maxlength="30" style="padding-left:32px" />
+          </div>
         </div>
         <button class="btn btn-primary" id="btn-register">Entrar a la fiesta →</button>
         <p id="login-error" style="color:var(--neon-pink);font-size:0.8rem;margin-top:12px;display:none;"></p>
@@ -180,6 +193,7 @@
         <div class="profile-badge"><span class="profile-dot"></span>En la fiesta</div>
         <div class="divider"></div>
         <div class="stats-row" id="profile-stats"></div>
+        <div style="margin-top:12px" id="profile-ig"></div>
         <div class="divider"></div>
         <button class="logout-btn" id="btn-logout">Salir / Cambiar perfil</button>
       </div>
@@ -247,6 +261,14 @@
       return matches;
     }
 
+    function playerName(id) {
+      const p = players[id];
+      return p?.name || p || `#${id}`;
+    }
+    function playerIg(id) {
+      return players[id]?.ig || "";
+    }
+
     function getMyVote(targetId) {
       return votes[`${me.id}_${targetId}`];
     }
@@ -259,7 +281,7 @@
       return Object.keys(players)
         .map(Number)
         .filter(id => id !== me.id && isMatch(id))
-        .map(id => ({ id, name: players[id] }));
+        .map(id => ({ id, name: playerName(id), ig: playerIg(id) }));
     }
 
     // ── TABS ───────────────────────────────────────────────────────────────
@@ -274,7 +296,6 @@
       });
     });
 
-    // ── RENDER PLAYERS ─────────────────────────────────────────────────────
     function renderPlayers() {
       const list = document.getElementById("players-list");
       const countEl = document.getElementById("player-count");
@@ -287,16 +308,19 @@
       }
 
       list.innerHTML = others.map(id => {
-        const name = players[id];
+        const name = playerName(id);
+        const ig = playerIg(id);
         const myVote = getMyVote(id);
         const matched = isMatch(id);
         const greenClass = myVote === "green" ? "voted-green" : "";
         const redClass = myVote === "red" ? "voted-red" : "";
         const disabled = myVote ? "disabled" : "";
+        const igBtn = ig ? `<a class="ig-btn" href="https://instagram.com/${ig}" target="_blank">📸 @${ig}</a>` : "";
         let sub = "";
-        if (matched) sub = `<span class="match-badge">✨ Match</span>`;
-        else if (myVote === "green") sub = `<div class="player-sub">Le diste verde · esperando...</div>`;
-        else if (myVote === "red") sub = `<div class="player-sub">Pasaste</div>`;
+        if (matched) sub = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px"><span class="match-badge">✨ Match</span>${igBtn}</div>`;
+        else if (myVote === "green") sub = `<div style="margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div class="player-sub">Le diste verde · esperando...</div>${igBtn}</div>`;
+        else if (myVote === "red") sub = `<div style="margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div class="player-sub">Pasaste</div>${igBtn}</div>`;
+        else if (igBtn) sub = `<div style="margin-top:4px">${igBtn}</div>`;
 
         return `
           <div class="player-row ${matched ? "matched" : ""}">
@@ -313,7 +337,6 @@
       }).join("");
     }
 
-    // ── RENDER MATCHES ─────────────────────────────────────────────────────
     function renderMatches() {
       const list = document.getElementById("matches-list");
       const myMatches = getMyMatches();
@@ -326,22 +349,26 @@
           <div class="player-num">#${p.id}</div>
           <div class="player-info">
             <div class="player-name">${p.name}</div>
-            <div class="player-sub" style="color:var(--neon-green)">¡Se gustan mutuamente! 🎉</div>
+            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <div class="player-sub" style="color:var(--neon-green)">¡Se gustan mutuamente! 🎉</div>
+              ${p.ig ? `<a class="ig-btn" href="https://instagram.com/${p.ig}" target="_blank">📸 @${p.ig}</a>` : ""}
+            </div>
           </div>
           <span style="font-size:1.5rem">💚</span>
         </div>`).join("");
     }
 
-    // ── RENDER PROFILE ─────────────────────────────────────────────────────
     function renderProfile() {
       if (!me) return;
       document.getElementById("profile-num").textContent = `#${me.id}`;
       document.getElementById("profile-name-display").textContent = me.name;
       const greens = Object.keys(votes).filter(k => k.startsWith(`${me.id}_`) && votes[k] === "green").length;
+      const igHtml = me.ig ? `<a class="ig-btn" href="https://instagram.com/${me.ig}" target="_blank" style="margin-top:8px;display:inline-flex">📸 @${me.ig}</a>` : `<span style="color:var(--muted);font-size:0.75rem">Sin Instagram registrado</span>`;
       document.getElementById("profile-stats").innerHTML = `
         <span>💚 ${greens} intereses</span>
         <span>🤝 ${getMyMatches().length} matches</span>
         <span>👥 ${Object.keys(players).length} jugadores</span>`;
+      document.getElementById("profile-ig").innerHTML = igHtml;
     }
 
     // ── RENDER PONG ────────────────────────────────────────────────────────
@@ -386,7 +413,7 @@
       await set(ref(db, `votes/${key}`), color);
 
       if (color === "green" && votes[`${targetId}_${me.id}`] === "green") {
-        const targetName = players[targetId] || `#${targetId}`;
+        const targetName = playerName(targetId);
         showToast(`💚 ¡Match con ${targetName}!`);
       }
       renderPlayers();
@@ -396,9 +423,11 @@
     document.getElementById("btn-register").addEventListener("click", async () => {
       const nameEl = document.getElementById("input-name");
       const idEl = document.getElementById("input-id");
+      const igEl = document.getElementById("input-ig");
       const errEl = document.getElementById("login-error");
       const name = nameEl.value.trim();
       const id = parseInt(idEl.value);
+      const ig = igEl.value.trim().replace(/^@/, "");
       if (!name || !id || id < 1 || id > 999) return;
 
       const btn = document.getElementById("btn-register");
@@ -407,16 +436,16 @@
 
       // Check if ID is taken by someone else
       const snap = await get(ref(db, `players/${id}`));
-      if (snap.exists() && snap.val() !== name) {
-        errEl.textContent = `❌ El número ${id} ya está en uso por ${snap.val()}`;
+      if (snap.exists() && snap.val()?.name !== name) {
+        errEl.textContent = `❌ El número ${id} ya está en uso por ${snap.val()?.name || snap.val()}`;
         errEl.style.display = "block";
         btn.disabled = false;
         btn.textContent = "Entrar a la fiesta →";
         return;
       }
 
-      await set(ref(db, `players/${id}`), name);
-      me = { id, name };
+      await set(ref(db, `players/${id}`), { name, ig });
+      me = { id, name, ig };
       document.getElementById("login-screen").style.display = "none";
       document.getElementById("main-screen").style.display = "block";
       showToast(`🎉 ¡Bienvenido/a, ${name}!`);
@@ -429,12 +458,13 @@
       document.getElementById("login-screen").style.display = "block";
       document.getElementById("input-name").value = "";
       document.getElementById("input-id").value = "";
+      document.getElementById("input-ig").value = "";
       document.getElementById("login-error").style.display = "none";
     });
 
     // ── BEER PONG ──────────────────────────────────────────────────────────
     document.getElementById("btn-pong").addEventListener("click", async () => {
-      const playerList = Object.keys(players).map(id => ({ id: parseInt(id), name: players[id] }));
+      const playerList = Object.keys(players).map(id => ({ id: parseInt(id), name: playerName(parseInt(id)) }));
       if (playerList.length < 2) { showToast("Se necesitan al menos 2 jugadores", "#ff2d78"); return; }
       const rounds = groupIntoPairs(playerList);
       pongRounds = rounds;
