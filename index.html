@@ -527,4 +527,209 @@
       const allPong = pongRounds.length ? pongRounds : pongCache;
       
       if (!allPong || allPong.length === 0) {
-        list.innerHTML = `<div class="matches-empty"><span class="emoji">🍺
+        list.innerHTML = `<div class="matches-empty"><span class="emoji">🍺</span>Genera una ronda para ver los enfrentamientos.</div>`;
+        return;
+      }
+      
+      list.innerHTML = allPong.map((match, i) => {
+        const aPlayers = match.a.map(p => `#${p.id} ${p.name}`).join("\n");
+        if (!match.b) return `
+          <div class="pong-match">
+            <div class="pong-team">
+              <div class="pong-team-label">Equipo A</div>
+              <div class="pong-team-players">${aPlayers}</div>
+            </div>
+            <div class="pong-bye">Descansa esta ronda 😴</div>
+          </div>`;
+        const bPlayers = match.b.map(p => `#${p.id} ${p.name}`).join("\n");
+        return `
+          <div class="pong-match">
+            <div class="pong-team">
+              <div class="pong-team-label">Equipo A</div>
+              <div class="pong-team-players">${aPlayers}</div>
+            </div>
+            <div class="pong-vs">VS</div>
+            <div class="pong-team">
+              <div class="pong-team-label">Equipo B</div>
+              <div class="pong-team-players">${bPlayers}</div>
+            </div>
+          </div>`;
+      }).join("");
+    }
+
+    // ── VOTE ───────────────────────────────────────────────────────────────
+    window.castVote = async function(targetId, color) {
+      if (!me) return;
+      const key = `${me.id}_${targetId}`;
+      if (votes[key] || votesCache[key]) return;
+      
+      // Actualizar cache inmediatamente para UI instantánea
+      votesCache[key] = color;
+      votes[key] = color;
+      renderPlayers();
+      
+      try {
+        await set(ref(db, `votes/${key}`), color);
+
+        if (color === "green" && (votes[`${targetId}_${me.id}`] || votesCache[`${targetId}_${me.id}`]) === "green") {
+          const targetName = playerName(targetId);
+          showToast(`💚 ¡Match con ${targetName}!`);
+        }
+      } catch (error) {
+        console.error('Error casting vote:', error);
+        // Revertir cache si hay error
+        delete votesCache[key];
+        delete votes[key];
+        renderPlayers();
+        showToast('Error al votar', '#ff2d78');
+      }
+    };
+
+    // ── REGISTER ───────────────────────────────────────────────────────────
+    async function registerUser(name, id, ig, skipCheck = false) {
+      const errEl = document.getElementById("login-error");
+      
+      if (!skipCheck) {
+        // Check if ID is taken by someone else
+        const snap = await get(ref(db, `players/${id}`));
+        if (snap.exists() && snap.val()?.name !== name) {
+          errEl.textContent = `❌ El número ${id} ya está en uso por ${snap.val()?.name || snap.val()}`;
+          errEl.style.display = "block";
+          return false;
+        }
+      }
+
+      await set(ref(db, `players/${id}`), { name, ig });
+      me = { id, name, ig };
+      saveSession(me);
+      
+      // Actualizar cache
+      playersCache[id] = { name, ig };
+      players[id] = { name, ig };
+      
+      document.getElementById("login-screen").style.display = "none";
+      document.getElementById("main-screen").style.display = "block";
+      
+      // Renderizar inmediatamente
+      renderPlayers();
+      renderProfile();
+      
+      showToast(`🎉 ¡Bienvenido/a, ${name}!`);
+      return true;
+    }
+
+    document.getElementById("btn-register").addEventListener("click", async () => {
+      const nameEl = document.getElementById("input-name");
+      const idEl = document.getElementById("input-id");
+      const igEl = document.getElementById("input-ig");
+      const name = nameEl.value.trim();
+      const id = parseInt(idEl.value);
+      const ig = igEl.value.trim().replace(/^@/, "");
+      
+      if (!name || !id || id < 1 || id > 999) return;
+
+      const btn = document.getElementById("btn-register");
+      btn.disabled = true;
+      btn.textContent = "Entrando...";
+
+      const success = await registerUser(name, id, ig);
+      
+      if (!success) {
+        btn.disabled = false;
+        btn.textContent = "Entrar a la fiesta →";
+      }
+    });
+
+    // ── AUTO-LOGIN ─────────────────────────────────────────────────────────
+    async function tryAutoLogin() {
+      const savedUser = loadSession();
+      if (savedUser && savedUser.id && savedUser.name) {
+        // Verificar y cargar datos rápidamente
+        const snap = await get(ref(db, `players/${savedUser.id}`));
+        if (snap.exists() && snap.val()?.name === savedUser.name) {
+          // Primero cargar datos iniciales
+          await loadInitialData();
+          // Luego hacer login
+          await registerUser(savedUser.name, savedUser.id, savedUser.ig || '', true);
+        } else {
+          clearSession();
+          // Aún así cargar datos iniciales
+          await loadInitialData();
+        }
+      } else {
+        // Cargar datos iniciales para vista de login
+        await loadInitialData();
+      }
+    }
+
+    // ── LOGOUT ─────────────────────────────────────────────────────────────
+    document.getElementById("btn-logout").addEventListener("click", () => {
+      me = null;
+      clearSession();
+      document.getElementById("main-screen").style.display = "none";
+      document.getElementById("login-screen").style.display = "block";
+      document.getElementById("input-name").value = "";
+      document.getElementById("input-id").value = "";
+      document.getElementById("input-ig").value = "";
+      document.getElementById("login-error").style.display = "none";
+    });
+
+    // ── BEER PONG ──────────────────────────────────────────────────────────
+    document.getElementById("btn-pong").addEventListener("click", async () => {
+      const allPlayers = { ...playersCache, ...players };
+      const playerList = Object.keys(allPlayers).map(id => ({ id: parseInt(id), name: playerName(parseInt(id)) }));
+      if (playerList.length < 2) { showToast("Se necesitan al menos 2 jugadores", "#ff2d78"); return; }
+      const rounds = groupIntoPairs(playerList);
+      
+      // Actualizar cache inmediatamente
+      pongCache = rounds;
+      pongRounds = rounds;
+      renderPong();
+      
+      try {
+        await set(ref(db, "pong"), rounds);
+        showToast("🏓 ¡Ronda generada!");
+      } catch (error) {
+        console.error('Error saving pong:', error);
+        showToast('Error al guardar ronda', '#ff2d78');
+      }
+    });
+
+    // ── FIREBASE LISTENERS (actualizaciones en tiempo real) ───────────────
+    onValue(ref(db, "players"), snap => {
+      players = snap.val() || {};
+      playersCache = { ...playersCache, ...players };
+      if (me) {
+        renderPlayers();
+        renderProfile();
+      }
+    });
+
+    onValue(ref(db, "votes"), snap => {
+      votes = snap.val() || {};
+      votesCache = { ...votesCache, ...votes };
+      if (me) {
+        renderPlayers();
+        renderMatches();
+        renderProfile();
+      }
+    });
+
+    onValue(ref(db, "pong"), snap => {
+      pongRounds = snap.val() || [];
+      pongCache = pongRounds;
+      if (me) {
+        renderPong();
+      }
+    });
+
+    // Enter key on login
+    document.getElementById("input-name").addEventListener("keydown", e => {
+      if (e.key === "Enter") document.getElementById("btn-register").click();
+    });
+
+    // Iniciar carga instantánea
+    tryAutoLogin();
+  </script>
+</body>
+</html>
