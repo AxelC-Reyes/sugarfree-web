@@ -108,7 +108,6 @@
     .stats-row { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
     .ig-btn { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; border: none; border-radius: 8px; padding: 5px 10px; font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity 0.2s; letter-spacing: 0.3px; }
     .ig-btn:hover { opacity: 0.85; }
-    /* Logo de Instagram en el formulario */
     .ig-logo {
       width: 20px;
       height: 20px;
@@ -143,7 +142,6 @@
       display: flex;
       align-items: center;
     }
-    /* Loader */
     .loader {
       display: inline-block;
       width: 20px;
@@ -199,6 +197,12 @@
             <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1rem">@</span>
             <input class="form-input" type="text" id="input-ig" placeholder="tuusuario" maxlength="30" style="padding-left:32px" />
           </div>
+        </div>
+        <!-- NUEVO: Campo para código de la fiesta -->
+        <div class="form-group">
+          <label class="form-label">🔐 Código de la fiesta</label>
+          <input class="form-input" type="text" id="input-code" placeholder="Ej: BARBS2024" maxlength="20" value="BARBS2024" />
+          <small style="color:var(--muted); font-size:0.7rem; margin-top:4px; display:block;">Pregunta a Barbara por el código</small>
         </div>
         <button class="btn btn-primary" id="btn-register">Entrar a la fiesta →</button>
         <p id="login-error" style="color:var(--neon-pink);font-size:0.8rem;margin-top:12px;display:none;"></p>
@@ -288,6 +292,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // ── CONFIGURACIÓN DE LA FIESTA ────────────────────────────────────────
+    // CAMBIA ESTE CÓDIGO POR EL QUE QUIERAS USAR EN TU FIESTA
+    const PARTY_CODE = "barb21yo"; // ¡Cámbialo por el tuyo!
+    
     // ── STATE WITH CACHE ───────────────────────────────────────────────────
     let me = null;
     let players = {};
@@ -389,6 +397,49 @@
       localStorage.removeItem('partyMatchSession');
     }
 
+    // ── VALIDACIÓN DE REGISTRO ────────────────────────────────────────────
+    async function validateRegistration(name, id, ig, code) {
+      const errEl = document.getElementById("login-error");
+      
+      // 1. Validar código de fiesta
+      if (code !== PARTY_CODE) {
+        errEl.textContent = "❌ Código de fiesta incorrecto";
+        errEl.style.display = "block";
+        return false;
+      }
+
+      // 2. Verificar que el número no esté ocupado por otra persona
+      const numSnap = await get(ref(db, `players/${id}`));
+      if (numSnap.exists()) {
+        const existingUser = numSnap.val();
+        // Si el nombre es diferente, entonces es otra persona
+        if (existingUser.name !== name) {
+          errEl.textContent = `❌ El número ${id} ya es de ${existingUser.name}`;
+          errEl.style.display = "block";
+          return false;
+        }
+        // Si es el mismo nombre, es la misma persona (re-login permitido)
+      }
+
+      // 3. Verificar que el Instagram no esté repetido (si se proporcionó)
+      if (ig) {
+        const playersSnap = await get(ref(db, 'players'));
+        const allPlayers = playersSnap.val() || {};
+        
+        const existingIgUser = Object.entries(allPlayers).find(([playerId, data]) => 
+          data.ig && data.ig.toLowerCase() === ig.toLowerCase() && parseInt(playerId) !== id
+        );
+        
+        if (existingIgUser) {
+          errEl.textContent = `❌ El Instagram @${ig} ya está registrado por otra persona`;
+          errEl.style.display = "block";
+          return false;
+        }
+      }
+
+      return true;
+    }
+
     // ── LOAD INITIAL DATA FAST ────────────────────────────────────────────
     async function loadInitialData() {
       try {
@@ -396,8 +447,8 @@
         const playersSnap = await get(ref(db, 'players'));
         if (playersSnap.exists()) {
           playersCache = playersSnap.val();
-          players = playersCache; // Sincronizar
-          renderPlayers(); // Renderizar inmediatamente
+          players = playersCache;
+          if (me) renderPlayers();
         }
 
         // Cargar votes en segundo plano
@@ -405,9 +456,11 @@
           if (snap.exists()) {
             votesCache = snap.val();
             votes = votesCache;
-            renderPlayers();
-            renderMatches();
-            renderProfile();
+            if (me) {
+              renderPlayers();
+              renderMatches();
+              renderProfile();
+            }
           }
         });
 
@@ -416,7 +469,7 @@
           if (snap.exists()) {
             pongCache = snap.val();
             pongRounds = pongCache;
-            renderPong();
+            if (me) renderPong();
           }
         });
 
@@ -577,7 +630,6 @@
         }
       } catch (error) {
         console.error('Error casting vote:', error);
-        // Revertir cache si hay error
         delete votesCache[key];
         delete votes[key];
         renderPlayers();
@@ -586,20 +638,10 @@
     };
 
     // ── REGISTER ───────────────────────────────────────────────────────────
-    async function registerUser(name, id, ig, skipCheck = false) {
-      const errEl = document.getElementById("login-error");
-      
-      if (!skipCheck) {
-        // Check if ID is taken by someone else
-        const snap = await get(ref(db, `players/${id}`));
-        if (snap.exists() && snap.val()?.name !== name) {
-          errEl.textContent = `❌ El número ${id} ya está en uso por ${snap.val()?.name || snap.val()}`;
-          errEl.style.display = "block";
-          return false;
-        }
-      }
-
+    async function registerUser(name, id, ig, skipValidation = false) {
+      // Guardar en Firebase
       await set(ref(db, `players/${id}`), { name, ig });
+      
       me = { id, name, ig };
       saveSession(me);
       
@@ -618,21 +660,45 @@
       return true;
     }
 
+    // NUEVO: Manejador del botón registrar con validación
     document.getElementById("btn-register").addEventListener("click", async () => {
       const nameEl = document.getElementById("input-name");
       const idEl = document.getElementById("input-id");
       const igEl = document.getElementById("input-ig");
+      const codeEl = document.getElementById("input-code");
+      
       const name = nameEl.value.trim();
       const id = parseInt(idEl.value);
       const ig = igEl.value.trim().replace(/^@/, "");
+      const code = codeEl.value.trim();
       
-      if (!name || !id || id < 1 || id > 999) return;
+      // Validaciones básicas
+      if (!name) {
+        document.getElementById("login-error").textContent = "❌ Escribe tu nombre";
+        document.getElementById("login-error").style.display = "block";
+        return;
+      }
+      if (!id || id < 1 || id > 999) {
+        document.getElementById("login-error").textContent = "❌ Número válido (1-999)";
+        document.getElementById("login-error").style.display = "block";
+        return;
+      }
 
       const btn = document.getElementById("btn-register");
       btn.disabled = true;
-      btn.textContent = "Entrando...";
+      btn.textContent = "Verificando...";
 
-      const success = await registerUser(name, id, ig);
+      // Validar todo (código, número, instagram)
+      const isValid = await validateRegistration(name, id, ig, code);
+      if (!isValid) {
+        btn.disabled = false;
+        btn.textContent = "Entrar a la fiesta →";
+        return;
+      }
+
+      // Si pasó validación, registrar
+      btn.textContent = "Entrando...";
+      const success = await registerUser(name, id, ig, true);
       
       if (!success) {
         btn.disabled = false;
@@ -644,16 +710,15 @@
     async function tryAutoLogin() {
       const savedUser = loadSession();
       if (savedUser && savedUser.id && savedUser.name) {
-        // Verificar y cargar datos rápidamente
+        // Verificar que el usuario sigue existiendo
         const snap = await get(ref(db, `players/${savedUser.id}`));
         if (snap.exists() && snap.val()?.name === savedUser.name) {
           // Primero cargar datos iniciales
           await loadInitialData();
-          // Luego hacer login
+          // Luego hacer login automático
           await registerUser(savedUser.name, savedUser.id, savedUser.ig || '', true);
         } else {
           clearSession();
-          // Aún así cargar datos iniciales
           await loadInitialData();
         }
       } else {
@@ -671,6 +736,7 @@
       document.getElementById("input-name").value = "";
       document.getElementById("input-id").value = "";
       document.getElementById("input-ig").value = "";
+      document.getElementById("input-code").value = "BARBS2024"; // Reset al código por defecto
       document.getElementById("login-error").style.display = "none";
     });
 
@@ -728,7 +794,7 @@
       if (e.key === "Enter") document.getElementById("btn-register").click();
     });
 
-    // Iniciar carga instantánea
+    // Iniciar
     tryAutoLogin();
   </script>
 </body>
