@@ -95,14 +95,21 @@
         }
 
         .logo-area { display: flex; align-items: center; gap: 14px; }
-        .logo-icon {
-            width: 44px; height: 44px; min-width: 44px;
-            background: var(--rose-dim);
-            border: 1px solid var(--rose);
-            border-radius: 12px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 20px; color: var(--rose);
-            box-shadow: 0 0 20px rgba(255,59,127,0.2);
+        .logo-img {
+            height: 44px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255,59,127,0.25));
+            transition: transform 0.3s var(--ease), filter 0.3s;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+        @media (hover:hover) {
+            .logo-img:hover {
+                transform: scale(1.07);
+                filter: drop-shadow(0 0 16px rgba(255,59,127,0.45));
+            }
         }
         .logo-text {
             font-family: 'Syne', sans-serif;
@@ -555,7 +562,7 @@
             <!-- ── HEADER ──────────────────────────────── -->
             <header class="header">
                 <div class="logo-area">
-                    <div class="logo-icon"><i class="fas fa-arrows-spin"></i></div>
+                    <img src="caramelo.png" alt="Sugar Free" class="logo-img">
                     <div>
                         <div class="logo-text">Sugar Free</div>
                         <div class="logo-sub">PREMIUM</div>
