@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#030305">
+    <title>Sugar Girl · Sugar Free</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0; padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --bg:        #030305;
+            --rose:      #FF3B7F;
+            --rose-dim:  rgba(255,59,127,0.18);
+            --rose-line: rgba(255,59,127,0.12);
+            --gold:      #C9A96E;
+            --white:     #FFFFFF;
+            --w80:       rgba(255,255,255,0.8);
+            --w50:       rgba(255,255,255,0.5);
+            --w20:       rgba(255,255,255,0.2);
+            --w08:       rgba(255,255,255,0.08);
+            --w04:       rgba(255,255,255,0.04);
+            --ease:      cubic-bezier(0.16,1,0.3,1);
+            --safe-top:    env(safe-area-inset-top,    0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left:   env(safe-area-inset-left,   0px);
+            --safe-right:  env(safe-area-inset-right,  0px);
+        }
+
+        html { overflow-x: hidden; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--white);
+            min-height: 100vh;
+            min-height: 100dvh;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
+        /* ── FONDO ──────────────────────────────────────────── */
+        .geo-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .geo-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255,59,127,0.18) 1px, transparent 1px);
+            background-size: 36px 36px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+            -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+        }
+
+        .geo-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                repeating-linear-gradient(-60deg, transparent 0px, transparent 80px, rgba(255,59,127,0.04) 80px, rgba(255,59,127,0.04) 81px),
+                repeating-linear-gradient(30deg,  transparent 0px, transparent 120px, rgba(201,169,110,0.03) 120px, rgba(201,169,110,0.03) 121px);
+        }
+
+        .ambient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 60% 40% at 85% 10%, rgba(255,59,127,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 50% at 10% 90%, rgba(201,169,110,0.05) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 60% at 50% 50%, rgba(255,59,127,0.03) 0%, transparent 100%);
+        }
+
+        /* ── LAYOUT ─────────────────────────────────────────── */
+        .page {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: clamp(20px,5vw,48px);
+            padding-top:    calc(clamp(20px,5vw,48px) + var(--safe-top));
+            padding-left:   calc(clamp(20px,5vw,48px) + var(--safe-left));
+            padding-right:  calc(clamp(20px,5vw,48px) + var(--safe-right));
+            padding-bottom: calc(clamp(40px,8vw,80px) + var(--safe-bottom));
+            width: 100%;
+        }
+
+        /* ── HEADER ─────────────────────────────────────────── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--w50);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            margin-bottom: 36px;
+            transition: color 0.25s;
+            min-height: 44px;
+            touch-action: manipulation;
+        }
+        .back-link:active, .back-link:hover { color: var(--rose); }
+        .back-link i { font-size: 11px; }
+
+        .form-header { margin-bottom: 48px; }
+
+        .form-header-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .eyebrow-line { width: 32px; height: 1px; background: var(--rose); }
+        .eyebrow-text {
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--rose);
+        }
+
+        .form-header h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(32px,6vw,52px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin-bottom: 14px;
+        }
+
+        .form-header h1 .accent {
+            background: linear-gradient(135deg, #fff 0%, var(--rose) 60%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .form-header p {
+            color: var(--w50);
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 480px;
+        }
+
+        .header-deco {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 28px;
+        }
+        .header-deco-line { flex: 1; height: 1px; background: var(--rose-line); }
+        .header-deco-icon {
+            width: 36px; height: 36px;
+            border: 1px solid var(--rose-line);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--rose);
+            font-size: 14px;
+        }
+
+        /* ── BLOQUES ─────────────────────────────────────────── */
+        .form-block {
+            margin-bottom: 44px;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
+        }
+        .form-block.visible { opacity: 1; transform: translateY(0); }
+        .form-block:nth-child(1) { transition-delay: 0.05s; }
+        .form-block:nth-child(2) { transition-delay: 0.12s; }
+        .form-block:nth-child(3) { transition-delay: 0.19s; }
+        .form-block:nth-child(4) { transition-delay: 0.26s; }
+        .form-block:nth-child(5) { transition-delay: 0.33s; }
+        .form-block:nth-child(6) { transition-delay: 0.40s; }
+
+        .block-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .block-number {
+            width: 28px; height: 28px;
+            border: 1px solid var(--rose);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--rose);
+            flex-shrink: 0;
+        }
+        .block-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .block-line { flex: 1; height: 1px; background: var(--rose-line); }
+
+        /* ── CAMPOS ─────────────────────────────────────────── */
+        .field { margin-bottom: 20px; }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--w50);
+            margin-bottom: 8px;
+        }
+        .field-required::after { content: ' *'; color: var(--rose); }
+
+        .input {
+            width: 100%;
+            background: var(--w04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+            -webkit-appearance: none;
+            appearance: none;
+            min-height: 52px;
+            touch-action: manipulation;
+        }
+        .input::placeholder { color: var(--w20); }
+        .input:focus {
+            outline: none;
+            border-color: var(--rose);
+            background: rgba(255,59,127,0.04);
+            box-shadow: 0 0 0 3px rgba(255,59,127,0.1);
+        }
+        @media (hover:hover) {
+            .input:hover:not(:focus) {
+                border-color: rgba(255,59,127,0.35);
+                background: var(--w08);
+            }
+        }
+
+        .select-wrap { position: relative; }
+        .select-wrap::after {
+            content: '\f107';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--rose);
+            pointer-events: none;
+            font-size: 14px;
+        }
+        select.input { cursor: pointer; padding-right: 44px; }
+        select.input option { background: #0d0d18; color: var(--white); }
+
+        textarea.input { min-height: 110px; resize: vertical; line-height: 1.6; }
+
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+        @media (max-width: 480px) {
+            .field-row { grid-template-columns: 1fr; gap: 0; }
+        }
+
+        /* ── CARDS DE SELECCIÓN MÚLTIPLE (Intereses / Qué ofrezco) ── */
+        .tag-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 4px;
+        }
+
+        .tag-option { position: relative; }
+        .tag-option input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0; height: 0;
+        }
+        .tag-option label {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 10px 16px;
+            background: var(--w04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.22s var(--ease);
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--w80);
+            letter-spacing: 0;
+            text-transform: none;
+            min-height: 44px;
+            touch-action: manipulation;
+            margin-bottom: 0;
+            white-space: nowrap;
+        }
+        .tag-option label i { font-size: 12px; color: var(--rose); opacity: 0.5; transition: opacity 0.22s; }
+        .tag-option input:checked + label {
+            border-color: var(--rose);
+            background: rgba(255,59,127,0.1);
+            color: var(--white);
+            box-shadow: 0 0 0 1px var(--rose);
+        }
+        .tag-option input:checked + label i { opacity: 1; }
+        @media (hover:hover) {
+            .tag-option label:hover {
+                border-color: rgba(255,59,127,0.4);
+                background: var(--w08);
+            }
+        }
+        .tag-option label:active { transform: scale(0.96); }
+
+        /* ── TIPO DE RELACIÓN (cards grandes) ──────────────────── */
+        .relation-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        @media (max-width: 380px) {
+            .relation-grid { grid-template-columns: 1fr; }
+        }
+
+        .relation-option { position: relative; }
+        .relation-option input[type="checkbox"] {
+            position: absolute;
+            opacity: 0;
+            width: 0; height: 0;
+        }
+        .relation-option label {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding: 16px 18px;
+            background: var(--w04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.22s var(--ease);
+            min-height: 80px;
+            touch-action: manipulation;
+            letter-spacing: 0;
+            text-transform: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--w80);
+            margin-bottom: 0;
+        }
+        .relation-option label .rel-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--white);
+        }
+        .relation-option label .rel-desc {
+            font-size: 12px;
+            color: var(--w50);
+            font-weight: 400;
+            line-height: 1.4;
+        }
+        .relation-option input:checked + label {
+            border-color: var(--rose);
+            background: rgba(255,59,127,0.08);
+            box-shadow: 0 0 0 1px var(--rose), 0 6px 20px rgba(255,59,127,0.12);
+        }
+        .relation-option input:checked + label .rel-title { color: var(--rose); }
+        @media (hover:hover) {
+            .relation-option label:hover {
+                border-color: rgba(255,59,127,0.4);
+                background: var(--w08);
+            }
+        }
+        .relation-option label:active { transform: scale(0.97); }
+
+        /* ── FOTO UPLOAD ────────────────────────────────────── */
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        @media (max-width: 380px) {
+            .photos-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .photo-slot {
+            aspect-ratio: 3/4;
+            background: var(--w04);
+            border: 1px dashed rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.25s, background 0.25s;
+            touch-action: manipulation;
+        }
+        .photo-slot input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            font-size: 0;
+        }
+        .photo-slot-icon {
+            font-size: 24px;
+            color: var(--rose);
+            opacity: 0.6;
+            transition: opacity 0.25s, transform 0.25s;
+            pointer-events: none;
+        }
+        .photo-slot-label {
+            font-size: 11px;
+            color: var(--w20);
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+        .photo-slot-num {
+            position: absolute;
+            top: 10px; left: 10px;
+            width: 20px; height: 20px;
+            background: rgba(255,59,127,0.15);
+            border: 1px solid var(--rose-line);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--rose);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            pointer-events: none;
+        }
+        @media (hover:hover) {
+            .photo-slot:hover {
+                border-color: var(--rose);
+                background: rgba(255,59,127,0.05);
+            }
+            .photo-slot:hover .photo-slot-icon { opacity: 1; transform: scale(1.1); }
+        }
+        .photo-slot:active { transform: scale(0.97); }
+        .photo-slot.has-photo { border-color: var(--rose); border-style: solid; }
+        .photo-preview-img {
+            position: absolute;
+            inset: 0;
+            width: 100%; height: 100%;
+            object-fit: cover;
+            border-radius: 13px;
+            display: none;
+        }
+        .photo-remove {
+            position: absolute;
+            top: 8px; right: 8px;
+            width: 26px; height: 26px;
+            background: rgba(0,0,0,0.75);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            touch-action: manipulation;
+        }
+        .photo-slot.has-photo .photo-preview-img { display: block; }
+        .photo-slot.has-photo .photo-remove { display: flex; }
+        .photo-slot.has-photo .photo-slot-icon,
+        .photo-slot.has-photo .photo-slot-label { display: none; }
+        .photo-hint {
+            font-size: 12px;
+            color: var(--w20);
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        /* ── NOTAS INFO ─────────────────────────────────────── */
+        .info-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: rgba(201,169,110,0.07);
+            border: 1px solid rgba(201,169,110,0.2);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 8px;
+        }
+        .info-note i { color: var(--gold); font-size: 14px; margin-top: 1px; flex-shrink: 0; }
+        .info-note p { font-size: 13px; color: rgba(201,169,110,0.85); line-height: 1.5; }
+
+        /* ── SUBMIT ─────────────────────────────────────────── */
+        .submit-area {
+            margin-top: 52px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+        .submit-btn {
+            width: 100%;
+            max-width: 360px;
+            padding: 18px 32px;
+            background: var(--rose);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s var(--ease);
+            min-height: 58px;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+            border-radius: inherit;
+        }
+        @media (hover:hover) {
+            .submit-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 16px 40px rgba(255,59,127,0.35);
+                background: #ff2070;
+            }
+        }
+        .submit-btn:active { transform: scale(0.97); }
+        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+        .submit-disclaimer {
+            font-size: 12px;
+            color: var(--w20);
+            text-align: center;
+            max-width: 320px;
+            line-height: 1.5;
+        }
+
+        /* ── PROGRESS BAR ───────────────────────────────────── */
+        .progress-bar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: 2px;
+            background: var(--rose-line);
+            z-index: 100;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--rose);
+            width: 0%;
+            transition: width 0.4s var(--ease);
+            box-shadow: 0 0 8px var(--rose);
+        }
+
+        /* ── TOAST ──────────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            z-index: 9999;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            background: rgba(8,8,15,0.97);
+            border-radius: 14px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+            max-width: calc(100vw - 32px);
+            transition: transform 0.4s var(--ease), opacity 0.4s;
+        }
+        .toast.error   { border: 1px solid rgba(255,60,60,0.4); }
+        .toast.error i { color: #ff4444; }
+        .toast.success   { border: 1px solid rgba(255,59,127,0.4); }
+        .toast.success i { color: var(--rose); }
+
+        @media (min-width: 481px) {
+            .toast { top: 28px; right: 28px; border-radius: 50px; }
+            .toast.hidden { transform: translateX(120%); opacity: 0; }
+        }
+        @media (max-width: 480px) {
+            .toast {
+                top: calc(16px + env(safe-area-inset-top,0px));
+                left: 16px; right: 16px;
+            }
+            .toast.hidden { transform: translateY(-120%); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="geo-bg"></div>
+    <div class="ambient"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="page">
+        <div class="container">
+
+            <a href="index.html" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Volver al inicio
+            </a>
+
+            <!-- Header -->
+            <div class="form-header">
+                <div class="form-header-eyebrow">
+                    <div class="eyebrow-line"></div>
+                    <span class="eyebrow-text">Sugar Free · Perfil Baby</span>
+                </div>
+                <h1>
+                    Sugar<br>
+                    <span class="accent">Girl</span>
+                </h1>
+                <p>Cuéntanos quién eres y qué buscas. Los perfiles completos tienen hasta 8× más conexiones exitosas.</p>
+                <div class="header-deco">
+                    <div class="header-deco-line"></div>
+                    <div class="header-deco-icon"><i class="fas fa-user-heart"></i></div>
+                    <div class="header-deco-line"></div>
+                </div>
+            </div>
+
+            <form id="profileForm" novalidate>
+
+                <!-- 01 · Datos personales -->
+                <div class="form-block">
+                    <div class="block-label">
+                        <div class="block-number">01</div>
+                        <div class="block-title">Información personal</div>
+                        <div class="block-line"></div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-required">Edad</label>
+                            <input type="number" id="edad" class="input"
+                                   placeholder="Ej. 24" min="18" max="29" required inputmode="numeric">
+                        </div>
+                        <div class="field">
+                            <label class="field-required">Ciudad</label>
+                            <input type="text" id="ciudad" class="input"
+                                   placeholder="Ej. Ciudad de México" required
+                                   autocomplete="address-level2">
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-required">Altura (cm)</label>
+                            <input type="number" id="altura" class="input"
+                                   placeholder="Ej. 178" min="140" max="220" required inputmode="numeric">
+                        </div>
+                        <div class="field">
+                            <label class="field-required">Peso (kg)</label>
+                            <input type="number" id="peso" class="input"
+                                   placeholder="Ej. 72" min="40" max="200" required inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-required">Complexión</label>
+                            <div class="select-wrap">
+                                <select id="complexion" class="input" required>
+                                    <option value="">Seleccionar</option>
+                                    <option>Delgada</option>
+                                    <option>Atlética</option>
+                                    <option>Media</option>
+                                    <option>Robusta</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="field-required">Tono de piel</label>
+                            <div class="select-wrap">
+                                <select id="tonoPiel" class="input" required>
+                                    <option value="">Seleccionar</option>
+                                    <option>Muy clara</option>
+                                    <option>Clara</option>
+                                    <option>Morena clara</option>
+                                    <option>Morena</option>
+                                    <option>Morena oscura</option>
+                                    <option>Negra</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-note">
+                        <i class="fas fa-shield-halved"></i>
+                        <p>La edad para Sugar Girls es de <strong>18 a 29 años</strong>. Tu información es privada y nunca se comparte con terceros.</p>
+                    </div>
+                </div>
+
+                <!-- 02 · Fotos -->
+                <div class="form-block">
+                    <div class="block-label">
+                        <div class="block-number">02</div>
+                        <div class="block-title">Fotos recientes</div>
+                        <div class="block-line"></div>
+                    </div>
+
+                    <div class="photos-grid">
+                        <div class="photo-slot" id="slot1">
+                            <span class="photo-slot-num">1</span>
+                            <i class="fas fa-plus photo-slot-icon"></i>
+                            <span class="photo-slot-label">SUBIR</span>
+                            <input type="file" accept="image/*">
+                            <img class="photo-preview-img" alt="">
+                            <button type="button" class="photo-remove"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="photo-slot" id="slot2">
+                            <span class="photo-slot-num">2</span>
+                            <i class="fas fa-plus photo-slot-icon"></i>
+                            <span class="photo-slot-label">SUBIR</span>
+                            <input type="file" accept="image/*">
+                            <img class="photo-preview-img" alt="">
+                            <button type="button" class="photo-remove"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="photo-slot" id="slot3">
+                            <span class="photo-slot-num">3</span>
+                            <i class="fas fa-plus photo-slot-icon"></i>
+                            <span class="photo-slot-label">SUBIR</span>
+                            <input type="file" accept="image/*">
+                            <img class="photo-preview-img" alt="">
+                            <button type="button" class="photo-remove"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <p class="photo-hint">3 fotos donde se vea tu rostro claramente · Máx. 10 MB c/u</p>
+                </div>
+
+                <!-- 03 · Qué ofrezco -->
+                <div class="form-block">
+                    <div class="block-label">
+                        <div class="block-number">03</div>
+                        <div class="block-title">¿Qué puedo ofrecer?</div>
+                        <div class="block-line"></div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-required" style="margin-bottom:14px;">
+                            Selecciona todo lo que aplique
+                        </label>
+                        <div class="tag-grid" id="ofrezcoGrid">
+
+                            <div class="tag-option">
+                                <input type="checkbox" id="of1" name="ofrezco" value="compania">
+                                <label for="of1"><i class="fas fa-comments"></i> Compañía y conversación</label>
+                            </div>
+                            <div class="tag-option">
+                                <input type="checkbox" id="of2" name="ofrezco" value="eventos">
+                                <label for="of2"><i class="fas fa-champagne-glasses"></i> Eventos y salidas</label>
+                            </div>
+                            <div class="tag-option">
+                                <input type="checkbox" id="of3" name="ofrezco" value="viajes">
+                                <label for="of3"><i class="fas fa-plane"></i> Viajes</label>
+                            </div>
+                            <div class="tag-option">
+                                <input type="checkbox" id="of4" name="ofrezco" value="fitness">
+                                <label for="of4"><i class="fas fa-dumbbell"></i> Compañía fitness</label>
+                            </div>
+                            <div class="tag-option">
+                                <input type="checkbox" id="of5" name="ofrezco" value="mentoria">
+                                <label for="of5"><i class="fas fa-brain"></i> Escucha activa</label>
+                            </div>
+                            <div class="tag-option">
+                                <input type="checkbox" id="of6" name="ofrezco" value="cultura">
+                                <label for="of6"><i class="fas fa-masks-theater"></i> Cultura y arte</label>
+                            </div>
+                            <div class="tag-option">
+                                <input type="checkbox" id="of7" name="ofrezco" value="gastronomia">
+                                <label for="of7"><i class="fas fa-utensils"></i> Gastronomía</label>
+                            </div>
+                            <div class="tag-option">
+                                <input type="checkbox" id="of8" name="ofrezco" value="discrecion">
+                                <label for="of8"><i class="fas fa-lock"></i> Total discreción</label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 04 · Tipo de relación -->
+                <div class="form-block">
+                    <div class="block-label">
+                        <div class="block-number">04</div>
+                        <div class="block-title">Tipo de relación que busco</div>
+                        <div class="block-line"></div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-required" style="margin-bottom:14px;">
+                            Puede ser más de una
+                        </label>
+                        <div class="relation-grid" id="relacionGrid">
+
+                            <div class="relation-option">
+                                <input type="checkbox" id="rel1" name="relacion" value="compania_social">
+                                <label for="rel1">
+                                    <span class="rel-title">Compañía social</span>
+                                    <span class="rel-desc">Eventos, cenas, salidas sin compromiso de continuidad</span>
+                                </label>
+                            </div>
+                            <div class="relation-option">
+                                <input type="checkbox" id="rel2" name="relacion" value="amistad_premium">
+                                <label for="rel2">
+                                    <span class="rel-title">Amistad premium</span>
+                                    <span class="rel-desc">Conexión genuina con beneficios mutuos a largo plazo</span>
+                                </label>
+                            </div>
+                            <div class="relation-option">
+                                <input type="checkbox" id="rel3" name="relacion" value="viajes">
+                                <label for="rel3">
+                                    <span class="rel-title">Compañero de viajes</span>
+                                    <span class="rel-desc">Disponibilidad para escapadas nacionales e internacionales</span>
+                                </label>
+                            </div>
+                            <div class="relation-option">
+                                <input type="checkbox" id="rel4" name="relacion" value="conexion_intima">
+                                <label for="rel4">
+                                    <span class="rel-title">Conexión íntima</span>
+                                    <span class="rel-desc">Relación más cercana entre adultos con acuerdo claro</span>
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 05 · Disponibilidad y expectativas -->
+                <div class="form-block">
+                    <div class="block-label">
+                        <div class="block-number">05</div>
+                        <div class="block-title">Disponibilidad y expectativas</div>
+                        <div class="block-line"></div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-required">Disponibilidad</label>
+                        <div class="select-wrap">
+                            <select id="disponibilidad" class="input" required>
+                                <option value="">Seleccionar</option>
+                                <option value="fines">Fines de semana</option>
+                                <option value="entre_semana">Entre semana</option>
+                                <option value="flexible">Horario flexible</option>
+                                <option value="viajes">Disponible para viajes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Cuéntanos sobre ti</label>
+                        <textarea id="descripcion" class="input" rows="4"
+                                  placeholder="Descríbete: personalidad, intereses, qué te hace diferente y qué esperas de esta experiencia…"></textarea>
+                    </div>
+                </div>
+
+                <!-- SUBMIT -->
+                <div class="submit-area form-block">
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <i class="fas fa-check"></i>
+                        Crear mi perfil
+                    </button>
+                    <p class="submit-disclaimer">
+                        Al continuar aceptas los Términos de Uso y la Política de Privacidad de Sugar Free.
+                    </p>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // ── PROGRESS BAR ───────────────────────────────────
+    window.addEventListener('scroll', () => {
+        const el  = document.documentElement;
+        const pct = el.scrollTop / (el.scrollHeight - el.clientHeight) * 100;
+        document.getElementById('progressFill').style.width = pct + '%';
+    }, { passive: true });
+
+    // ── STAGGER REVEAL ─────────────────────────────────
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                io.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.06 });
+    document.querySelectorAll('.form-block').forEach(b => io.observe(b));
+
+    // ── FOTO UPLOAD ────────────────────────────────────
+    document.querySelectorAll('.photo-slot').forEach(slot => {
+        const input     = slot.querySelector('input[type="file"]');
+        const preview   = slot.querySelector('.photo-preview-img');
+        const removeBtn = slot.querySelector('.photo-remove');
+
+        slot.addEventListener('click', e => {
+            if (removeBtn.contains(e.target)) return;
+            if (!slot.classList.contains('has-photo')) input.click();
+        });
+
+        input.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                toast('La imagen supera los 10 MB', 'error'); return;
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                preview.src = e.target.result;
+                slot.classList.add('has-photo');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        removeBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            preview.src = '';
+            input.value = '';
+            slot.classList.remove('has-photo');
+        });
+    });
+
+    // ── VALIDACIÓN Y SUBMIT ────────────────────────────
+    document.getElementById('profileForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const edad     = parseInt(document.getElementById('edad').value);
+        const ciudad   = document.getElementById('ciudad').value.trim();
+        const altura   = parseInt(document.getElementById('altura').value);
+        const peso     = parseInt(document.getElementById('peso').value);
+        const complex  = document.getElementById('complexion').value;
+        const tono     = document.getElementById('tonoPiel').value;
+        const disp     = document.getElementById('disponibilidad').value;
+        const fotos    = document.querySelectorAll('.photo-slot.has-photo').length;
+        const ofrezco  = document.querySelectorAll('input[name="ofrezco"]:checked').length;
+        const relacion = document.querySelectorAll('input[name="relacion"]:checked').length;
+
+        if (!edad || edad < 18 || edad > 29) {
+            toast('La edad para Sugar Boys es de 18 a 29 años', 'error');
+            document.getElementById('edad').focus(); return;
+        }
+        if (!ciudad) {
+            toast('Por favor ingresa tu ciudad', 'error');
+            document.getElementById('ciudad').focus(); return;
+        }
+        if (!altura || altura < 140) {
+            toast('Ingresa una altura válida', 'error'); return;
+        }
+        if (!peso || peso < 40) {
+            toast('Ingresa un peso válido', 'error'); return;
+        }
+        if (!complex) { toast('Selecciona tu complexión', 'error'); return; }
+        if (!tono)    { toast('Selecciona tu tono de piel', 'error'); return; }
+        if (fotos < 3){ toast('Sube las 3 fotos requeridas', 'error'); return; }
+        if (ofrezco === 0) { toast('Selecciona al menos una cosa que puedas ofrecer', 'error'); return; }
+        if (relacion === 0){ toast('Selecciona al menos un tipo de relación', 'error'); return; }
+        if (!disp)    { toast('Indica tu disponibilidad', 'error'); return; }
+
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando…';
+
+        setTimeout(() => {
+            btn.innerHTML = '<i class="fas fa-check"></i> ¡Perfil creado!';
+            btn.style.background = 'linear-gradient(135deg,#2ecc71,#27ae60)';
+            toast('Perfil enviado. Te avisaremos cuando sea aprobado.', 'success');
+            setTimeout(() => {
+                window.location.href = 'dashboard.html?profile=sboy&welcome=true';
+            }, 2000);
+        }, 2000);
+    });
+
+    // ── TOAST ──────────────────────────────────────────
+    function toast(msg, type = 'info') {
+        document.querySelectorAll('.toast').forEach(t => t.remove());
+        const t = document.createElement('div');
+        t.className = `toast ${type} hidden`;
+        t.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i><span>${msg}</span>`;
+        document.body.appendChild(t);
+        requestAnimationFrame(() => requestAnimationFrame(() => t.classList.remove('hidden')));
+        setTimeout(() => {
+            t.classList.add('hidden');
+            setTimeout(() => t.remove(), 420);
+        }, 4000);
+    }
+    </script>
+
+</body>
+</html>

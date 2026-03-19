@@ -1,800 +1,464 @@
-<!DOCTYPE html>
+
+        <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Barbs party match</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #080810;
-      --surface: #10101e;
-      --card: #15152a;
-      --border: rgba(255,255,255,0.07);
-      --neon-pink: #ff2d78;
-      --neon-green: #00f5a0;
-      --neon-blue: #3d9fff;
-      --neon-yellow: #ffe94e;
-      --text: #f0f0ff;
-      --muted: #6b6b8a;
-    }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-      pointer-events: none;
-      z-index: 0;
-    }
-    .orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.18; pointer-events: none; z-index: 0; }
-    .orb-1 { width: 300px; height: 300px; background: var(--neon-pink); top: -80px; right: -80px; }
-    .orb-2 { width: 250px; height: 250px; background: var(--neon-blue); bottom: 20%; left: -100px; }
-    .app { position: relative; z-index: 1; max-width: 480px; margin: 0 auto; padding: 0 0 100px; }
-    .header { padding: 32px 24px 16px; display: flex; align-items: center; gap: 12px; }
-    .header-logo { font-family: 'Bebas Neue', cursive; font-size: 2rem; letter-spacing: 2px; background: linear-gradient(135deg, var(--neon-pink), var(--neon-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; line-height: 1; }
-    .header-pill { background: rgba(255,45,120,0.15); border: 1px solid rgba(255,45,120,0.35); color: var(--neon-pink); font-size: 0.7rem; font-weight: 500; padding: 3px 10px; border-radius: 99px; letter-spacing: 1px; text-transform: uppercase; }
-    .tabs { display: flex; padding: 0 24px; gap: 6px; margin-bottom: 24px; }
-    .tab { flex: 1; padding: 10px 6px; border: none; border-radius: 10px; background: var(--surface); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.2s; letter-spacing: 0.3px; }
-    .tab.active { background: linear-gradient(135deg, rgba(255,45,120,0.2), rgba(61,159,255,0.2)); border: 1px solid rgba(255,45,120,0.4); color: var(--text); }
-    .section { padding: 0 24px; }
-    .section-title { font-family: 'Bebas Neue', cursive; font-size: 1.4rem; letter-spacing: 2px; color: var(--muted); margin-bottom: 16px; text-transform: uppercase; }
-    .profile-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 28px; margin-bottom: 24px; position: relative; overflow: hidden; }
-    .profile-card::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,45,120,0.06), rgba(61,159,255,0.06)); pointer-events: none; }
-    .profile-image {
-      width: 2.5cm;
-      height: 2.5cm;
-      margin: 0 auto 16px;
-      display: block;
-      object-fit: contain;
-    }
-    .profile-number { font-family: 'Bebas Neue', cursive; font-size: 5rem; line-height: 1; background: linear-gradient(135deg, var(--neon-pink), var(--neon-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
-    .profile-name { font-size: 1.3rem; font-weight: 500; color: var(--text); margin-bottom: 8px; }
-    .profile-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(0,245,160,0.1); border: 1px solid rgba(0,245,160,0.25); color: var(--neon-green); font-size: 0.7rem; padding: 4px 10px; border-radius: 99px; font-weight: 500; letter-spacing: 0.5px; }
-    .profile-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--neon-green); animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
-    .form-group { margin-bottom: 16px; }
-    .form-label { font-size: 0.75rem; font-weight: 500; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px; display: block; }
-    .form-input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 1rem; outline: none; transition: border-color 0.2s; }
-    .form-input:focus { border-color: rgba(255,45,120,0.5); }
-    .form-input::placeholder { color: var(--muted); }
-    input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-    .btn { width: 100%; padding: 15px; border: none; border-radius: 14px; font-family: 'Bebas Neue', cursive; font-size: 1.1rem; letter-spacing: 2px; cursor: pointer; transition: all 0.2s; }
-    .btn-primary { background: linear-gradient(135deg, var(--neon-pink), #a020f0); color: #fff; box-shadow: 0 4px 24px rgba(255,45,120,0.3); }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(255,45,120,0.45); }
-    .btn-primary:disabled { opacity: 0.5; cursor: default; transform: none; }
-    .btn-secondary { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.85rem; letter-spacing: 0; padding: 10px; }
-    .btn-pong { background: linear-gradient(135deg, var(--neon-blue), #00f5a0); color: #000; box-shadow: 0 4px 24px rgba(61,159,255,0.3); }
-    .btn-pong:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(61,159,255,0.45); }
-    .player-list { display: flex; flex-direction: column; gap: 10px; }
-    .player-row { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 14px 16px; display: flex; align-items: center; gap: 14px; transition: border-color 0.2s; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-    .player-row.matched { border-color: rgba(0,245,160,0.3); background: rgba(0,245,160,0.04); }
-    .player-num { font-family: 'Bebas Neue', cursive; font-size: 1.5rem; color: var(--muted); min-width: 36px; line-height: 1; }
-    .player-info { flex: 1; }
-    .player-name { font-size: 0.95rem; font-weight: 500; }
-    .player-sub { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
-    .vote-btns { display: flex; gap: 8px; }
-    .vote-btn { width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid transparent; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; background: var(--surface); }
-    .vote-btn.voted-green { background: rgba(0,245,160,0.2); border-color: var(--neon-green); }
-    .vote-btn.voted-red { background: rgba(255,45,120,0.2); border-color: var(--neon-pink); }
-    .vote-btn:not([disabled]):hover { transform: scale(1.1); }
-    .vote-btn:disabled { opacity: 0.4; cursor: default; }
-    .match-badge { font-size: 0.65rem; font-weight: 600; padding: 3px 8px; border-radius: 99px; background: rgba(0,245,160,0.15); border: 1px solid rgba(0,245,160,0.3); color: var(--neon-green); letter-spacing: 0.5px; }
-    .matches-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
-    .matches-empty .emoji { font-size: 2.5rem; display: block; margin-bottom: 12px; }
-    .pong-match { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; animation: fadeIn 0.3s ease; }
-    .pong-team { flex: 1; text-align: center; }
-    .pong-team-players { font-size: 0.82rem; font-weight: 500; color: var(--text); line-height: 1.6; white-space: pre-line; }
-    .pong-team-label { font-family: 'Bebas Neue', cursive; font-size: 0.7rem; letter-spacing: 2px; color: var(--muted); margin-bottom: 4px; }
-    .pong-vs { font-family: 'Bebas Neue', cursive; font-size: 1.2rem; color: var(--neon-yellow); letter-spacing: 1px; }
-    .pong-bye { text-align: center; padding: 12px; color: var(--muted); font-size: 0.8rem; font-style: italic; flex: 1; }
-    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: var(--neon-green); color: #000; font-weight: 600; font-size: 0.85rem; padding: 12px 24px; border-radius: 99px; z-index: 100; animation: toastIn 0.3s ease; white-space: nowrap; box-shadow: 0 4px 24px rgba(0,245,160,0.4); }
-    @keyframes toastIn { from { opacity:0; transform: translateX(-50%) translateY(10px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
-    .refresh-row { display: flex; gap: 8px; align-items: center; margin-bottom: 16px; }
-    .refresh-btn { background: var(--surface); border: 1px solid var(--border); color: var(--muted); border-radius: 10px; padding: 8px 14px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
-    .refresh-btn:hover { border-color: rgba(255,255,255,0.15); color: var(--text); }
-    .player-count { font-size: 0.78rem; color: var(--muted); margin-left: auto; }
-    .divider { height: 1px; background: var(--border); margin: 20px 0; }
-    .logout-btn { background: none; border: 1px solid var(--border); color: var(--muted); border-radius: 10px; padding: 8px 14px; font-size: 0.78rem; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.2s; }
-    .logout-btn:hover { border-color: rgba(255,45,120,0.4); color: var(--neon-pink); }
-    .stats-row { display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
-    .ig-btn { display: inline-flex; align-items: center; gap: 5px; background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: #fff; border: none; border-radius: 8px; padding: 5px 10px; font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: none; transition: opacity 0.2s; letter-spacing: 0.3px; }
-    .ig-btn:hover { opacity: 0.85; }
-    .ig-logo {
-      width: 20px;
-      height: 20px;
-      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-      border-radius: 5px;
-      display: inline-block;
-      margin-right: 8px;
-      position: relative;
-    }
-    .ig-logo::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 10px;
-      height: 10px;
-      border: 2px solid white;
-      border-radius: 3px;
-    }
-    .ig-logo::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      right: 3px;
-      width: 4px;
-      height: 4px;
-      background: white;
-      border-radius: 50%;
-    }
-    .label-with-ig {
-      display: flex;
-      align-items: center;
-    }
-    .loader {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 3px solid var(--muted);
-      border-radius: 50%;
-      border-top-color: var(--neon-pink);
-      animation: spin 1s ease-in-out infinite;
-      margin-right: 8px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 20px;
-      color: var(--muted);
-    }
-    #login-screen { display: block; }
-    #main-screen { display: none; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0f0f14">
+    <title>Sugar-Free · Conexiones Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0; padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg:      #0f0f14;
+            --rose:    #FF3B7F;
+            --rose-d:  rgba(255,59,127,0.15);
+            --rose-l:  rgba(255,59,127,0.1);
+            --white:   #ffffff;
+            --w70:     rgba(255,255,255,0.7);
+            --w40:     rgba(255,255,255,0.4);
+            --w12:     rgba(255,255,255,0.12);
+            --w06:     rgba(255,255,255,0.06);
+            --ease:    cubic-bezier(0.16,1,0.3,1);
+            --safe-top:    env(safe-area-inset-top,    0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        html { overflow-x: hidden; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--white);
+            min-height: 100vh;
+            min-height: 100dvh;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* ── FONDO SUTIL ──────────────────────────────────── */
+        .bg-glow {
+            position: fixed; inset: 0;
+            z-index: 0; pointer-events: none;
+            background:
+                radial-gradient(ellipse 70% 50% at 50% -10%, rgba(255,59,127,0.08) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 40% at 100% 100%, rgba(255,59,127,0.04) 0%, transparent 60%);
+        }
+
+        /* ── LAYOUT ───────────────────────────────────────── */
+        .page {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            max-width: 440px;
+            margin: 0 auto;
+            padding: 0 24px;
+            width: 100%;
+        }
+
+        /* ── HEADER ───────────────────────────────────────── */
+        header {
+            padding: calc(20px + var(--safe-top)) 0 0;
+        }
+        header .container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .logo {
+            display: flex; align-items: center;
+            text-decoration: none;
+            touch-action: manipulation;
+        }
+        .logo-img {
+            height: 130px;
+            width: auto;
+            display: block;
+            transition: transform 0.35s var(--ease), opacity 0.25s;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+        .logo:active .logo-img {
+            transform: scale(0.9);
+            opacity: 0.8;
+        }
+        @media (hover:hover) {
+            .logo:hover .logo-img {
+                transform: scale(1.06);
+                opacity: 0.9;
+            }
+        }
+
+        .header-badge {
+            font-size: 11px; color: var(--w40);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 5px 11px; border-radius: 50px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ── HERO ─────────────────────────────────────────── */
+        .hero {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 48px 0 32px;
+        }
+        .hero .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .hero-tagline {
+            font-family: 'Syne', sans-serif;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--rose);
+            margin-bottom: 20px;
+            opacity: 0.85;
+        }
+
+        .hero h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(28px, 7vw, 40px);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 12px;
+        }
+        .hero h1 em { font-style: normal; color: var(--rose); }
+
+        .hero p {
+            font-size: 15px; color: var(--w70);
+            line-height: 1.6; max-width: 300px;
+            margin-bottom: 34px;
+        }
+
+        /* ── BOTÓN GOOGLE ─────────────────────────────────── */
+        .google-btn {
+            width: 100%; max-width: 320px;
+            padding: 15px 24px;
+            background: var(--white);
+            border: none; border-radius: 14px;
+            color: #333;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px; font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 12px;
+            transition: all 0.25s var(--ease);
+            min-height: 52px; touch-action: manipulation;
+            margin-bottom: 0;
+        }
+        @media (hover:hover) { .google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); } }
+        .google-btn:active { transform: scale(0.97); }
+
+        /* ── DIVIDER ──────────────────────────────────────── */
+        .divider {
+            width: 100%; max-width: 320px;
+            display: flex; align-items: center; gap: 12px;
+            margin: 20px 0;
+        }
+        .divider-line { flex: 1; height: 1px; background: var(--w12); }
+        .divider span { font-size: 12px; color: var(--w40); white-space: nowrap; }
+
+        /* ── BOTÓN PREMIUM ────────────────────────────────── */
+        .premium-btn {
+            width: 100%; max-width: 320px;
+            padding: 15px 24px;
+            background: var(--rose);
+            border: 2px solid #C9A96E;
+            border-radius: 14px;
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px; font-weight: 600;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            gap: 0;
+            text-decoration: none;
+            min-height: 52px;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s var(--ease);
+            letter-spacing: 0.2px;
+        }
+        /* Shimmer dorado al hacer hover/tap */
+        .premium-btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 60%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(201,169,110,0.25), transparent);
+            transition: left 0.55s var(--ease);
+        }
+        @media (hover:hover) {
+            .premium-btn:hover {
+                background: #ff2070;
+                border-color: #e0c080;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 28px rgba(255,59,127,0.35);
+            }
+            .premium-btn:hover::after { left: 140%; }
+        }
+        .premium-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 3px 14px rgba(255,59,127,0.3);
+        }
+
+        /* ── SELECCIÓN DE PERFIL (post-login) ─────────────── */
+        #profileSection {
+            display: none;
+            flex: 1;
+            padding: 48px 0 32px;
+        }
+        #profileSection .container {
+            display: flex; flex-direction: column;
+            align-items: center; text-align: center;
+        }
+        #profileSection h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px; font-weight: 700;
+            margin-bottom: 6px;
+        }
+        #profileSection > .container > p {
+            font-size: 14px; color: var(--w40);
+            margin-bottom: 28px;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%; max-width: 320px;
+        }
+
+        .profile-opt {
+            background: var(--w06);
+            border: 1px solid var(--w12);
+            border-radius: 16px;
+            padding: 20px 14px;
+            text-align: center; text-decoration: none;
+            color: var(--white); cursor: pointer;
+            transition: all 0.25s var(--ease);
+            touch-action: manipulation;
+        }
+        @media (hover:hover) {
+            .profile-opt:hover { border-color: var(--rose); background: var(--rose-l); }
+        }
+        .profile-opt:active { transform: scale(0.96); border-color: var(--rose); }
+
+        .profile-opt-icon {
+            width: 44px; height: 44px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; margin: 0 auto 10px;
+            background: var(--rose-d); color: var(--rose);
+            border: 1px solid rgba(255,59,127,0.2);
+        }
+        .profile-opt span {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px; font-weight: 600;
+            display: block; margin-bottom: 3px;
+        }
+        .profile-opt small {
+            font-size: 10px; color: var(--w40);
+            line-height: 1.3; display: block;
+        }
+
+        /* ── FOOTER ───────────────────────────────────────── */
+        footer {
+            padding: 18px 0 calc(18px + var(--safe-bottom));
+            border-top: 1px solid var(--w12);
+            margin-top: auto;
+        }
+        footer .container {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap; gap: 10px;
+        }
+        .footer-copy { font-size: 11px; color: var(--w40); }
+        .footer-links { display: flex; gap: 16px; }
+        .footer-links a {
+            font-size: 11px; color: var(--w40);
+            text-decoration: none;
+            min-height: 44px; display: flex; align-items: center;
+            transition: color 0.2s;
+        }
+        .footer-links a:active { color: var(--rose); }
+        @media (hover:hover) { .footer-links a:hover { color: var(--rose); } }
+
+        /* ── TOAST ────────────────────────────────────────── */
+        .toast {
+            position: fixed; z-index: 9999;
+            font-family: 'DM Sans', sans-serif; font-size: 14px;
+            background: rgba(8,8,15,0.97);
+            border-radius: 50px; padding: 12px 20px;
+            display: flex; align-items: center; gap: 9px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+            transition: transform 0.4s var(--ease), opacity 0.4s;
+            max-width: calc(100vw - 32px);
+        }
+        .toast.success { border: 1px solid rgba(46,204,113,0.4); }
+        .toast.success i { color: #2ecc71; }
+        @media (min-width: 481px) {
+            .toast { top: 24px; right: 20px; }
+            .toast.hidden { transform: translateX(120%); opacity: 0; }
+        }
+        @media (max-width: 480px) {
+            .toast { bottom: calc(20px + var(--safe-bottom)); left: 16px; right: 16px; border-radius: 14px; }
+            .toast.hidden { transform: translateY(120%); opacity: 0; }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .anim-in { animation: fadeUp 0.45s var(--ease) both; }
+    </style>
 </head>
 <body>
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
 
-  <!-- LOGIN -->
-  <div id="login-screen" class="app">
-    <div class="header">
-      <span class="header-logo">Barbs party match</span>
-      <span class="header-pill">L I V E</span>
-    </div>
-    <div class="section">
-      <div class="profile-card">
-        <img src="prtymtch.png" alt="Party Match" class="profile-image" onerror="this.style.display='none'">
-        <div class="profile-name">Tu mini perfil</div>
-        <br/>
-        <div class="form-group">
-          <label class="form-label">Tu número de jugador (1-100)</label>
-          <input class="form-input" type="number" id="input-id" placeholder="Ej: 7" min="1" max="100" />
-        </div>
-        <div class="form-group">
-          <label class="form-label">Tu nombre</label>
-          <input class="form-input" type="text" id="input-name" placeholder="Ej: María" maxlength="20" />
-        </div>
-        <div class="form-group">
-          <label class="form-label label-with-ig">
-            TU INSTA <span style="color:var(--muted);font-size:0.7rem;text-transform:none;letter-spacing:0"></span>
-          </label>
-          <div style="position:relative">
-            <span style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:1rem">@</span>
-            <input class="form-input" type="text" id="input-ig" placeholder="mi_usuario" maxlength="30" style="padding-left:32px" />
-          </div>
-        </div>
-        <!-- NUEVO: Campo para código de la fiesta -->
-        <div class="form-group">
-          <label class="form-label">🔐 Código de la fiesta</label>
-          <input class="form-input" type="text" id="input-code" placeholder="Ej: -----------" maxlength="20"/>
-          <small style="color:var(--muted); font-size:0.7rem; margin-top:4px; display:block;">Pregunta a Barbara por el código</small>
-        </div>
-        <button class="btn btn-primary" id="btn-register">Entrar a la fiesta →</button>
-        <p id="login-error" style="color:var(--neon-pink);font-size:0.8rem;margin-top:12px;display:none;"></p>
-      </div>
-    </div>
-  </div>
+    <div class="bg-glow"></div>
 
-  <!-- MAIN -->
-  <div id="main-screen" class="app">
-    <div class="header">
-      <span class="header-logo">party match</span>
-      <span class="header-pill">l i v e</span>
-    </div>
-    <div class="tabs">
-      <button class="tab active" data-tab="players">Todos</button>
-      <button class="tab" data-tab="matches">💚 Matches</button>
-      <button class="tab" data-tab="pong">🏓 Pong</button>
-      <button class="tab" data-tab="profile">👤 Perfil</button>
-    </div>
+    <div class="page">
 
-    <!-- TAB PLAYERS -->
-    <div id="tab-players" class="section tab-content">
-      <div class="refresh-row">
-        <span class="section-title" style="margin:0">Jugadores</span>
-        <span class="player-count" id="player-count">0 en la fiesta</span>
-      </div>
-      <div class="player-list" id="players-list">
-        <div class="matches-empty" id="players-loading">
-          <div class="loading-row">
-            <span class="loader"></span>
-            <span>Cargando jugadores instantáneamente...</span>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- TAB MATCHES -->
-    <div id="tab-matches" class="section tab-content" style="display:none">
-      <div class="section-title">Tus Matches</div>
-      <div class="player-list" id="matches-list">
-        <div class="matches-empty"><span class="emoji">💫</span>Aún no tienes matches.</div>
-      </div>
-    </div>
-
-    <!-- TAB PONG -->
-    <div id="tab-pong" class="section tab-content" style="display:none">
-      <div class="section-title">Beer Pong</div>
-      <button class="btn btn-pong" id="btn-pong" style="margin-bottom:20px">🏓 Generar ronda aleatoria</button>
-      <div id="pong-list">
-        <div class="matches-empty"><span class="emoji">🍺</span>Genera una ronda para ver los enfrentamientos.</div>
-      </div>
-    </div>
-
-    <!-- TAB PROFILE -->
-    <div id="tab-profile" class="section tab-content" style="display:none">
-      <div class="profile-card">
-        <img src="prtymtch.png" alt="Party Match" class="profile-image" onerror="this.style.display='none'">
-        <div class="profile-number" id="profile-num">#0</div>
-        <div class="profile-name" id="profile-name-display">—</div>
-        <div class="profile-badge"><span class="profile-dot"></span>En la fiesta</div>
-        <div class="divider"></div>
-        <div class="stats-row" id="profile-stats"></div>
-        <div style="margin-top:12px" id="profile-ig"></div>
-        <div class="divider"></div>
-        <button class="logout-btn" id="btn-logout">Salir / Cambiar perfil</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="toast" class="toast" style="display:none"></div>
-
-  <!-- FIREBASE -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, set, get, onValue, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCY-1zJF_S7OXbGZS7_HkLMD6tzsYSTKy0",
-      authDomain: "mi-fiesta-b530c.firebaseapp.com",
-      projectId: "mi-fiesta-b530c",
-      storageBucket: "mi-fiesta-b530c.firebasestorage.app",
-      messagingSenderId: "339836539563",
-      appId: "1:339836539563:web:1ae5c5c7944be9af58ddee",
-      databaseURL: "https://mi-fiesta-b530c-default-rtdb.firebaseio.com"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // ── CONFIGURACIÓN DE LA FIESTA ────────────────────────────────────────
-    // CAMBIA ESTE CÓDIGO POR EL QUE QUIERAS USAR EN TU FIESTA
-    const PARTY_CODE = "barb21yo"; // ¡Cámbialo por el tuyo!
-    
-    // ── STATE WITH CACHE ───────────────────────────────────────────────────
-    let me = null;
-    let players = {};
-    let votes = {};
-    let pongRounds = [];
-    
-    // Cache local para renderizado instantáneo
-    let playersCache = {};
-    let votesCache = {};
-    let pongCache = [];
-
-    // ── UTILS ──────────────────────────────────────────────────────────────
-    function showToast(msg, color = "#00f5a0") {
-      const t = document.getElementById("toast");
-      t.textContent = msg;
-      t.style.background = color;
-      t.style.color = color === "#00f5a0" ? "#000" : "#fff";
-      t.style.display = "block";
-      clearTimeout(window._toastTimer);
-      window._toastTimer = setTimeout(() => t.style.display = "none", 2800);
-    }
-
-    function shuffle(arr) {
-      const a = [...arr];
-      for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-      }
-      return a;
-    }
-
-    function groupIntoPairs(playerList) {
-      const s = shuffle(playerList);
-      const teams = [];
-      for (let i = 0; i < s.length; i += 2) {
-        if (i + 1 < s.length) teams.push([s[i], s[i + 1]]);
-        else teams[teams.length - 1].push(s[i]);
-      }
-      const matches = [];
-      for (let i = 0; i < teams.length - 1; i += 2) {
-        matches.push({ a: teams[i], b: teams[i + 1] });
-      }
-      if (teams.length % 2 === 1) matches.push({ a: teams[teams.length - 1], b: null });
-      return matches;
-    }
-
-    function playerName(id) {
-      const p = players[id] || playersCache[id];
-      return p?.name || p || `#${id}`;
-    }
-    
-    function playerIg(id) {
-      const p = players[id] || playersCache[id];
-      return p?.ig || "";
-    }
-
-    function getMyVote(targetId) {
-      if (!me) return null;
-      const voteKey = `${me.id}_${targetId}`;
-      return votes[voteKey] || votesCache[voteKey];
-    }
-
-    function isMatch(targetId) {
-      if (!me) return false;
-      const myVoteKey = `${me.id}_${targetId}`;
-      const theirVoteKey = `${targetId}_${me.id}`;
-      const myVote = votes[myVoteKey] || votesCache[myVoteKey];
-      const theirVote = votes[theirVoteKey] || votesCache[theirVoteKey];
-      return myVote === "green" && theirVote === "green";
-    }
-
-    function getMyMatches() {
-      if (!me) return [];
-      const allPlayers = { ...playersCache, ...players };
-      return Object.keys(allPlayers)
-        .map(Number)
-        .filter(id => id !== me.id && isMatch(id))
-        .map(id => ({ id, name: playerName(id), ig: playerIg(id) }));
-    }
-
-    // ── SESSION MANAGEMENT ─────────────────────────────────────────────────
-    function saveSession(user) {
-      localStorage.setItem('partyMatchSession', JSON.stringify(user));
-    }
-
-    function loadSession() {
-      const saved = localStorage.getItem('partyMatchSession');
-      if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch (e) {
-          return null;
-        }
-      }
-      return null;
-    }
-
-    function clearSession() {
-      localStorage.removeItem('partyMatchSession');
-    }
-
-    // ── VALIDACIÓN DE REGISTRO ────────────────────────────────────────────
-    async function validateRegistration(name, id, ig, code) {
-      const errEl = document.getElementById("login-error");
-      
-      // 1. Validar código de fiesta
-      if (code !== PARTY_CODE) {
-        errEl.textContent = "❌ Código de fiesta incorrecto";
-        errEl.style.display = "block";
-        return false;
-      }
-
-      // 2. Verificar que el número no esté ocupado por otra persona
-      const numSnap = await get(ref(db, `players/${id}`));
-      if (numSnap.exists()) {
-        const existingUser = numSnap.val();
-        // Si el nombre es diferente, entonces es otra persona
-        if (existingUser.name !== name) {
-          errEl.textContent = `❌ El número ${id} ya es de ${existingUser.name}`;
-          errEl.style.display = "block";
-          return false;
-        }
-        // Si es el mismo nombre, es la misma persona (re-login permitido)
-      }
-
-      // 3. Verificar que el Instagram no esté repetido (si se proporcionó)
-      if (ig) {
-        const playersSnap = await get(ref(db, 'players'));
-        const allPlayers = playersSnap.val() || {};
-        
-        const existingIgUser = Object.entries(allPlayers).find(([playerId, data]) => 
-          data.ig && data.ig.toLowerCase() === ig.toLowerCase() && parseInt(playerId) !== id
-        );
-        
-        if (existingIgUser) {
-          errEl.textContent = `❌ El Instagram @${ig} ya está registrado por otra persona`;
-          errEl.style.display = "block";
-          return false;
-        }
-      }
-
-      return true;
-    }
-
-    // ── LOAD INITIAL DATA FAST ────────────────────────────────────────────
-    async function loadInitialData() {
-      try {
-        // Cargar players primero (lo más importante)
-        const playersSnap = await get(ref(db, 'players'));
-        if (playersSnap.exists()) {
-          playersCache = playersSnap.val();
-          players = playersCache;
-          if (me) renderPlayers();
-        }
-
-        // Cargar votes en segundo plano
-        get(ref(db, 'votes')).then(snap => {
-          if (snap.exists()) {
-            votesCache = snap.val();
-            votes = votesCache;
-            if (me) {
-              renderPlayers();
-              renderMatches();
-              renderProfile();
-            }
-          }
-        });
-
-        // Cargar pong en segundo plano
-        get(ref(db, 'pong')).then(snap => {
-          if (snap.exists()) {
-            pongCache = snap.val();
-            pongRounds = pongCache;
-            if (me) renderPong();
-          }
-        });
-
-      } catch (error) {
-        console.error('Error loading initial data:', error);
-      }
-    }
-
-    // ── TABS ───────────────────────────────────────────────────────────────
-    document.querySelectorAll(".tab").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-        document.querySelectorAll(".tab-content").forEach(t => t.style.display = "none");
-        btn.classList.add("active");
-        document.getElementById(`tab-${btn.dataset.tab}`).style.display = "block";
-        if (btn.dataset.tab === "profile") renderProfile();
-        if (btn.dataset.tab === "matches") renderMatches();
-      });
-    });
-
-    function renderPlayers() {
-      const list = document.getElementById("players-list");
-      const countEl = document.getElementById("player-count");
-      
-      if (!me) return;
-      
-      const allPlayers = { ...playersCache, ...players };
-      const others = Object.keys(allPlayers).map(Number).filter(id => id !== me?.id).sort((a,b) => a-b);
-      countEl.textContent = `${Object.keys(allPlayers).length} en la fiesta`;
-
-      if (others.length === 0) {
-        list.innerHTML = `<div class="matches-empty"><span class="emoji">🎈</span>Nadie más se ha unido aún.<br/>¡Comparte el link!</div>`;
-        return;
-      }
-
-      list.innerHTML = others.map(id => {
-        const name = playerName(id);
-        const ig = playerIg(id);
-        const myVote = getMyVote(id);
-        const matched = isMatch(id);
-        const greenClass = myVote === "green" ? "voted-green" : "";
-        const redClass = myVote === "red" ? "voted-red" : "";
-        const disabled = myVote ? "disabled" : "";
-        const igBtn = ig ? `<a class="ig-btn" href="https://instagram.com/${ig}" target="_blank">📸 @${ig}</a>` : "";
-        let sub = "";
-        if (matched) sub = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px"><span class="match-badge">✨ Match</span>${igBtn}</div>`;
-        else if (myVote === "green") sub = `<div style="margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div class="player-sub">Le diste verde · esperando...</div>${igBtn}</div>`;
-        else if (myVote === "red") sub = `<div style="margin-top:4px;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><div class="player-sub">Pasaste</div>${igBtn}</div>`;
-        else if (igBtn) sub = `<div style="margin-top:4px">${igBtn}</div>`;
-
-        return `
-          <div class="player-row ${matched ? "matched" : ""}">
-            <div class="player-num">#${id}</div>
-            <div class="player-info">
-              <div class="player-name">${name}</div>
-              ${sub}
+        <header>
+            <div class="container">
+                <a href="index-premium.html" class="logo">
+                    <img src="logosugarblanco.png" alt="Sugar-Free" class="logo-img">
+                </a>
+                <span class="header-badge">Free</span>
             </div>
-            <div class="vote-btns">
-              <button class="vote-btn ${redClass}" ${disabled} onclick="castVote(${id},'red')" title="No gracias">❌</button>
-              <button class="vote-btn ${greenClass}" ${disabled} onclick="castVote(${id},'green')" title="¡Me interesa!">💚</button>
+        </header>
+
+        <!-- HERO -->
+        <section class="hero" id="heroSection">
+            <div class="container">
+
+                <div class="hero-tagline">literalmente sugar FREE</div>
+
+                <h1>Conecta.<br><em>g r a t i s :)</em></h1>
+                <p>Entra con Google y elige tu perfil para empezar.</p>
+
+                <button class="google-btn" id="googleSignIn">
+                    <svg width="18" height="18" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    Continuar con Google
+                </button>
+
+                <div class="divider">
+                    <div class="divider-line"></div>
+                    <span>¿Quieres más?</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <a href="index-premium.html" class="premium-btn">
+                    Premium
+                </a>
+
             </div>
-          </div>`;
-      }).join("");
-    }
+        </section>
 
-    function renderMatches() {
-      const list = document.getElementById("matches-list");
-      const myMatches = getMyMatches();
-      if (myMatches.length === 0) {
-        list.innerHTML = `<div class="matches-empty"><span class="emoji">💫</span>Aún no tienes matches mutuos.<br/>Dale verde a alguien y espera a que<br/>también te dé verde a ti.</div>`;
-        return;
-      }
-      list.innerHTML = myMatches.map(p => `
-        <div class="player-row matched">
-          <div class="player-num">#${p.id}</div>
-          <div class="player-info">
-            <div class="player-name">${p.name}</div>
-            <div style="margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <div class="player-sub" style="color:var(--neon-green)">¡Se gustan mutuamente! 🎉</div>
-              ${p.ig ? `<a class="ig-btn" href="https://instagram.com/${p.ig}" target="_blank">📸 @${p.ig}</a>` : ""}
+        <!-- SELECCIÓN DE PERFIL (post-login) -->
+        <section id="profileSection">
+            <div class="container">
+                <h2>¿Cuál es tu perfil?</h2>
+                <p>Elige tu categoría para continuar</p>
+
+                <div class="profile-grid">
+                    <a href="formulario-daddy-premium.html" class="profile-opt">
+                        <div class="profile-opt-icon"><i class="fas fa-crown"></i></div>
+                        <span>Sugar Daddy</span>
+                        <small>≥ 30 años</small>
+                    </a>
+                    <a href="formulario-mommy-premium.html" class="profile-opt">
+                        <div class="profile-opt-icon"><i class="fas fa-gem"></i></div>
+                        <span>Sugar Mommy</span>
+                        <small>≥ 30 años</small>
+                    </a>
+                    <a href="formulario-sboy-premium.html" class="profile-opt">
+                        <div class="profile-opt-icon"><i class="fas fa-user-tie"></i></div>
+                        <span>Sugar Boy</span>
+                        <small>&lt; 30 años</small>
+                    </a>
+                    <a href="formulario-sgirl-premium.html" class="profile-opt">
+                        <div class="profile-opt-icon"><i class="fas fa-user-heart"></i></div>
+                        <span>Sugar Girl</span>
+                        <small>&lt; 30 años</small>
+                    </a>
+                </div>
             </div>
-          </div>
-          <span style="font-size:1.5rem">💚</span>
-        </div>`).join("");
-    }
+        </section>
 
-    function renderProfile() {
-      if (!me) return;
-      document.getElementById("profile-num").textContent = `#${me.id}`;
-      document.getElementById("profile-name-display").textContent = me.name;
-      
-      const allVotes = { ...votesCache, ...votes };
-      const greens = Object.keys(allVotes).filter(k => k.startsWith(`${me.id}_`) && allVotes[k] === "green").length;
-      
-      const igHtml = me.ig ? `<a class="ig-btn" href="https://instagram.com/${me.ig}" target="_blank" style="margin-top:8px;display:inline-flex">📸 @${me.ig}</a>` : `<span style="color:var(--muted);font-size:0.75rem">Sin Instagram registrado</span>`;
-      
-      const allPlayers = { ...playersCache, ...players };
-      document.getElementById("profile-stats").innerHTML = `
-        <span>💚 ${greens} intereses</span>
-        <span>🤝 ${getMyMatches().length} matches</span>
-        <span>👥 ${Object.keys(allPlayers).length} jugadores</span>`;
-      document.getElementById("profile-ig").innerHTML = igHtml;
-    }
-
-    // ── RENDER PONG ────────────────────────────────────────────────────────
-    function renderPong() {
-      const list = document.getElementById("pong-list");
-      const allPong = pongRounds.length ? pongRounds : pongCache;
-      
-      if (!allPong || allPong.length === 0) {
-        list.innerHTML = `<div class="matches-empty"><span class="emoji">🍺</span>Genera una ronda para ver los enfrentamientos.</div>`;
-        return;
-      }
-      
-      list.innerHTML = allPong.map((match, i) => {
-        const aPlayers = match.a.map(p => `#${p.id} ${p.name}`).join("\n");
-        if (!match.b) return `
-          <div class="pong-match">
-            <div class="pong-team">
-              <div class="pong-team-label">Equipo A</div>
-              <div class="pong-team-players">${aPlayers}</div>
+        <footer>
+            <div class="container">
+                <span class="footer-copy">© 2026 Sugar-Free · +18</span>
+                <div class="footer-links">
+                    <a href="#">Términos</a>
+                    <a href="#">Privacidad</a>
+                    <a href="#">Contacto</a>
+                </div>
             </div>
-            <div class="pong-bye">Descansa esta ronda 😴</div>
-          </div>`;
-        const bPlayers = match.b.map(p => `#${p.id} ${p.name}`).join("\n");
-        return `
-          <div class="pong-match">
-            <div class="pong-team">
-              <div class="pong-team-label">Equipo A</div>
-              <div class="pong-team-players">${aPlayers}</div>
-            </div>
-            <div class="pong-vs">VS</div>
-            <div class="pong-team">
-              <div class="pong-team-label">Equipo B</div>
-              <div class="pong-team-players">${bPlayers}</div>
-            </div>
-          </div>`;
-      }).join("");
+        </footer>
+
+    </div>
+
+    <script>
+    document.getElementById('googleSignIn').addEventListener('click', function() {
+        if (this.disabled) return;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#FF3B7F"></i> Conectando…';
+        this.disabled = true;
+
+        setTimeout(() => {
+            const hero    = document.getElementById('heroSection');
+            const section = document.getElementById('profileSection');
+
+            hero.style.transition = 'opacity 0.3s ease';
+            hero.style.opacity = '0';
+
+            setTimeout(() => {
+                hero.style.display = 'none';
+                section.style.display = 'block';
+                section.classList.add('anim-in');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                toast('¡Bienvenido! Elige tu perfil.', 'success');
+            }, 300);
+        }, 1400);
+    });
+
+    function toast(msg, type = 'info') {
+        document.querySelectorAll('.toast').forEach(t => t.remove());
+        const t = document.createElement('div');
+        t.className = `toast ${type} hidden`;
+        t.innerHTML = `<i class="fas fa-check-circle"></i><span>${msg}</span>`;
+        document.body.appendChild(t);
+        requestAnimationFrame(() => requestAnimationFrame(() => t.classList.remove('hidden')));
+        setTimeout(() => {
+            t.classList.add('hidden');
+            setTimeout(() => t.remove(), 420);
+        }, 4000);
     }
+    </script>
 
-    // ── VOTE ───────────────────────────────────────────────────────────────
-    window.castVote = async function(targetId, color) {
-      if (!me) return;
-      const key = `${me.id}_${targetId}`;
-      if (votes[key] || votesCache[key]) return;
-      
-      // Actualizar cache inmediatamente para UI instantánea
-      votesCache[key] = color;
-      votes[key] = color;
-      renderPlayers();
-      
-      try {
-        await set(ref(db, `votes/${key}`), color);
-
-        if (color === "green" && (votes[`${targetId}_${me.id}`] || votesCache[`${targetId}_${me.id}`]) === "green") {
-          const targetName = playerName(targetId);
-          showToast(`💚 ¡Match con ${targetName}!`);
-        }
-      } catch (error) {
-        console.error('Error casting vote:', error);
-        delete votesCache[key];
-        delete votes[key];
-        renderPlayers();
-        showToast('Error al votar', '#ff2d78');
-      }
-    };
-
-    // ── REGISTER ───────────────────────────────────────────────────────────
-    async function registerUser(name, id, ig, skipValidation = false) {
-      // Guardar en Firebase
-      await set(ref(db, `players/${id}`), { name, ig });
-      
-      me = { id, name, ig };
-      saveSession(me);
-      
-      // Actualizar cache
-      playersCache[id] = { name, ig };
-      players[id] = { name, ig };
-      
-      document.getElementById("login-screen").style.display = "none";
-      document.getElementById("main-screen").style.display = "block";
-      
-      // Renderizar inmediatamente
-      renderPlayers();
-      renderProfile();
-      
-      showToast(`🎉 ¡Bienvenido/a, ${name}!`);
-      return true;
-    }
-
-    // NUEVO: Manejador del botón registrar con validación
-    document.getElementById("btn-register").addEventListener("click", async () => {
-      const nameEl = document.getElementById("input-name");
-      const idEl = document.getElementById("input-id");
-      const igEl = document.getElementById("input-ig");
-      const codeEl = document.getElementById("input-code");
-      
-      const name = nameEl.value.trim();
-      const id = parseInt(idEl.value);
-      const ig = igEl.value.trim().replace(/^@/, "");
-      const code = codeEl.value.trim();
-      
-      // Validaciones básicas
-      if (!name) {
-        document.getElementById("login-error").textContent = "❌ Escribe tu nombre";
-        document.getElementById("login-error").style.display = "block";
-        return;
-      }
-      if (!id || id < 1 || id > 999) {
-        document.getElementById("login-error").textContent = "❌ Número válido (1-999)";
-        document.getElementById("login-error").style.display = "block";
-        return;
-      }
-
-      const btn = document.getElementById("btn-register");
-      btn.disabled = true;
-      btn.textContent = "Verificando...";
-
-      // Validar todo (código, número, instagram)
-      const isValid = await validateRegistration(name, id, ig, code);
-      if (!isValid) {
-        btn.disabled = false;
-        btn.textContent = "Entrar a la fiesta →";
-        return;
-      }
-
-      // Si pasó validación, registrar
-      btn.textContent = "Entrando...";
-      const success = await registerUser(name, id, ig, true);
-      
-      if (!success) {
-        btn.disabled = false;
-        btn.textContent = "Entrar a la fiesta →";
-      }
-    });
-
-    // ── AUTO-LOGIN ─────────────────────────────────────────────────────────
-    async function tryAutoLogin() {
-      const savedUser = loadSession();
-      if (savedUser && savedUser.id && savedUser.name) {
-        // Verificar que el usuario sigue existiendo
-        const snap = await get(ref(db, `players/${savedUser.id}`));
-        if (snap.exists() && snap.val()?.name === savedUser.name) {
-          // Primero cargar datos iniciales
-          await loadInitialData();
-          // Luego hacer login automático
-          await registerUser(savedUser.name, savedUser.id, savedUser.ig || '', true);
-        } else {
-          clearSession();
-          await loadInitialData();
-        }
-      } else {
-        // Cargar datos iniciales para vista de login
-        await loadInitialData();
-      }
-    }
-
-    // ── LOGOUT ─────────────────────────────────────────────────────────────
-    document.getElementById("btn-logout").addEventListener("click", () => {
-      me = null;
-      clearSession();
-      document.getElementById("main-screen").style.display = "none";
-      document.getElementById("login-screen").style.display = "block";
-      document.getElementById("input-name").value = "";
-      document.getElementById("input-id").value = "";
-      document.getElementById("input-ig").value = "";
-      document.getElementById("input-code").value = "BARBS2024"; // Reset al código por defecto
-      document.getElementById("login-error").style.display = "none";
-    });
-
-    // ── BEER PONG ──────────────────────────────────────────────────────────
-    document.getElementById("btn-pong").addEventListener("click", async () => {
-      const allPlayers = { ...playersCache, ...players };
-      const playerList = Object.keys(allPlayers).map(id => ({ id: parseInt(id), name: playerName(parseInt(id)) }));
-      if (playerList.length < 2) { showToast("Se necesitan al menos 2 jugadores", "#ff2d78"); return; }
-      const rounds = groupIntoPairs(playerList);
-      
-      // Actualizar cache inmediatamente
-      pongCache = rounds;
-      pongRounds = rounds;
-      renderPong();
-      
-      try {
-        await set(ref(db, "pong"), rounds);
-        showToast("🏓 ¡Ronda generada!");
-      } catch (error) {
-        console.error('Error saving pong:', error);
-        showToast('Error al guardar ronda', '#ff2d78');
-      }
-    });
-
-    // ── FIREBASE LISTENERS (actualizaciones en tiempo real) ───────────────
-    onValue(ref(db, "players"), snap => {
-      players = snap.val() || {};
-      playersCache = { ...playersCache, ...players };
-      if (me) {
-        renderPlayers();
-        renderProfile();
-      }
-    });
-
-    onValue(ref(db, "votes"), snap => {
-      votes = snap.val() || {};
-      votesCache = { ...votesCache, ...votes };
-      if (me) {
-        renderPlayers();
-        renderMatches();
-        renderProfile();
-      }
-    });
-
-    onValue(ref(db, "pong"), snap => {
-      pongRounds = snap.val() || [];
-      pongCache = pongRounds;
-      if (me) {
-        renderPong();
-      }
-    });
-
-    // Enter key on login
-    document.getElementById("input-name").addEventListener("keydown", e => {
-      if (e.key === "Enter") document.getElementById("btn-register").click();
-    });
-
-    // Iniciar
-    tryAutoLogin();
-  </script>
 </body>
 </html>
