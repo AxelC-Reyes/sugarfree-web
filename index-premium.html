@@ -562,14 +562,15 @@
             <!-- ── HEADER ──────────────────────────────── -->
             <header class="header">
                 <div class="logo-area">
-                    <img src="logosugarblanco.png" alt="Sugar" class="logo-img">
+                    <img src="caramelo.png" alt="Sugar Free" class="logo-img">
                     <div>
-                        <div class="logo-text">Sugar</div>
+                        <div class="logo-text">Sugar Free</div>
                         <div class="logo-sub">PREMIUM</div>
                     </div>
                 </div>
                 <div class="header-right">
                     <div class="premium-badge" id="premiumBadge">
+                        <i class="fas fa-crown"></i>
                         <span>MEMBRESÍA PREMIUM</span>
                     </div>
                     <div class="user-pill" id="userPill">
@@ -772,14 +773,30 @@
 
 
     <!-- ================================================================
-         FIREBASE AUTH — módulo ES
+         FIREBASE AUTH — versión compat (script clásico, NO módulo ES)
+         Esto resuelve el conflicto de postMessage con Stripe Buy Button.
+         El error "t.message.payload undefined" ocurre cuando Firebase
+         carga como módulo ES en el mismo documento que Stripe.
     ================================================================ -->
-    <script type="module">
-    import { initializeApp }   from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
-                               from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-                               from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script>
+    // ── HELPERS compat → misma API que usábamos ───────────────────
+    const initializeApp    = (cfg) => firebase.initializeApp(cfg);
+    const getAuth          = (app) => firebase.auth();
+    const getFirestore     = (app) => firebase.firestore();
+    const signInWithPopup  = (a,p) => a.signInWithPopup(p);
+    const signOut          = (a)   => a.signOut();
+    const serverTimestamp  = ()    => firebase.firestore.FieldValue.serverTimestamp();
+    const onAuthStateChanged = (a,cb) => a.onAuthStateChanged(cb);
+    const doc   = (db,col,id) => db.collection(col).doc(id);
+    const getDoc= (ref)       => ref.get();
+    const setDoc= (ref,data,opt) => opt?.merge ? ref.set(data,{merge:true}) : ref.set(data);
+
+    class GoogleAuthProvider {
+        constructor() { return new firebase.auth.GoogleAuthProvider(); }
+    }
 
     // ── CONFIG FIREBASE ──────────────────────────────────────────
     const app  = initializeApp({
