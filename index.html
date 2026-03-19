@@ -1,5 +1,4 @@
-
-        <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +7,131 @@
     <title>Sugar-Free · Conexiones Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    
+    <!-- 🔥 FIREBASE SDK (versión modular) -->
+    <script type="module">
+        // Importar Firebase de forma modular (mejor práctica)
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+
+        // Tu configuración de Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
+            authDomain: "sugarfree-cbb21.firebaseapp.com",
+            projectId: "sugarfree-cbb21",
+            storageBucket: "sugarfree-cbb21.firebasestorage.app",
+            messagingSenderId: "797632408987",
+            appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
+        };
+
+        // Inicializar Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const provider = new GoogleAuthProvider();
+
+        // Hacer disponibles auth y db globalmente (para debug, opcional)
+        window.firebaseAuth = auth;
+        window.firebaseDb = db;
+
+        // ════════════════════════════════════════════════════════════════
+        //  LOGIN CON GOOGLE (unificado)
+        // ════════════════════════════════════════════════════════════════
+        document.getElementById('googleSignIn').addEventListener('click', async function() {
+            if (this.disabled) return;
+            
+            const btn = this;
+            const originalText = btn.innerHTML;
+            
+            try {
+                // Mostrar loading
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#FF3B7F"></i> Conectando…';
+                btn.disabled = true;
+
+                // 1. Autenticar con Google
+                const result = await signInWithPopup(auth, provider);
+                const user = result.user;
+                
+                // 2. Verificar si el usuario YA EXISTE en Firestore
+                const userDocRef = doc(db, 'users', user.uid);
+                const userDoc = await getDoc(userDocRef);
+                
+                if (!userDoc.exists()) {
+                    // 3. Es NUEVO usuario free → crear documento
+                    await setDoc(userDocRef, {
+                        email: user.email,
+                        nombre: user.displayName || 'Usuario',
+                        foto: user.photoURL || '',
+                        freeUser: true,
+                        premium: false,
+                        sinAnuncios: false,
+                        verificationStatus: 'no_verificado',
+                        fechaRegistro: new Date().toISOString(),
+                        uid: user.uid
+                    });
+                    console.log('✅ Nuevo usuario free creado:', user.uid);
+                } else {
+                    // 4. Usuario EXISTENTE (puede ser free o premium)
+                    const userData = userDoc.data();
+                    console.log('👤 Usuario existente:', userData);
+                    
+                    // Si ya es premium, redirigir a listing premium
+                    if (userData.premium === true) {
+                        window.location.href = 'listing-premium.html';
+                        return;
+                    }
+                }
+                
+                // 5. Mostrar sección de selección de perfil
+                const hero = document.getElementById('heroSection');
+                const section = document.getElementById('profileSection');
+                
+                hero.style.transition = 'opacity 0.3s ease';
+                hero.style.opacity = '0';
+                
+                setTimeout(() => {
+                    hero.style.display = 'none';
+                    section.style.display = 'block';
+                    section.classList.add('anim-in');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    toast('¡Bienvenido! Elige tu perfil.', 'success');
+                }, 300);
+                
+            } catch (error) {
+                console.error('❌ Error en login:', error);
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                toast('Error al conectar. Intenta de nuevo.', 'error');
+            }
+        });
+
+        // ════════════════════════════════════════════════════════════════
+        //  FUNCIÓN TOAST (mejorada)
+        // ════════════════════════════════════════════════════════════════
+        window.toast = function(msg, type = 'info') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const t = document.createElement('div');
+            t.className = `toast ${type} hidden`;
+            
+            let icon = 'info-circle';
+            if (type === 'success') icon = 'check-circle';
+            if (type === 'error') icon = 'exclamation-circle';
+            
+            t.innerHTML = `<i class="fas fa-${icon}"></i><span>${msg}</span>`;
+            document.body.appendChild(t);
+            
+            requestAnimationFrame(() => requestAnimationFrame(() => t.classList.remove('hidden')));
+            
+            setTimeout(() => {
+                t.classList.add('hidden');
+                setTimeout(() => t.remove(), 420);
+            }, 4000);
+        };
+    </script>
+
     <style>
+        /* ... TU MISMO CSS (lo dejas igual) ... */
         *, *::before, *::after {
             margin: 0; padding: 0;
             box-sizing: border-box;
@@ -41,7 +164,6 @@
             -webkit-overflow-scrolling: touch;
         }
 
-        /* ── FONDO SUTIL ──────────────────────────────────── */
         .bg-glow {
             position: fixed; inset: 0;
             z-index: 0; pointer-events: none;
@@ -50,7 +172,6 @@
                 radial-gradient(ellipse 40% 40% at 100% 100%, rgba(255,59,127,0.04) 0%, transparent 60%);
         }
 
-        /* ── LAYOUT ───────────────────────────────────────── */
         .page {
             position: relative;
             z-index: 10;
@@ -67,7 +188,6 @@
             width: 100%;
         }
 
-        /* ── HEADER ───────────────────────────────────────── */
         header {
             padding: calc(20px + var(--safe-top)) 0 0;
         }
@@ -108,7 +228,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* ── HERO ─────────────────────────────────────────── */
         .hero {
             flex: 1;
             display: flex;
@@ -151,7 +270,6 @@
             margin-bottom: 34px;
         }
 
-        /* ── BOTÓN GOOGLE ─────────────────────────────────── */
         .google-btn {
             width: 100%; max-width: 320px;
             padding: 15px 24px;
@@ -169,7 +287,6 @@
         @media (hover:hover) { .google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); } }
         .google-btn:active { transform: scale(0.97); }
 
-        /* ── DIVIDER ──────────────────────────────────────── */
         .divider {
             width: 100%; max-width: 320px;
             display: flex; align-items: center; gap: 12px;
@@ -178,7 +295,6 @@
         .divider-line { flex: 1; height: 1px; background: var(--w12); }
         .divider span { font-size: 12px; color: var(--w40); white-space: nowrap; }
 
-        /* ── BOTÓN PREMIUM ────────────────────────────────── */
         .premium-btn {
             width: 100%; max-width: 320px;
             padding: 15px 24px;
@@ -199,7 +315,6 @@
             transition: all 0.25s var(--ease);
             letter-spacing: 0.2px;
         }
-        /* Shimmer dorado al hacer hover/tap */
         .premium-btn::after {
             content: '';
             position: absolute;
@@ -222,7 +337,6 @@
             box-shadow: 0 3px 14px rgba(255,59,127,0.3);
         }
 
-        /* ── SELECCIÓN DE PERFIL (post-login) ─────────────── */
         #profileSection {
             display: none;
             flex: 1;
@@ -281,7 +395,6 @@
             line-height: 1.3; display: block;
         }
 
-        /* ── FOOTER ───────────────────────────────────────── */
         footer {
             padding: 18px 0 calc(18px + var(--safe-bottom));
             border-top: 1px solid var(--w12);
@@ -303,7 +416,6 @@
         .footer-links a:active { color: var(--rose); }
         @media (hover:hover) { .footer-links a:hover { color: var(--rose); } }
 
-        /* ── TOAST ────────────────────────────────────────── */
         .toast {
             position: fixed; z-index: 9999;
             font-family: 'DM Sans', sans-serif; font-size: 14px;
@@ -316,6 +428,8 @@
         }
         .toast.success { border: 1px solid rgba(46,204,113,0.4); }
         .toast.success i { color: #2ecc71; }
+        .toast.error { border: 1px solid rgba(255,59,59,0.4); }
+        .toast.error i { color: #ff3b3b; }
         @media (min-width: 481px) {
             .toast { top: 24px; right: 20px; }
             .toast.hidden { transform: translateX(120%); opacity: 0; }
@@ -423,42 +537,8 @@
 
     </div>
 
-    <script>
-    document.getElementById('googleSignIn').addEventListener('click', function() {
-        if (this.disabled) return;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#FF3B7F"></i> Conectando…';
-        this.disabled = true;
-
-        setTimeout(() => {
-            const hero    = document.getElementById('heroSection');
-            const section = document.getElementById('profileSection');
-
-            hero.style.transition = 'opacity 0.3s ease';
-            hero.style.opacity = '0';
-
-            setTimeout(() => {
-                hero.style.display = 'none';
-                section.style.display = 'block';
-                section.classList.add('anim-in');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                toast('¡Bienvenido! Elige tu perfil.', 'success');
-            }, 300);
-        }, 1400);
-    });
-
-    function toast(msg, type = 'info') {
-        document.querySelectorAll('.toast').forEach(t => t.remove());
-        const t = document.createElement('div');
-        t.className = `toast ${type} hidden`;
-        t.innerHTML = `<i class="fas fa-check-circle"></i><span>${msg}</span>`;
-        document.body.appendChild(t);
-        requestAnimationFrame(() => requestAnimationFrame(() => t.classList.remove('hidden')));
-        setTimeout(() => {
-            t.classList.add('hidden');
-            setTimeout(() => t.remove(), 420);
-        }, 4000);
-    }
-    </script>
+    <!-- NOTA: El script de Firebase está dentro de <script type="module"> al inicio del head -->
+    <!-- Ya no necesitas el script antiguo al final -->
 
 </body>
 </html>
