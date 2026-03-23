@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#030305">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Sugar Free Premium</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Stripe.js para Identity -->
+    <script src="https://js.stripe.com/v3/"></script>
+
+    <style>
+        *, *::before, *::after {
+            margin: 0; padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        :root {
+            --bg-deep:   #030305;
+            --rose:      #FF3B7F;
+            --rose-dim:  rgba(255,59,127,0.15);
+            --rose-line: rgba(255,59,127,0.12);
+            --gold:      #C9A96E;
+            --white:     #FFFFFF;
+            --w80:       rgba(255,255,255,0.8);
+            --w50:       rgba(255,255,255,0.5);
+            --w20:       rgba(255,255,255,0.2);
+            --w08:       rgba(255,255,255,0.08);
+            --w04:       rgba(255,255,255,0.04);
+            --ease:      cubic-bezier(0.16,1,0.3,1);
+            --safe-top:    env(safe-area-inset-top,    0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left:   env(safe-area-inset-left,   0px);
+            --safe-right:  env(safe-area-inset-right,  0px);
+        }
+
+        html { overflow-x: hidden; }
+
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            background: var(--bg-deep);
+            color: var(--white);
+            min-height: 100vh; min-height: 100dvh;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #starsCanvas {
+            position: fixed; inset: 0;
+            width: 100%; height: 100%;
+            z-index: 0; pointer-events: none;
+        }
+        .chip-lines {
+            position: fixed; inset: 0;
+            background-image:
+                repeating-linear-gradient(45deg,  transparent 0, transparent 45px, rgba(255,59,127,0.02) 45px, rgba(255,59,127,0.02) 46px),
+                repeating-linear-gradient(-45deg, transparent 0, transparent 45px, rgba(255,59,127,0.02) 45px, rgba(255,59,127,0.02) 46px);
+            pointer-events: none; z-index: 1; opacity: 0.5;
+        }
+
+        .page {
+            position: relative; z-index: 10;
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; flex-direction: column;
+        }
+        .container {
+            max-width: 1300px; margin: 0 auto;
+            padding: clamp(16px,4vw,40px);
+            padding-left:   calc(clamp(16px,4vw,40px) + var(--safe-left));
+            padding-right:  calc(clamp(16px,4vw,40px) + var(--safe-right));
+            padding-bottom: calc(clamp(16px,4vw,40px) + var(--safe-bottom));
+            width: 100%; flex: 1;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: calc(20px + var(--safe-top));
+            padding-bottom: 20px;
+            flex-wrap: wrap; gap: 14px;
+            border-bottom: 1px solid var(--rose-line);
+            margin-bottom: clamp(24px,5vw,40px);
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 14px; }
+        .logo-img {
+            height: 44px;
+            width: auto;
+            display: block;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255,59,127,0.25));
+            transition: transform 0.3s var(--ease), filter 0.3s;
+            -webkit-user-drag: none;
+            user-select: none;
+        }
+        @media (hover:hover) {
+            .logo-img:hover {
+                transform: scale(1.07);
+                filter: drop-shadow(0 0 16px rgba(255,59,127,0.45));
+            }
+        }
+        .logo-text {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(20px,5vw,36px);
+            font-weight: 800; letter-spacing: -0.02em;
+            background: linear-gradient(135deg,#fff 0%,var(--rose) 80%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .logo-sub {
+            font-size: 10px; color: var(--w50);
+            letter-spacing: 3px; text-transform: uppercase; margin-top: 3px;
+        }
+
+        .header-right { display: flex; align-items: center; gap: 10px; }
+
+        .premium-badge {
+            background: var(--rose-dim);
+            border: 1px solid var(--rose);
+            padding: 9px 18px; border-radius: 40px;
+            display: flex; align-items: center; gap: 8px;
+            color: var(--rose); font-weight: 500; font-size: 13px;
+            min-height: 44px;
+        }
+
+        .user-pill {
+            display: none; align-items: center; gap: 10px;
+            background: var(--w04); border: 1px solid var(--rose-line);
+            border-radius: 50px; padding: 6px 16px 6px 6px; min-height: 44px;
+        }
+        .user-pill.show { display: flex; }
+
+        .user-avatar {
+            width: 32px; height: 32px; border-radius: 50%;
+            object-fit: cover; border: 1px solid var(--rose);
+            display: none;
+        }
+        .user-avatar-ph {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--rose-dim); border: 1px solid var(--rose);
+            display: flex; align-items: center; justify-content: center;
+            color: var(--rose); font-size: 13px;
+        }
+        .user-name {
+            font-size: 13px; font-weight: 500; color: var(--w80);
+            max-width: 100px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .signout-btn {
+            background: none; border: none; color: var(--w50);
+            font-size: 12px; cursor: pointer; padding: 4px 8px;
+            border-radius: 50px; transition: color 0.2s;
+            font-family: 'Space Grotesk', sans-serif;
+            touch-action: manipulation;
+        }
+        .signout-btn:hover { color: var(--rose); }
+
+        .step { display: none; }
+        .step.active { display: block; }
+
+        .hero {
+            text-align: center;
+            padding: clamp(20px,5vw,60px) 0;
+            margin-bottom: 20px;
+        }
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(34px,9vw,72px);
+            font-weight: 700; line-height: 1.1;
+            margin-bottom: 18px;
+        }
+        .gradient-text {
+            background: linear-gradient(135deg,#fff,var(--rose));
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+        }
+        .hero-desc {
+            font-size: clamp(15px,2.5vw,20px);
+            color: var(--w80); max-width: 600px;
+            margin: 0 auto 40px; line-height: 1.65;
+        }
+
+        .steps-indicator {
+            display: flex; align-items: center; justify-content: center;
+            gap: 0; margin-bottom: 48px;
+        }
+        .step-dot {
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+        }
+        .step-dot-circle {
+            width: 36px; height: 36px; border-radius: 50%;
+            border: 1px solid var(--rose-line);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+            color: var(--w50); background: var(--w04);
+            transition: all 0.4s var(--ease);
+        }
+        .step-dot-circle.active {
+            background: var(--rose); border-color: var(--rose);
+            color: #fff; box-shadow: 0 0 16px rgba(255,59,127,0.4);
+        }
+        .step-dot-circle.done {
+            background: rgba(46,204,113,0.15);
+            border-color: #2ecc71; color: #2ecc71;
+        }
+        .step-dot-label {
+            font-size: 10px; color: var(--w50);
+            letter-spacing: 1px; text-transform: uppercase;
+            text-align: center; max-width: 70px;
+        }
+        .step-connector {
+            width: clamp(40px,8vw,80px); height: 1px;
+            background: var(--rose-line); margin-bottom: 22px;
+        }
+
+        .google-btn {
+            background: var(--w04);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 50px;
+            padding: 16px 36px;
+            font-size: clamp(15px,2vw,18px); font-weight: 500;
+            color: var(--white); cursor: pointer;
+            display: inline-flex; align-items: center; gap: 12px;
+            transition: all 0.3s var(--ease);
+            font-family: 'Space Grotesk', sans-serif;
+            min-height: 54px; touch-action: manipulation;
+        }
+        .google-btn i { color: var(--rose); font-size: 20px; }
+        @media (hover:hover) {
+            .google-btn:hover {
+                border-color: var(--rose);
+                background: rgba(255,59,127,0.05);
+                transform: translateY(-2px);
+                box-shadow: 0 10px 28px rgba(255,59,127,0.15);
+            }
+        }
+        .google-btn:active { transform: scale(0.97); }
+        .google-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .payment-section {
+            max-width: 560px; margin: 0 auto;
+            text-align: center; padding: clamp(20px,5vw,48px) 0;
+        }
+        .payment-section h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(26px,5vw,40px); font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .payment-section > p {
+            font-size: 15px; color: var(--w50);
+            margin-bottom: 36px; line-height: 1.6;
+        }
+
+        .membership-card {
+            background: linear-gradient(135deg, rgba(255,59,127,0.1) 0%, rgba(255,59,127,0.03) 100%);
+            border: 1px solid rgba(255,59,127,0.3);
+            border-radius: 24px; padding: 32px 28px;
+            margin-bottom: 28px; text-align: left;
+            position: relative; overflow: hidden;
+        }
+        .membership-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--rose), transparent);
+        }
+        .membership-price-row {
+            display: flex; align-items: baseline; gap: 8px;
+            margin-bottom: 20px;
+        }
+        .membership-price {
+            font-family: 'Syne', sans-serif;
+            font-size: 48px; font-weight: 800; color: var(--white);
+        }
+        .membership-period { font-size: 15px; color: var(--w50); }
+        .membership-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 11px; font-weight: 700;
+            letter-spacing: 3px; text-transform: uppercase;
+            color: var(--rose); margin-bottom: 20px; display: block;
+        }
+        .membership-perks {
+            display: flex; flex-direction: column; gap: 10px;
+        }
+        .perk-item {
+            display: flex; align-items: center; gap: 10px;
+            font-size: 14px; color: var(--w80);
+        }
+        .perk-item i { color: var(--rose); font-size: 11px; width: 14px; }
+
+        .stripe-btn-wrapper {
+            display: flex; justify-content: center;
+            margin-top: 4px;
+        }
+
+        stripe-buy-button {
+            width: 100%;
+        }
+
+        .payment-note {
+            display: flex; align-items: center; justify-content: center;
+            gap: 8px; margin-top: 20px;
+            font-size: 12px; color: var(--w50);
+        }
+        .payment-note i { color: var(--w50); }
+
+        .verify-section {
+            max-width: 500px; margin: 0 auto;
+            text-align: center; padding: clamp(20px,5vw,48px) 0;
+        }
+        .verify-icon {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: var(--rose-dim); border: 1px solid rgba(255,59,127,0.3);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; color: var(--rose);
+            margin: 0 auto 28px;
+        }
+        .verify-section h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(24px,5vw,36px); font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .verify-section > p {
+            font-size: 15px; color: var(--w50);
+            line-height: 1.65; margin-bottom: 36px;
+            max-width: 380px; margin-left: auto; margin-right: auto;
+        }
+
+        .verify-steps {
+            display: flex; flex-direction: column; gap: 14px;
+            text-align: left; margin-bottom: 36px;
+        }
+        .verify-step-item {
+            display: flex; align-items: center; gap: 14px;
+            background: var(--w04); border: 1px solid var(--rose-line);
+            border-radius: 14px; padding: 14px 16px;
+        }
+        .verify-step-num {
+            width: 28px; height: 28px; flex-shrink: 0;
+            background: var(--rose-dim); border: 1px solid var(--rose);
+            border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-size: 12px;
+            font-weight: 700; color: var(--rose);
+        }
+        .verify-step-text { font-size: 13px; color: var(--w80); line-height: 1.4; }
+        .verify-step-text strong { color: var(--white); display: block; margin-bottom: 2px; }
+
+        .verify-btn {
+            width: 100%; max-width: 340px;
+            padding: 17px 32px;
+            background: var(--rose); border: none; border-radius: 50px;
+            color: #fff; font-family: 'Syne', sans-serif;
+            font-size: 16px; font-weight: 700; letter-spacing: 0.3px;
+            cursor: pointer; display: inline-flex;
+            align-items: center; justify-content: center; gap: 10px;
+            transition: all 0.3s var(--ease);
+            min-height: 56px; touch-action: manipulation;
+            position: relative; overflow: hidden;
+        }
+        .verify-btn::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+        }
+        @media (hover:hover) {
+            .verify-btn:hover {
+                background: #ff2070;
+                transform: translateY(-2px);
+                box-shadow: 0 14px 36px rgba(255,59,127,0.35);
+            }
+        }
+        .verify-btn:active { transform: scale(0.97); }
+        .verify-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .verify-skip {
+            margin-top: 16px; font-size: 13px; color: var(--w50);
+        }
+        .verify-skip a {
+            color: var(--rose); text-decoration: none;
+            border-bottom: 1px solid rgba(255,59,127,0.3);
+            transition: border-color 0.2s;
+        }
+        .verify-skip a:hover { border-color: var(--rose); }
+
+        .verify-status {
+            display: none; margin-top: 24px;
+            padding: 16px 20px; border-radius: 14px;
+            font-size: 14px; line-height: 1.5;
+        }
+        .verify-status.pending {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(201,169,110,0.1);
+            border: 1px solid rgba(201,169,110,0.3);
+            color: var(--gold);
+        }
+        .verify-status.success {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(46,204,113,0.1);
+            border: 1px solid rgba(46,204,113,0.3);
+            color: #2ecc71;
+        }
+
+        .profile-section { margin-top: 30px; }
+        .section-subtitle {
+            font-size: 13px; text-transform: uppercase;
+            letter-spacing: 5px; color: var(--rose);
+            margin-bottom: 18px; text-align: center;
+        }
+        .register-grid {
+            display: grid; grid-template-columns: repeat(4,1fr);
+            gap: 18px; margin-top: 22px;
+        }
+        .register-card {
+            background: rgba(255,255,255,0.025);
+            border: 1px solid var(--rose-line);
+            border-radius: 20px; padding: 28px 20px;
+            text-align: center; cursor: pointer;
+            position: relative; overflow: hidden;
+            text-decoration: none; color: var(--white);
+            min-height: 190px; touch-action: manipulation;
+            opacity: 0; transform: translateY(18px);
+            transition: opacity 0.5s var(--ease), transform 0.5s var(--ease),
+                        border-color 0.25s, box-shadow 0.25s, background 0.25s;
+        }
+        .register-card.visible { opacity: 1; transform: translateY(0); }
+        @media (hover:hover) {
+            .register-card::before {
+                content:''; position:absolute; inset:0;
+                background: linear-gradient(90deg,transparent,rgba(255,59,127,0.05),transparent);
+                transform: translateX(-100%); transition: transform 0.6s;
+            }
+            .register-card:hover::before { transform: translateX(100%); }
+            .register-card:hover {
+                transform: translateY(-6px); border-color: var(--rose);
+                box-shadow: 0 16px 32px rgba(255,59,127,0.15);
+            }
+        }
+        .register-card:active {
+            transform: scale(0.97); border-color: var(--rose);
+            background: rgba(255,59,127,0.04);
+        }
+        .card-icon {
+            width: 68px; height: 68px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px; font-size: 26px;
+            background: linear-gradient(135deg,rgba(255,59,127,0.1),rgba(255,59,127,0.02));
+            border: 1px solid rgba(255,59,127,0.2); color: var(--rose);
+        }
+        .register-card h3 {
+            font-size: clamp(17px,2.2vw,22px); font-weight: 600;
+            margin-bottom: 10px; font-family: 'Syne', sans-serif;
+        }
+        .register-card p { font-size: 13px; color: var(--w80); line-height: 1.6; margin-bottom: 16px; }
+        .card-badge {
+            font-size: 11px; color: var(--rose);
+            border-top: 1px solid var(--rose-line);
+            padding-top: 13px; text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .loading-overlay {
+            position: fixed; inset: 0;
+            background: rgba(3,3,5,0.88);
+            backdrop-filter: blur(10px);
+            z-index: 9000;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 14px;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .loading-overlay.show { opacity: 1; pointer-events: all; }
+        .loading-overlay i { font-size: 30px; color: var(--rose); }
+        .loading-overlay p { font-size: 14px; color: var(--w80); letter-spacing: 0.5px; }
+
+        .toast-el {
+            position: fixed; z-index: 10001;
+            font-family: 'Space Grotesk', sans-serif; font-size: 14px;
+            background: rgba(8,8,12,0.97);
+            border-radius: 50px; padding: 13px 20px;
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+            transition: transform 0.4s var(--ease), opacity 0.4s;
+            max-width: calc(100vw - 32px);
+        }
+        .toast-el.success { border: 1px solid rgba(46,204,113,0.4); }
+        .toast-el.success i { color: #2ecc71; }
+        .toast-el.error   { border: 1px solid rgba(255,60,60,0.4); }
+        .toast-el.error i { color: #ff4444; }
+        .toast-el.info    { border: 1px solid rgba(255,59,127,0.3); }
+        .toast-el.info i  { color: var(--rose); }
+        @media (min-width:481px) {
+            .toast-el { top: 24px; right: 20px; }
+            .toast-el.hidden { transform: translateX(120%); opacity: 0; }
+        }
+        @media (max-width:480px) {
+            .toast-el { bottom: calc(20px + var(--safe-bottom)); left:16px; right:16px; border-radius:14px; }
+            .toast-el.hidden { transform: translateY(120%); opacity: 0; }
+        }
+
+        @media (max-width:1024px) { .register-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width:768px) {
+            .premium-badge span { display: none; }
+            .premium-badge { padding: 9px 14px; }
+        }
+        @media (max-width:480px) {
+            .register-grid { grid-template-columns: 1fr; gap: 12px; }
+            .register-card {
+                display: flex; flex-direction: row;
+                align-items: center; text-align: left;
+                padding: 18px 16px; min-height: 0; gap: 14px; border-radius: 16px;
+            }
+            .card-icon { width: 50px; height: 50px; min-width: 50px; font-size: 20px; margin: 0; }
+            .register-card-inner { flex: 1; min-width: 0; }
+            .register-card h3 { font-size: 16px; margin-bottom: 3px; }
+            .register-card p  { font-size: 12px; margin-bottom: 7px; color: var(--w50); }
+            .card-badge       { border-top: none; padding-top: 0; font-size: 10px; }
+            .step-connector   { width: 24px; }
+            .membership-price { font-size: 38px; }
+        }
+        @media (max-width:360px) { .hero-title { font-size: 30px; } }
+    </style>
+</head>
+<body>
+
+    <canvas id="starsCanvas"></canvas>
+    <div class="chip-lines"></div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p id="loadingMsg">Cargando...</p>
+    </div>
+
+    <div class="page">
+        <div class="container">
+
+            <header class="header">
+                <div class="logo-area">
+                    <img src="logosugarblanco.png" alt="Sugar Free" class="logo-img">
+                    <div>
+                        <div class="logo-text">Sugar Free</div>
+                        <div class="logo-sub">PREMIUM</div>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="premium-badge" id="premiumBadge">
+                        <i class="fas fa-crown"></i>
+                        <span>MEMBRESÍA PREMIUM</span>
+                    </div>
+                    <div class="user-pill" id="userPill">
+                        <div class="user-avatar-ph" id="userAvatarPh"><i class="fas fa-user"></i></div>
+                        <img class="user-avatar" id="userAvatar" alt="">
+                        <span class="user-name" id="userName"></span>
+                        <button class="signout-btn" id="signOutBtn" title="Cerrar sesión">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div class="steps-indicator">
+                <div class="step-dot">
+                    <div class="step-dot-circle active" id="dot1">1</div>
+                    <div class="step-dot-label">Acceso</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step-dot">
+                    <div class="step-dot-circle" id="dot2">2</div>
+                    <div class="step-dot-label">Membresía</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step-dot">
+                    <div class="step-dot-circle" id="dot3">3</div>
+                    <div class="step-dot-label">Verificación</div>
+                </div>
+                <div class="step-connector"></div>
+                <div class="step-dot">
+                    <div class="step-dot-circle" id="dot4">4</div>
+                    <div class="step-dot-label">Tu perfil</div>
+                </div>
+            </div>
+
+            <!-- STEP 1: GOOGLE AUTH -->
+            <div class="step active" id="step1">
+                <section class="hero">
+                    <h1 class="hero-title">
+                        QUID PRO<br>
+                        <span class="gradient-text">QUO</span>
+                    </h1>
+                    <p class="hero-desc">
+                        Donde la ambición encuentra su contraparte.<br>
+                        Entra con Google para comenzar.
+                    </p>
+                    <button class="google-btn" id="googleSignIn">
+                        <i class="fab fa-google"></i>
+                        Continuar con Google
+                    </button>
+                </section>
+            </div>
+
+            <!-- STEP 2: STRIPE PAGO -->
+            <div class="step" id="step2">
+                <div class="payment-section">
+                    <h2>Activa tu <span class="gradient-text">membresía</span></h2>
+                    <p>Acceso completo a perfiles verificados, conexiones ilimitadas y discreción total.</p>
+
+                    <div class="membership-card">
+                        <span class="membership-name">✦ Quid Pro Quo Premium</span>
+                        <div class="membership-price-row">
+                            <span class="membership-price">$99</span>
+                            <span class="membership-period">USD / mes</span>
+                        </div>
+                        <div class="membership-perks">
+                            <div class="perk-item"><i class="fas fa-check"></i>Perfiles 100% verificados con identidad</div>
+                            <div class="perk-item"><i class="fas fa-check"></i>Solicitudes de conexión ilimitadas</div>
+                            <div class="perk-item"><i class="fas fa-check"></i>Chat privado con cifrado</div>
+                            <div class="perk-item"><i class="fas fa-check"></i>Acceso prioritario a nuevos perfiles</div>
+                            <div class="perk-item"><i class="fas fa-check"></i>Cancela cuando quieras</div>
+                        </div>
+                    </div>
+
+                    <div class="stripe-btn-wrapper">
+                        <stripe-buy-button
+                            buy-button-id="buy_btn_1TCPIJRhykjwQyLNdvXFditg"
+                            publishable-key="pk_test_51SZ0lqRhykjwQyLNhC6THDygZEWrIwzw1VCE7BvDBm6jApWDdRc574p0HxjUZO2rQR6hwvRIlPoNMD9bB5o9dPTl00jiMoPSuJ"
+                            client-reference-id=""
+                        ></stripe-buy-button>
+                    </div>
+
+                    <div class="payment-note">
+                        <i class="fas fa-lock"></i>
+                        Pago seguro procesado por Stripe · SSL 256-bit
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: STRIPE IDENTITY -->
+            <div class="step" id="step3">
+                <div class="verify-section">
+                    <div class="verify-icon">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <h2>Verifica tu <span class="gradient-text">identidad</span></h2>
+                    <p>
+                        Todos los miembros premium pasan por verificación. Esto garantiza que cada conexión sea real y segura.
+                    </p>
+
+                    <div class="verify-steps">
+                        <div class="verify-step-item">
+                            <div class="verify-step-num">1</div>
+                            <div class="verify-step-text">
+                                <strong>Foto de tu ID oficial</strong>
+                                INE, pasaporte o licencia de conducir
+                            </div>
+                        </div>
+                        <div class="verify-step-item">
+                            <div class="verify-step-num">2</div>
+                            <div class="verify-step-text">
+                                <strong>Selfie en tiempo real</strong>
+                                Tarda menos de 2 minutos
+                            </div>
+                        </div>
+                        <div class="verify-step-item">
+                            <div class="verify-step-num">3</div>
+                            <div class="verify-step-text">
+                                <strong>Resultado inmediato</strong>
+                                Tu perfil se activa al instante
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="verify-btn" id="verifyBtn">
+                        <i class="fas fa-id-card"></i>
+                        Verificar mi identidad
+                    </button>
+
+                    <div class="verify-status" id="verifyStatus"></div>
+
+                    <p class="verify-skip">
+                        ¿Prefieres verificar después?
+                        <a href="#" id="skipVerify">Continuar sin verificar</a>
+                        <br><span style="font-size:11px;color:var(--w20);margin-top:4px;display:block;">
+                            Tu perfil aparecerá sin el badge de verificado
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- STEP 4: ELEGIR PERFIL -->
+            <div class="step" id="step4">
+                <section class="profile-section">
+                    <div class="section-subtitle">✦ ELIGE TU PERFIL ✦</div>
+                    <div class="register-grid">
+
+                        <a href="formulario-daddy-premium.html" class="register-card" style="transition-delay:0.05s" data-type="daddy">
+                            <div class="card-icon"><i class="fas fa-crown"></i></div>
+                            <div class="register-card-inner">
+                                <h3>Sugar Daddy</h3>
+                                <p>Hombre exitoso ≥30 años que busca compartir experiencias con un sugar baby.</p>
+                                <div class="card-badge">Ingreso verificado ≥ $250k</div>
+                            </div>
+                        </a>
+
+                        <a href="formulario-mommy-premium.html" class="register-card" style="transition-delay:0.12s" data-type="mommy">
+                            <div class="card-icon"><i class="fas fa-gem"></i></div>
+                            <div class="register-card-inner">
+                                <h3>Sugar Mommy</h3>
+                                <p>Mujer exitosa ≥30 años que desea disfrutar de compañía con un sugar baby.</p>
+                                <div class="card-badge">Patrimonio destacado</div>
+                            </div>
+                        </a>
+
+                        <a href="formulario-sboy-premium.html" class="register-card" style="transition-delay:0.19s" data-type="sboy">
+                            <div class="card-icon"><i class="fas fa-user-tie"></i></div>
+                            <div class="register-card-inner">
+                                <h3>Sugar Boy</h3>
+                                <p>Hombre joven &lt;30 años que busca compartir momentos especiales.</p>
+                                <div class="card-badge">Perfil verificado</div>
+                            </div>
+                        </a>
+
+                        <a href="formulario-sgirl-premium.html" class="register-card" style="transition-delay:0.26s" data-type="sgirl">
+                            <div class="card-icon"><i class="fas fa-user-heart"></i></div>
+                            <div class="register-card-inner">
+                                <h3>Sugar Girl</h3>
+                                <p>Mujer joven &lt;30 años que busca compartir momentos especiales.</p>
+                                <div class="card-badge">Perfil verificado</div>
+                            </div>
+                        </a>
+
+                    </div>
+                </section>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FIREBASE AUTH - VERSIÓN COMPAT -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    
+    <script>
+    // ============================================
+    // FIREBASE CONFIGURACIÓN (CORREGIDA)
+    // ============================================
+    const firebaseConfig = {
+        apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
+        authDomain: "sugarfree-cbb21.firebaseapp.com",
+        projectId: "sugarfree-cbb21",
+        storageBucket: "sugarfree-cbb21.firebasestorage.app",
+        messagingSenderId: "797632408987",
+        appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
+    };
+
+    // Inicializar Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    // Variables globales
+    window.__auth = auth;
+    window.__db = db;
+
+    // Elementos DOM
+    const googleBtn = document.getElementById('googleSignIn');
+    const signOutBtn = document.getElementById('signOutBtn');
+    const userPill = document.getElementById('userPill');
+    const premBadge = document.getElementById('premiumBadge');
+    const userName = document.getElementById('userName');
+    const userAvatar = document.getElementById('userAvatar');
+    const userAvPh = document.getElementById('userAvatarPh');
+
+    // Helpers
+    const showLoading = (msg) => {
+        document.getElementById('loadingMsg').textContent = msg || 'Cargando...';
+        document.getElementById('loadingOverlay').classList.add('show');
+    };
+    const hideLoading = () => document.getElementById('loadingOverlay').classList.remove('show');
+
+    function updateHeader(user) {
+        if (user) {
+            if (googleBtn) googleBtn.style.display = 'none';
+            premBadge.style.display = 'none';
+            userPill.classList.add('show');
+            userName.textContent = (user.displayName || user.email).split(' ')[0];
+            if (user.photoURL) {
+                userAvatar.src = user.photoURL;
+                userAvatar.style.display = 'block';
+                userAvPh.style.display = 'none';
+            }
+        } else {
+            if (googleBtn) googleBtn.style.display = '';
+            premBadge.style.display = '';
+            userPill.classList.remove('show');
+            userAvatar.style.display = 'none';
+            userAvPh.style.display = 'flex';
+        }
+    }
+
+    // ============================================
+    // DETERMINAR PASO SEGÚN ESTADO EN FIRESTORE
+    // ============================================
+    async function resolveStep(user) {
+        // IMPORTANTE: Usamos "usuarios" (igual que en free)
+        const userRef = db.collection('usuarios').doc(user.uid);
+        const docSnap = await userRef.get();
+
+        if (!docSnap.exists) {
+            // Nuevo usuario premium
+            await userRef.set({
+                uid: user.uid,
+                email: user.email,
+                nombre: user.displayName || '',
+                foto: user.photoURL || '',
+                freeUser: false,
+                premium: false,
+                verificationStatus: 'no_verificado',
+                profileType: null,
+                profileCompleted: false,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            return 'payment'; // Step 2
+        }
+
+        const data = docSnap.data();
+        
+        // Actualizar último login
+        await userRef.update({
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        // Si ya es premium y perfil completo → listing
+        if (data.premium === true && data.profileCompleted === true) {
+            return 'listing';
+        }
+        
+        // Si no es premium → paso 2 (pago)
+        if (!data.premium) return 'payment';
+        
+        // Si es premium pero no verificado → paso 3
+        if (data.verificationStatus !== 'verificado') return 'verify';
+        
+        // Si es premium, verificado pero perfil incompleto → paso 4
+        if (!data.profileCompleted) return 'profile';
+        
+        return 'listing';
+    }
+
+    // ============================================
+    // AUTH STATE OBSERVER
+    // ============================================
+    auth.onAuthStateChanged(async (user) => {
+        updateHeader(user);
+
+        // Detectar retorno de pago exitoso
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('payment') === 'success' && user) {
+            showLoading('Confirmando tu membresía...');
+            try {
+                await db.collection('usuarios').doc(user.uid).update({
+                    premium: true,
+                    fechaPago: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                window.history.replaceState({}, '', window.location.pathname);
+                window.goToStep('verify');
+                window.toast('¡Membresía activada! Ahora verifica tu identidad.', 'success');
+            } catch(e) {
+                console.error(e);
+                window.goToStep('verify');
+            } finally {
+                hideLoading();
+            }
+            return;
+        }
+
+        if (user) {
+            showLoading('Verificando tu cuenta...');
+            try {
+                const nextStep = await resolveStep(user);
+                hideLoading();
+                
+                if (nextStep === 'listing') {
+                    window.toast('¡Bienvenido de nuevo! 👋', 'success');
+                    setTimeout(() => window.location.href = 'listing-premium.html', 1200);
+                } else {
+                    window.goToStep(nextStep);
+                }
+            } catch(e) {
+                console.error(e);
+                hideLoading();
+                window.goToStep('payment');
+            }
+        } else {
+            hideLoading();
+            window.goToStep('auth');
+        }
+    });
+
+    // ============================================
+    // GOOGLE SIGN IN
+    // ============================================
+    googleBtn?.addEventListener('click', async () => {
+        if (googleBtn.disabled) return;
+        
+        googleBtn.disabled = true;
+        googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
+        showLoading('Abriendo Google...');
+        
+        try {
+            await auth.signInWithPopup(provider);
+            // onAuthStateChanged maneja el resto
+        } catch(err) {
+            hideLoading();
+            googleBtn.disabled = false;
+            googleBtn.innerHTML = '<i class="fab fa-google"></i> Continuar con Google';
+            
+            const errorMsg = err.code === 'auth/popup-closed-by-user' ? 'Cerraste la ventana de Google.' :
+                            err.code === 'auth/popup-blocked' ? 'Tu navegador bloqueó el popup. Permite popups para este sitio.' :
+                            'Error al conectar. Intenta de nuevo.';
+            
+            window.toast(errorMsg, 'error');
+        }
+    });
+
+    // ============================================
+    // SIGN OUT
+    // ============================================
+    signOutBtn?.addEventListener('click', async () => {
+        await auth.signOut();
+        window.goToStep('auth');
+        window.toast('Sesión cerrada.', 'info');
+    });
+
+    // ============================================
+    // STRIPE BUY BUTTON - asignar client-reference-id
+    // ============================================
+    auth.onAuthStateChanged((user) => {
+        const stripeBtn = document.querySelector('stripe-buy-button');
+        if (stripeBtn && user) {
+            stripeBtn.setAttribute('client-reference-id', user.uid);
+        }
+    });
+
+    // ============================================
+    // CARDS - guardar profileType antes de navegar
+    // ============================================
+    document.querySelectorAll('.register-card[data-type]').forEach(card => {
+        card.addEventListener('click', async (e) => {
+            const user = auth.currentUser;
+            if (!user) {
+                e.preventDefault();
+                window.toast('Debes iniciar sesión', 'error');
+                return;
+            }
+            
+            try {
+                await db.collection('usuarios').doc(user.uid).update({
+                    profileType: card.dataset.type,
+                    profileCompleted: false
+                });
+                // La navegación sigue normal
+            } catch(err) {
+                console.error(err);
+                e.preventDefault();
+                window.toast('Error al guardar selección', 'error');
+            }
+        });
+    });
+
+    hideLoading();
+    </script>
+
+    <!-- SCRIPT DE STEPS, IDENTITY, STARS, TOAST -->
+    <script>
+    // ============================================
+    // NAVEGACIÓN ENTRE STEPS
+    // ============================================
+    const STEP_MAP = { auth:1, payment:2, verify:3, profile:4 };
+    const DOT_MAP = { auth:'dot1', payment:'dot2', verify:'dot3', profile:'dot4' };
+
+    window.goToStep = function(name) {
+        const num = STEP_MAP[name] || 1;
+
+        // Mostrar/ocultar steps
+        document.querySelectorAll('.step').forEach((el, i) => {
+            el.classList.toggle('active', i + 1 === num);
+        });
+
+        // Actualizar dots
+        Object.entries(DOT_MAP).forEach(([key, dotId], i) => {
+            const dot = document.getElementById(dotId);
+            const stepNum = i + 1;
+            dot.classList.remove('active', 'done');
+            
+            if (stepNum < num) {
+                dot.classList.add('done');
+                dot.innerHTML = '<i class="fas fa-check" style="font-size:11px"></i>';
+            } else if (stepNum === num) {
+                dot.classList.add('active');
+                dot.textContent = stepNum;
+            } else {
+                dot.textContent = stepNum;
+            }
+        });
+
+        // Animación de cards en step 4
+        if (name === 'profile') {
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(e => {
+                    if(e.isIntersecting) {
+                        e.target.classList.add('visible');
+                        observer.unobserve(e.target);
+                    }
+                });
+            }, { threshold: 0.05 });
+            
+            document.querySelectorAll('.register-card').forEach(c => observer.observe(c));
+        }
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // ============================================
+    // STRIPE IDENTITY (simulado por ahora)
+    // ============================================
+    const STRIPE_PK = 'pk_test_51SZ0lqRhykjwQyLNhC6THDygZEWrIwzw1VCE7BvDBm6jApWDdRc574p0HxjUZO2rQR6hwvRIlPoNMD9bB5o9dPTl00jiMoPSuJ';
+    const stripe = Stripe(STRIPE_PK);
+
+    document.getElementById('verifyBtn')?.addEventListener('click', async function() {
+        const user = auth?.currentUser;
+        if (!user) {
+            window.toast('Debes iniciar sesión', 'error');
+            return;
+        }
+
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Iniciando verificación...';
+
+        const statusEl = document.getElementById('verifyStatus');
+        statusEl.className = 'verify-status pending';
+        statusEl.style.display = 'flex';
+        statusEl.innerHTML = `<i class="fas fa-clock"></i>
+            <span>Preparando verificación segura...</span>`;
+
+        try {
+            // Simulación de verificación (en producción, conectar con Stripe Identity)
+            statusEl.innerHTML = `
+                <i class="fas fa-hourglass-half"></i>
+                <span>Verificación en proceso. Te notificaremos cuando esté lista (máx. 2 min).</span>`;
+
+            // Simular aprobación después de 3s
+            setTimeout(async () => {
+                try {
+                    await db.collection('usuarios').doc(user.uid).update({
+                        verificationStatus: 'verificado'
+                    });
+                    
+                    statusEl.className = 'verify-status success';
+                    statusEl.innerHTML = `<i class="fas fa-check-circle"></i> <span>¡Identidad verificada! Tu perfil tendrá el badge de verificado.</span>`;
+                    
+                    window.toast('Identidad verificada ✓', 'success');
+                    setTimeout(() => window.goToStep('profile'), 1500);
+                } catch(e) {
+                    console.error(e);
+                    statusEl.style.display = 'none';
+                    window.toast('Error al guardar verificación', 'error');
+                    this.disabled = false;
+                    this.innerHTML = '<i class="fas fa-id-card"></i> Verificar mi identidad';
+                }
+            }, 3000);
+
+        } catch(err) {
+            console.error('Identity error:', err);
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-id-card"></i> Verificar mi identidad';
+            statusEl.style.display = 'none';
+            window.toast('Error al iniciar la verificación. Intenta de nuevo.', 'error');
+        }
+    });
+
+    // Skip verificación
+    document.getElementById('skipVerify')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.goToStep('profile');
+        window.toast('Puedes verificar tu identidad desde tu perfil en cualquier momento.', 'info');
+    });
+
+    // ============================================
+    // FONDO DE ESTRELLAS
+    // ============================================
+    const canvas = document.getElementById('starsCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    function isMobile() { return window.innerWidth <= 768; }
+
+    const LAYOUT_DESKTOP = [
+        {count:500, speedMin:.04, speedMax:.11, sizeMin:.3, sizeMax:.75, opMin:.2, opMax:.45},
+        {count:300, speedMin:.13, speedMax:.26, sizeMin:.7, sizeMax:1.2, opMin:.4, opMax:.75},
+        {count:100, speedMin:.28, speedMax:.48, sizeMin:1.1, sizeMax:1.7, opMin:.7, opMax:1}
+    ];
+    
+    const LAYOUT_MOBILE = [
+        {count:180, speedMin:.04, speedMax:.10, sizeMin:.3, sizeMax:.7, opMin:.2, opMax:.4},
+        {count:90,  speedMin:.12, speedMax:.24, sizeMin:.6, sizeMax:1.1, opMin:.4, opMax:.7},
+        {count:30,  speedMin:.26, speedMax:.44, sizeMin:1,  sizeMax:1.5, opMin:.7, opMax:1}
+    ];
+
+    let stars = [];
+    let animationFrame;
+
+    const random = (min, max) => min + Math.random() * (max - min);
+
+    function createStar(layer) {
+        return {
+            x: random(0, canvas.width),
+            y: random(0, canvas.height),
+            size: random(layer.sizeMin, layer.sizeMax),
+            speed: random(layer.speedMin, layer.speedMax),
+            opacity: random(layer.opMin, layer.opMax),
+            phase: Math.random() * Math.PI * 2,
+            pulseSpeed: 0.0003 + Math.random() * 0.0004,
+            pulseAmount: 0.05 + Math.random() * 0.05,
+            isPink: Math.random() < 0.07
+        };
+    }
+
+    function initStars() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        stars = [];
+        
+        const layers = isMobile() ? LAYOUT_MOBILE : LAYOUT_DESKTOP;
+        layers.forEach(layer => {
+            for (let i = 0; i < layer.count; i++) {
+                stars.push(createStar(layer));
+            }
+        });
+    }
+
+    function drawStars(timestamp) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        stars.forEach(star => {
+            star.x -= star.speed;
+            if (star.x < -4) {
+                star.x = canvas.width + 2;
+                star.y = random(0, canvas.height);
+            }
+            
+            const alpha = Math.min(1, Math.max(0, 
+                star.opacity + Math.sin(timestamp * star.pulseSpeed + star.phase) * star.pulseAmount
+            ));
+            
+            ctx.beginPath();
+            ctx.arc(star.x, star.y, star.size * 0.5, 0, Math.PI * 2);
+            ctx.fillStyle = star.isPink ? `rgba(255, 180, 200, ${alpha})` : `rgba(255, 255, 255, ${alpha})`;
+            ctx.fill();
+            
+            if (!isMobile() && star.size > 1.4) {
+                const gradient = ctx.createRadialGradient(star.x, star.y, 0, star.x, star.y, star.size * 1.8);
+                gradient.addColorStop(0, star.isPink ? `rgba(255, 100, 150, ${alpha * 0.22})` : `rgba(255, 255, 255, ${alpha * 0.16})`);
+                gradient.addColorStop(1, 'rgba(0,0,0,0)');
+                
+                ctx.beginPath();
+                ctx.arc(star.x, star.y, star.size * 1.8, 0, Math.PI * 2);
+                ctx.fillStyle = gradient;
+                ctx.fill();
+            }
+        });
+        
+        animationFrame = requestAnimationFrame(drawStars);
+    }
+
+    // Event listeners para estrellas
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+            cancelAnimationFrame(animationFrame);
+        } else {
+            animationFrame = requestAnimationFrame(drawStars);
+        }
+    });
+
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+            initStars();
+        }, 180);
+    });
+
+    initStars();
+    animationFrame = requestAnimationFrame(drawStars);
+
+    // ============================================
+    // TOAST GLOBAL
+    // ============================================
+    window.toast = function(msg, type = 'info') {
+        document.querySelectorAll('.toast-el').forEach(t => t.remove());
+        
+        const icons = {
+            success: 'check-circle',
+            error: 'exclamation-circle',
+            info: 'info-circle'
+        };
+        
+        const toast = document.createElement('div');
+        toast.className = `toast-el ${type} hidden`;
+        toast.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i><span>${msg}</span>`;
+        document.body.appendChild(toast);
+        
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => toast.classList.remove('hidden'));
+        });
+        
+        setTimeout(() => {
+            toast.classList.add('hidden');
+            setTimeout(() => toast.remove(), 420);
+        }, 4500);
+    };
+
+    // Iniciar en step auth
+    window.goToStep('auth');
+    </script>
+</body>
+</html>

@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#030305">
+    <title>Sugar Daddy · Sugar Free</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after {
+            margin: 0; padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg:        #030305;
+            --bg2:       #08080f;
+            --rose:      #FF3B7F;
+            --rose-dim:  rgba(255, 59, 127, 0.18);
+            --rose-line: rgba(255, 59, 127, 0.12);
+            --gold:      #C9A96E;
+            --gold-dim:  rgba(201, 169, 110, 0.12);
+            --white:     #FFFFFF;
+            --w80:       rgba(255,255,255,0.8);
+            --w50:       rgba(255,255,255,0.5);
+            --w20:       rgba(255,255,255,0.2);
+            --w08:       rgba(255,255,255,0.08);
+            --w04:       rgba(255,255,255,0.04);
+            --ease:      cubic-bezier(0.16,1,0.3,1);
+            --safe-top:    env(safe-area-inset-top,    0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-left:   env(safe-area-inset-left,   0px);
+            --safe-right:  env(safe-area-inset-right,  0px);
+        }
+
+        html { overflow-x: hidden; scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--white);
+            min-height: 100vh;
+            min-height: 100dvh;
+            -webkit-overflow-scrolling: touch;
+            position: relative;
+        }
+
+        /* ── FONDO GEOMÉTRICO ESTÁTICO ──────────────────────── */
+        /* SVG inline como background — cero JS, cero canvas */
+        .geo-bg {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        /* Grid de puntos */
+        .geo-bg::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(circle, rgba(255,59,127,0.18) 1px, transparent 1px);
+            background-size: 36px 36px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+            -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+        }
+
+        /* Líneas diagonales de circuito */
+        .geo-bg::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image:
+                repeating-linear-gradient(
+                    -60deg,
+                    transparent 0px, transparent 80px,
+                    rgba(255,59,127,0.04) 80px, rgba(255,59,127,0.04) 81px
+                ),
+                repeating-linear-gradient(
+                    30deg,
+                    transparent 0px, transparent 120px,
+                    rgba(201,169,110,0.03) 120px, rgba(201,169,110,0.03) 121px
+                );
+        }
+
+        /* Gradientes de ambiente */
+        .ambient {
+            position: fixed;
+            inset: 0;
+            z-index: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 60% 40% at 85% 10%, rgba(255,59,127,0.07) 0%, transparent 70%),
+                radial-gradient(ellipse 50% 50% at 10% 90%, rgba(201,169,110,0.05) 0%, transparent 70%),
+                radial-gradient(ellipse 40% 60% at 50% 50%, rgba(255,59,127,0.03) 0%, transparent 100%);
+        }
+
+        /* ── LAYOUT ─────────────────────────────────────────── */
+        .page {
+            position: relative;
+            z-index: 10;
+            min-height: 100vh;
+            min-height: 100dvh;
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: clamp(20px, 5vw, 48px);
+            padding-top: calc(clamp(20px,5vw,48px) + var(--safe-top));
+            padding-left: calc(clamp(20px,5vw,48px) + var(--safe-left));
+            padding-right: calc(clamp(20px,5vw,48px) + var(--safe-right));
+            padding-bottom: calc(clamp(40px,8vw,80px) + var(--safe-bottom));
+        }
+
+        /* ── HEADER ─────────────────────────────────────────── */
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--w50);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            margin-bottom: 36px;
+            transition: color 0.25s;
+            min-height: 44px;
+            touch-action: manipulation;
+        }
+        .back-link:active, .back-link:hover { color: var(--rose); }
+        .back-link i { font-size: 11px; }
+
+        .form-header {
+            margin-bottom: 48px;
+        }
+
+        .form-header-eyebrow {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+
+        .eyebrow-line {
+            width: 32px;
+            height: 1px;
+            background: var(--rose);
+        }
+
+        .eyebrow-text {
+            font-size: 11px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--rose);
+        }
+
+        .form-header h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(32px, 6vw, 52px);
+            font-weight: 800;
+            line-height: 1.05;
+            letter-spacing: -0.02em;
+            margin-bottom: 14px;
+        }
+
+        .form-header h1 .accent {
+            background: linear-gradient(135deg, #fff 0%, var(--rose) 60%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .form-header p {
+            color: var(--w50);
+            font-size: 15px;
+            line-height: 1.6;
+            max-width: 480px;
+        }
+
+        /* Separador decorativo */
+        .header-deco {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-top: 28px;
+        }
+        .header-deco-line { flex: 1; height: 1px; background: var(--rose-line); }
+        .header-deco-icon {
+            width: 36px; height: 36px;
+            border: 1px solid var(--rose-line);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--rose);
+            font-size: 14px;
+        }
+
+        /* ── SECCIONES ──────────────────────────────────────── */
+        .form-block {
+            margin-bottom: 44px;
+            opacity: 0;
+            transform: translateY(16px);
+            transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
+        }
+        .form-block.visible { opacity: 1; transform: translateY(0); }
+
+        .block-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .block-number {
+            width: 28px; height: 28px;
+            border: 1px solid var(--rose);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--rose);
+            flex-shrink: 0;
+        }
+
+        .block-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: var(--white);
+        }
+
+        .block-line {
+            flex: 1;
+            height: 1px;
+            background: var(--rose-line);
+        }
+
+        /* ── CAMPOS ─────────────────────────────────────────── */
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--w50);
+            margin-bottom: 8px;
+        }
+
+        .field-required::after {
+            content: ' *';
+            color: var(--rose);
+        }
+
+        /* Input base */
+        .input {
+            width: 100%;
+            background: var(--w04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            transition: border-color 0.25s, background 0.25s, box-shadow 0.25s;
+            -webkit-appearance: none;
+            appearance: none;
+            min-height: 52px;
+            touch-action: manipulation;
+        }
+
+        .input::placeholder { color: var(--w20); }
+
+        .input:focus {
+            outline: none;
+            border-color: var(--rose);
+            background: rgba(255,59,127,0.04);
+            box-shadow: 0 0 0 3px rgba(255,59,127,0.1);
+        }
+
+        @media (hover:hover) {
+            .input:hover:not(:focus) {
+                border-color: rgba(255,59,127,0.35);
+                background: var(--w08);
+            }
+        }
+
+        /* Select */
+        .select-wrap {
+            position: relative;
+        }
+        .select-wrap::after {
+            content: '\f107';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--rose);
+            pointer-events: none;
+            font-size: 14px;
+        }
+        select.input {
+            cursor: pointer;
+            padding-right: 44px;
+        }
+        select.input option {
+            background: #0d0d18;
+            color: var(--white);
+        }
+
+        /* Textarea */
+        textarea.input {
+            min-height: 110px;
+            resize: vertical;
+            line-height: 1.6;
+        }
+
+        /* Grid 2 columnas */
+        .field-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .field-row { grid-template-columns: 1fr; gap: 0; }
+        }
+
+        /* ── INCOME RANGE SELECTOR ──────────────────────────── */
+        .income-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 2px;
+        }
+
+        @media (max-width: 480px) {
+            .income-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .income-option {
+            position: relative;
+        }
+
+        .income-option input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            width: 0; height: 0;
+        }
+
+        .income-option label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 10px;
+            background: var(--w04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.25s var(--ease);
+            text-align: center;
+            min-height: 68px;
+            touch-action: manipulation;
+            /* Override label uppercase */
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--w80);
+            margin-bottom: 0;
+        }
+
+        .income-option label .range-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--white);
+            display: block;
+            line-height: 1.2;
+        }
+
+        .income-option label .range-sub {
+            font-size: 10px;
+            color: var(--w50);
+            margin-top: 3px;
+            letter-spacing: 0.5px;
+        }
+
+        .income-option input:checked + label {
+            border-color: var(--rose);
+            background: rgba(255,59,127,0.08);
+            box-shadow: 0 0 0 1px var(--rose), 0 6px 20px rgba(255,59,127,0.15);
+            color: var(--white);
+        }
+
+        .income-option input:checked + label .range-value { color: var(--rose); }
+
+        @media (hover:hover) {
+            .income-option label:hover {
+                border-color: rgba(255,59,127,0.4);
+                background: var(--w08);
+            }
+        }
+
+        .income-option label:active {
+            transform: scale(0.97);
+        }
+
+        /* ── FOTO UPLOAD ────────────────────────────────────── */
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 380px) {
+            .photos-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .photo-slot {
+            aspect-ratio: 3/4;
+            background: var(--w04);
+            border: 1px dashed rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.25s, background 0.25s;
+            touch-action: manipulation;
+        }
+
+        .photo-slot input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+            /* En móvil iOS, el input file sobre el elemento funciona mejor así */
+            font-size: 0;
+        }
+
+        .photo-slot-icon { 
+            font-size: 24px; 
+            color: var(--rose); 
+            opacity: 0.6;
+            transition: opacity 0.25s, transform 0.25s; 
+            pointer-events: none;
+        }
+        .photo-slot-label {
+            font-size: 11px;
+            color: var(--w20);
+            letter-spacing: 1px;
+            pointer-events: none;
+        }
+        .photo-slot-num {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 20px; height: 20px;
+            background: rgba(255,59,127,0.15);
+            border: 1px solid var(--rose-line);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: var(--rose);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            pointer-events: none;
+        }
+
+        @media (hover:hover) {
+            .photo-slot:hover {
+                border-color: var(--rose);
+                background: rgba(255,59,127,0.05);
+            }
+            .photo-slot:hover .photo-slot-icon { opacity: 1; transform: scale(1.1); }
+        }
+
+        .photo-slot:active { transform: scale(0.97); }
+
+        .photo-slot.has-photo {
+            border-color: var(--rose);
+            border-style: solid;
+        }
+
+        .photo-preview-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 13px;
+            display: none;
+        }
+
+        .photo-remove {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px; height: 24px;
+            background: rgba(0,0,0,0.7);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 10px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+            touch-action: manipulation;
+        }
+
+        .photo-slot.has-photo .photo-preview-img { display: block; }
+        .photo-slot.has-photo .photo-remove { display: flex; }
+        .photo-slot.has-photo .photo-slot-icon,
+        .photo-slot.has-photo .photo-slot-label { display: none; }
+
+        .photo-hint {
+            font-size: 12px;
+            color: var(--w20);
+            margin-top: 10px;
+            text-align: center;
+            letter-spacing: 0.3px;
+        }
+
+        /* ── NOTA INFO ──────────────────────────────────────── */
+        .info-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: rgba(201,169,110,0.07);
+            border: 1px solid rgba(201,169,110,0.2);
+            border-radius: 10px;
+            padding: 14px 16px;
+            margin-top: 8px;
+        }
+
+        .info-note i {
+            color: var(--gold);
+            font-size: 14px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+        .info-note p {
+            font-size: 13px;
+            color: rgba(201,169,110,0.85);
+            line-height: 1.5;
+        }
+
+        /* ── SUBMIT ─────────────────────────────────────────── */
+        .submit-area {
+            margin-top: 52px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            max-width: 360px;
+            padding: 18px 32px;
+            background: var(--rose);
+            border: none;
+            border-radius: 50px;
+            color: #fff;
+            font-family: 'Syne', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.3s var(--ease);
+            min-height: 58px;
+            touch-action: manipulation;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .submit-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
+            border-radius: inherit;
+        }
+
+        @media (hover:hover) {
+            .submit-btn:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 16px 40px rgba(255,59,127,0.35);
+                background: #ff2070;
+            }
+        }
+
+        .submit-btn:active {
+            transform: scale(0.97);
+            box-shadow: 0 4px 16px rgba(255,59,127,0.3);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-disclaimer {
+            font-size: 12px;
+            color: var(--w20);
+            text-align: center;
+            max-width: 320px;
+            line-height: 1.5;
+        }
+
+        /* ── PROGRESS BAR ───────────────────────────────────── */
+        .progress-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--rose-line);
+            z-index: 100;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--rose);
+            width: 0%;
+            transition: width 0.4s var(--ease);
+            box-shadow: 0 0 8px var(--rose);
+        }
+
+        /* ── TOAST ──────────────────────────────────────────── */
+        .toast {
+            position: fixed;
+            z-index: 9999;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            background: rgba(8,8,15,0.97);
+            border-radius: 14px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+            max-width: calc(100vw - 32px);
+            transition: transform 0.4s var(--ease), opacity 0.4s;
+        }
+
+        .toast.error  { border: 1px solid rgba(255,60,60,0.4); color: #fff; }
+        .toast.error i { color: #ff4444; }
+        .toast.success { border: 1px solid rgba(255,59,127,0.4); color: #fff; }
+        .toast.success i { color: var(--rose); }
+
+        @media (min-width: 481px) {
+            .toast { top: 28px; right: 28px; border-radius: 50px; }
+            .toast.hidden { transform: translateX(120%); opacity: 0; }
+        }
+        @media (max-width: 480px) {
+            .toast {
+                top: calc(16px + env(safe-area-inset-top, 0px));
+                left: 16px; right: 16px;
+            }
+            .toast.hidden { transform: translateY(-120%); opacity: 0; }
+        }
+
+        /* Animación de entrada stagger */
+        .form-block:nth-child(1) { transition-delay: 0.05s; }
+        .form-block:nth-child(2) { transition-delay: 0.12s; }
+        .form-block:nth-child(3) { transition-delay: 0.19s; }
+        .form-block:nth-child(4) { transition-delay: 0.26s; }
+        .form-block:nth-child(5) { transition-delay: 0.33s; }
+    </style>
+
+    <!-- 🔥 FIREBASE SDK -->
+<script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
+    import { getFirestore, doc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+    import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
+
+    // Tu configuración de Firebase
+    const firebaseConfig = {
+        apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
+        authDomain: "sugarfree-cbb21.firebaseapp.com",
+        projectId: "sugarfree-cbb21",
+        storageBucket: "sugarfree-cbb21.firebasestorage.app",
+        messagingSenderId: "797632408987",
+        appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
+    };
+
+    // Inicializar Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    // Variable global para el usuario actual
+    let currentUser = null;
+
+    // Verificar si el usuario está autenticado
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            currentUser = user;
+            console.log('✅ Usuario autenticado:', user.uid);
+        } else {
+            // No hay usuario, redirigir al login
+            console.log('❌ No hay usuario autenticado');
+            window.location.href = 'index-premium.html?error=login-required';
+        }
+    });
+
+    // Exponer funciones globalmente para que las use el script normal
+    window.firebaseApp = { auth, db, storage, currentUser: () => currentUser };
+</script>
+</head>
+<body>
+
+    <div class="geo-bg"></div>
+    <div class="ambient"></div>
+
+    <!-- Barra de progreso de scroll -->
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="page">
+        <div class="container">
+
+            <!-- Back -->
+            <a href="index-premium.html" class="back-link">
+                <i class="fas fa-arrow-left"></i>
+                Volver al inicio
+            </a>
+
+            <!-- Header -->
+            <div class="form-header">
+                <div class="form-header-eyebrow">
+                    <div class="eyebrow-line"></div>
+                    <span class="eyebrow-text">Sugar Free· Perfil Elite</span>
+                </div>
+                <h1>
+                    Sugar<br>
+                    <span class="accent">Daddy</span>
+                </h1>
+                <p>Completa tu perfil con información real. Todos los perfiles son verificados manualmente antes de ser activados.</p>
+                <div class="header-deco">
+                    <div class="header-deco-line"></div>
+                    <div class="header-deco-icon"><i class="fas fa-crown"></i></div>
+                    <div class="header-deco-line"></div>
+                </div>
+            </div>
+
+            <!-- FORMULARIO -->
+            <form id="profileForm" novalidate>
+
+                <!-- BLOQUE 1: Datos básicos -->
+                <div class="form-block">
+                    <div class="block-label">
+                        <div class="block-number">01</div>
+                        <div class="block-title">Información personal</div>
+                        <div class="block-line"></div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-required">Edad</label>
+                            <input type="number" id="edad" class="input"
+                                   placeholder="Ej. 38" min="30" max="99" required
+                                   inputmode="numeric">
+                        </div>
+                        <div class="field">
+                            <label class="field-required">Altura (cm)</label>
+                            <input type="number" id="altura" class="input"
+                                   placeholder="Ej. 178" min="140" max="220" required
+                                   inputmode="numeric">
+                        </div>
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field">
+                            <label class="field-required">Peso (kg)</label>
+                            <input type="number" id="peso" class="input"
+                                   placeholder="Ej. 80" min="40" max="200" required
+                                   inputmode="numeric">
+                        </div>
+                        <div class="field">
+                            <label class="field-required">Complexión</label>
+                            <div class="select-wrap">
+                                <select id="complexion" class="input" required>
+                                    <option value="">Seleccionar</option>
+                                    <option>Delgada</option>
+                                    <option>Atlética</option>
+                                    <option>Media</option>
+                                    <option>Robusta</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-required">Tono de piel</label>
+                        <div class="select-wrap">
+                            <select id="tonoPiel" class="input" required>
+                                <option value="">Seleccionar</option>
+                                <option>Muy clara</option>
+                                <option>Clara</option>
+                                <option>Morena clara</option>
+                                <option>Morena</option>
+                                <option>Morena oscura</option>
+                                <option>Negra</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="info-note">
+                        <i class="fas fa-shield-halved"></i>
+                        <p>La edad mínima para registrarse como Sugar Daddy es de <strong>30 años</strong>. Tu información es privada y segura.</p>
+                    </div>
+                </div>
+
+                <!-- BLOQUE 2: Ingresos -->
+                <div class="form-block">
+                    <div class="block-label">
+                        <div class="block-number">02</div>
+                        <div class="block-title">Rango de ingresos anuales</div>
+                        <div class="block-line"></div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-required" style="margin-bottom:14px;">Selecciona tu rango</label>
+                        <div class="income-grid">
+
+                            <div class="income-option">
+                                <input type="radio" name="ingresos" id="inc1" value="40k-80k" required>
+                                <label for="inc1">
+                                    <span class="range-value">$40k – $80k</span>
+                                    <span class="range-sub">mxn / mes</span>
+                                </label>
+                            </div>
+
+                            <div class="income-option">
+                                <input type="radio" name="ingresos" id="inc2" value="80k-150k">
+                                <label for="inc2">
+                                    <span class="range-value">$80k – $150k</span>
+                                    <span class="range-sub">mxn / mes</span>
+                                </label>
+                            </div>
+
+                            <div class="income-option">
+                                <input type="radio" name="ingresos" id="inc3" value="150k-250k">
+                                <label for="inc3">
+                                    <span class="range-value">$150k – $250k</span>
+                                    <span class="range-sub">mxn / mes</span>
+                                </label>
+                            </div>
+
+                            <div class="income-option">
+                                <input type="radio" name="ingresos" id="inc4" value="250k-500k">
+                                <label for="inc4">
+                                    <span class="range-value">$250k – $500k</span>
+                                    <span class="range-sub">mxn / mes</span>
+                                </label>
+                            </div>
+
+                            <div class="income-option">
+                                <input type="radio" name="ingresos" id="inc5" value="500k-1M">
+                                <label for="inc5">
+                                    <span class="range-value">$500k – $1M</span>
+                                    <span class="range-sub">mxn / mes</span>
+                                </label>
+                            </div>
+
+                            <div class="income-option">
+                                <input type="radio" name="ingresos" id="inc6" value="1M+">
+                                <label for="inc6">
+                                    <span class="range-value">$1M+</span>
+                                    <span class="range-sub">mxn / mes</span>
+                                </label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BLOQUE 3: Fotos -->
+                <div class="form-block">
+                    <div class="block-label">
+                        <div class="block-number">03</div>
+                        <div class="block-title">Fotos recientes</div>
+                        <div class="block-line"></div>
+                    </div>
+
+                    <div class="photos-grid">
+                        <div class="photo-slot" id="slot1">
+                            <span class="photo-slot-num">1</span>
+                            <i class="fas fa-plus photo-slot-icon"></i>
+                            <span class="photo-slot-label">SUBIR</span>
+                            <input type="file" accept="image/*" capture="environment">
+                            <img class="photo-preview-img" alt="">
+                            <button type="button" class="photo-remove"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="photo-slot" id="slot2">
+                            <span class="photo-slot-num">2</span>
+                            <i class="fas fa-plus photo-slot-icon"></i>
+                            <span class="photo-slot-label">SUBIR</span>
+                            <input type="file" accept="image/*">
+                            <img class="photo-preview-img" alt="">
+                            <button type="button" class="photo-remove"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div class="photo-slot" id="slot3">
+                            <span class="photo-slot-num">3</span>
+                            <i class="fas fa-plus photo-slot-icon"></i>
+                            <span class="photo-slot-label">SUBIR</span>
+                            <input type="file" accept="image/*">
+                            <img class="photo-preview-img" alt="">
+                            <button type="button" class="photo-remove"><i class="fas fa-times"></i></button>
+                        </div>
+                    </div>
+                    <p class="photo-hint">Sube 3 fotos recientes donde se te vea con claridad · Máximo 10 MB c/u</p>
+                </div>
+
+                <!-- BLOQUE 4: Preferencias -->
+                <div class="form-block">
+                    <div class="block-label">
+                        <div class="block-number">04</div>
+                        <div class="block-title">Preferencias</div>
+                        <div class="block-line"></div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-required">Busco a un Sugar Baby</label>
+                        <div class="select-wrap">
+                            <select id="busco" class="input" required>
+                                <option value="">Seleccionar tipo</option>
+                                <option value="mujer">Sugar Girl (Mujer)</option>
+                                <option value="hombre">Sugar Boy (Hombre)</option>
+                                <option value="ambos">Ambos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Expectativas de la relación</label>
+                        <textarea id="expectativas" class="input"
+                                  placeholder="Comparte qué tipo de conexión buscas, intereses, actividades…"
+                                  rows="4"></textarea>
+                    </div>
+                </div>
+
+                <!-- SUBMIT -->
+                <div class="submit-area form-block">
+                    <button type="submit" class="submit-btn" id="submitBtn">
+                        <i class="fas fa-check"></i>
+                        Completar perfil
+                    </button>
+                    <p class="submit-disclaimer">
+                        Al continuar aceptas los Términos de Uso y la Política de Privacidad de Sugar Free.
+                    </p>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <script>
+    // ── PROGRESS BAR de scroll ─────────────────────────
+    window.addEventListener('scroll', () => {
+        const el   = document.documentElement;
+        const pct  = el.scrollTop / (el.scrollHeight - el.clientHeight) * 100;
+        document.getElementById('progressFill').style.width = pct + '%';
+    }, { passive: true });
+
+    // ── INTERSECTION OBSERVER para animación stagger ───
+    const io = new IntersectionObserver(entries => {
+        entries.forEach(e => {
+            if (e.isIntersecting) {
+                e.target.classList.add('visible');
+                io.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.06 });
+
+    document.querySelectorAll('.form-block').forEach(b => io.observe(b));
+
+    // ── FOTO UPLOAD ────────────────────────────────────
+    document.querySelectorAll('.photo-slot').forEach(slot => {
+        const input   = slot.querySelector('input[type="file"]');
+        const preview = slot.querySelector('.photo-preview-img');
+        const removeBtn = slot.querySelector('.photo-remove');
+
+        // Clic en el slot abre el selector de archivo
+        slot.addEventListener('click', e => {
+            if (e.target === removeBtn || removeBtn.contains(e.target)) return;
+            if (!slot.classList.contains('has-photo')) input.click();
+        });
+
+        input.addEventListener('change', function () {
+            const file = this.files[0];
+            if (!file) return;
+            if (file.size > 10 * 1024 * 1024) {
+                toast('La imagen supera los 10 MB', 'error'); return;
+            }
+            const reader = new FileReader();
+            reader.onload = e => {
+                preview.src = e.target.result;
+                slot.classList.add('has-photo');
+            };
+            reader.readAsDataURL(file);
+        });
+
+        removeBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            preview.src = '';
+            input.value = '';
+            slot.classList.remove('has-photo');
+        });
+    });
+
+    // ── VALIDACIÓN Y SUBMIT ────────────────────────────
+    // ── VALIDACIÓN Y SUBMIT ────────────────────────────
+document.getElementById('profileForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+
+    // Verificar que hay usuario autenticado
+    if (!window.firebaseApp.currentUser || !window.firebaseApp.currentUser()) {
+        toast('Debes iniciar sesión primero', 'error');
+        setTimeout(() => window.location.href = 'index-premium.html', 2000);
+        return;
+    }
+
+    const user = window.firebaseApp.currentUser();
+    const db = window.firebaseApp.db;
+    const storage = window.firebaseApp.storage;
+
+    // Obtener valores del formulario
+    const edad      = parseInt(document.getElementById('edad').value);
+    const altura    = parseInt(document.getElementById('altura').value);
+    const peso      = parseInt(document.getElementById('peso').value);
+    const complexion= document.getElementById('complexion').value;
+    const tono      = document.getElementById('tonoPiel').value;
+    const busco     = document.getElementById('busco').value;
+    const expectativas = document.getElementById('expectativas').value;
+    const ingresos  = document.querySelector('input[name="ingresos"]:checked');
+    
+    // Validaciones
+    if (!edad || edad < 30) {
+        toast('La edad mínima para Sugar Daddy es 30 años', 'error');
+        document.getElementById('edad').focus(); return;
+    }
+    if (!altura || altura < 140) {
+        toast('Por favor ingresa una altura válida', 'error');
+        document.getElementById('altura').focus(); return;
+    }
+    if (!peso || peso < 40) {
+        toast('Por favor ingresa un peso válido', 'error');
+        document.getElementById('peso').focus(); return;
+    }
+    if (!complexion) { toast('Selecciona tu complexión', 'error'); return; }
+    if (!tono)        { toast('Selecciona tu tono de piel', 'error'); return; }
+    if (!ingresos)    { toast('Selecciona tu rango de ingresos', 'error'); return; }
+    if (!busco)       { toast('Indica qué tipo de Sugar Baby buscas', 'error'); return; }
+
+    // Fotos (subir a Storage primero)
+    const fotos = document.querySelectorAll('.photo-slot.has-photo');
+    if (fotos.length < 3) {
+        toast('Sube las 3 fotos requeridas', 'error'); 
+        return;
+    }
+
+    // Deshabilitar botón y mostrar loading
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo fotos...';
+
+    try {
+        // 1. Subir fotos a Firebase Storage
+        const fotosUrls = [];
+        const slots = document.querySelectorAll('.photo-slot');
+        
+        for (let i = 0; i < slots.length; i++) {
+            const slot = slots[i];
+            const imgPreview = slot.querySelector('.photo-preview-img');
+            const fileInput = slot.querySelector('input[type="file"]');
+            
+            if (fileInput.files && fileInput.files[0]) {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo foto ${i+1}/3...`;
+                
+                const file = fileInput.files[0];
+                const extension = file.name.split('.').pop();
+                const fileName = `fotos/${user.uid}/${Date.now()}_${i}.${extension}`;
+                const storageRef = ref(storage, fileName);
+                
+                // Subir archivo
+                await uploadBytes(storageRef, file);
+                // Obtener URL
+                const url = await getDownloadURL(storageRef);
+                fotosUrls.push(url);
+            }
+        }
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando perfil...';
+
+        // 2. Guardar datos en Firestore
+        const userDocRef = doc(db, 'usuarios', user.uid);
+        
+        // Datos específicos del perfil
+        const perfilData = {
+            rol: 'sugar_daddy', // Cambiar según el formulario
+            edad: edad,
+            altura: altura,
+            peso: peso,
+            complexion: complexion,
+            tonoPiel: tono,
+            rangoIngresos: ingresos.value,
+            busca: busco,
+            expectativas: expectativas || '',
+            fotos: fotosUrls,
+            perfilCompleto: true,
+            fechaPerfil: new Date().toISOString(),
+            // Datos para verificación
+            verificationStatus: 'pendiente', // Pendiente de revisión manual
+            fechaVerificacion: null
+        };
+
+        // Actualizar el documento del usuario (merge para no borrar datos existentes)
+        await updateDoc(userDocRef, perfilData);
+
+        // Éxito
+        btn.innerHTML = '<i class="fas fa-check"></i> ¡Perfil completado!';
+        btn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+        
+        toast('Perfil guardado correctamente. Será revisado en 24-48 hrs.', 'success');
+        
+        // Redirigir al listing correspondiente
+        setTimeout(() => {
+            window.location.href = 'listing-premium.html?welcome=true';
+        }, 2500);
+
+    } catch (error) {
+        console.error('Error al guardar perfil:', error);
+        toast('Error al guardar. Intenta de nuevo.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Completar perfil';
+    }
+});
+    </script>
+</body>
+</html>
