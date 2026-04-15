@@ -297,6 +297,18 @@
             margin-top: 4px;
         }
 
+        
+        <div style="margin-top: 20px; text-align: center;">
+          <div class="divider" style="margin: 16px 0;">
+            <div class="divider-line"></div>
+            <span style="font-size: 11px;">O MODO PRUEBA</span>
+            <div class="divider-line"></div>
+        </div>
+        <button id="simulatePaymentBtn" class="simulate-btn">
+            <i class="fas fa-flask"></i> Simular Pago (Prueba)
+         </button>
+        </div>
+
         stripe-buy-button {
             width: 100%;
         }
@@ -461,6 +473,26 @@
             border-top: 1px solid var(--rose-line);
             padding-top: 13px; text-transform: uppercase; letter-spacing: 1px;
         }
+        .simulate-btn {
+        background: rgba(46, 204, 113, 0.15);
+        border: 1px solid rgba(46, 204, 113, 0.4);
+        border-radius: 50px;
+        padding: 12px 24px;
+        color: #2ecc71;
+        font-family: 'Space Grotesk', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        }
+        .simulate-btn:hover {
+             background: rgba(46, 204, 113, 0.25);
+             transform: translateY(-2px);
+       
+            }
 
         .loading-overlay {
             position: fixed; inset: 0;
@@ -761,6 +793,9 @@
     const auth = firebase.auth();
     const db = firebase.firestore();
     const provider = new firebase.auth.GoogleAuthProvider();
+    const updateDoc = async (ref, data) => {
+    return ref.update(data);
+    };
     provider.setCustomParameters({ prompt: 'select_account' });
 
     // Variables globales
@@ -902,6 +937,44 @@
             window.goToStep('auth');
         }
     });
+
+    // Botón de simulación de pago (SOLO PARA PRUEBAS)
+const simulateBtn = document.getElementById('simulatePaymentBtn');
+if (simulateBtn) {
+    simulateBtn.addEventListener('click', async () => {
+        const user = auth.currentUser;
+        if (!user) {
+            window.toast('Debes iniciar sesión primero', 'error');
+            return;
+        }
+        
+        simulateBtn.disabled = true;
+        simulateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Simulando...';
+        
+        try {
+            // Marcar como premium en Firestore
+            const userRef = doc(db, 'usuarios', user.uid);
+            await updateDoc(userRef, {
+                premium: true,
+                isPremium: true,
+                fechaPago: new Date().toISOString()
+            });
+            
+            window.toast('¡Pago simulado! Membresía premium activada.', 'success');
+            
+            // Recargar el estado para que pase al step 3
+            setTimeout(() => {
+                window.location.href = window.location.pathname + '?payment=success';
+            }, 1500);
+            
+        } catch (error) {
+            console.error('Error al simular pago:', error);
+            window.toast('Error al simular pago', 'error');
+            simulateBtn.disabled = false;
+            simulateBtn.innerHTML = '<i class="fas fa-flask"></i> Simular Pago (Prueba)';
+        }
+    });
+}
 
     // ============================================
     // GOOGLE SIGN IN
