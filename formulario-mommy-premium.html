@@ -700,14 +700,15 @@
         .form-block:nth-child(5) { transition-delay: 0.33s; }
     </style>
 
+    
+
     <!-- 🔥 FIREBASE SDK -->
 <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-    import { getFirestore, doc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
-    import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js';
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+    import { getFirestore, doc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+    import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
 
-    // Tu configuración de Firebase
     const firebaseConfig = {
         apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
         authDomain: "sugarfree-cbb21.firebaseapp.com",
@@ -717,29 +718,23 @@
         appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
     };
 
-    // Inicializar Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const storage = getStorage(app);
 
-    // Variable global para el usuario actual
     let currentUser = null;
 
-    // Verificar si el usuario está autenticado
     onAuthStateChanged(auth, (user) => {
         if (user) {
             currentUser = user;
             console.log('✅ Usuario autenticado:', user.uid);
         } else {
-            // No hay usuario, redirigir al login
-            console.log('❌ No hay usuario autenticado');
             window.location.href = 'index-premium.html?error=login-required';
         }
     });
 
-    // Exponer funciones globalmente para que las use el script normal
-    window.firebaseApp = { auth, db, storage, currentUser: () => currentUser };
+    window.__firebase = { auth, db, storage, getCurrentUser: () => currentUser };
 </script>
 </head>
 <body>
@@ -809,6 +804,12 @@
                             <input type="number" id="peso" class="input"
                                    placeholder="Ej. 80" min="40" max="200" required
                                    inputmode="numeric">
+                        </div>
+                    <div class="field">
+                           <label class="field-required">Ciudad</label>
+                           <input type="text" id="ciudad" class="input"
+                                  placeholder="Ej. Ciudad de México, Guadalajara, Monterrey"
+                                  required>
                         </div>
                         <div class="field">
                             <label class="field-required">Complexión</label>
@@ -1045,131 +1046,112 @@
 
     // ── VALIDACIÓN Y SUBMIT ────────────────────────────
     // ── VALIDACIÓN Y SUBMIT ────────────────────────────
-document.getElementById('profileForm').addEventListener('submit', async function (e) {
-    e.preventDefault();
+document.getElementById('profileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
 
-    // Verificar que hay usuario autenticado
-    if (!window.firebaseApp.currentUser || !window.firebaseApp.currentUser()) {
-        toast('Debes iniciar sesión primero', 'error');
-        setTimeout(() => window.location.href = 'index-premium.html', 2000);
-        return;
-    }
-
-    const user = window.firebaseApp.currentUser();
-    const db = window.firebaseApp.db;
-    const storage = window.firebaseApp.storage;
-
-    // Obtener valores del formulario
-    const edad      = parseInt(document.getElementById('edad').value);
-    const altura    = parseInt(document.getElementById('altura').value);
-    const peso      = parseInt(document.getElementById('peso').value);
-    const complexion= document.getElementById('complexion').value;
-    const tono      = document.getElementById('tonoPiel').value;
-    const busco     = document.getElementById('busco').value;
-    const expectativas = document.getElementById('expectativas').value;
-    const ingresos  = document.querySelector('input[name="ingresos"]:checked');
-    
-    // Validaciones
-    if (!edad || edad < 30) {
-        toast('La edad mínima para Sugar Daddy es 30 años', 'error');
-        document.getElementById('edad').focus(); return;
-    }
-    if (!altura || altura < 140) {
-        toast('Por favor ingresa una altura válida', 'error');
-        document.getElementById('altura').focus(); return;
-    }
-    if (!peso || peso < 40) {
-        toast('Por favor ingresa un peso válido', 'error');
-        document.getElementById('peso').focus(); return;
-    }
-    if (!complexion) { toast('Selecciona tu complexión', 'error'); return; }
-    if (!tono)        { toast('Selecciona tu tono de piel', 'error'); return; }
-    if (!ingresos)    { toast('Selecciona tu rango de ingresos', 'error'); return; }
-    if (!busco)       { toast('Indica qué tipo de Sugar Baby buscas', 'error'); return; }
-
-    // Fotos (subir a Storage primero)
-    const fotos = document.querySelectorAll('.photo-slot.has-photo');
-    if (fotos.length < 3) {
-        toast('Sube las 3 fotos requeridas', 'error'); 
-        return;
-    }
-
-    // Deshabilitar botón y mostrar loading
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo fotos...';
-
-    try {
-        // 1. Subir fotos a Firebase Storage
-        const fotosUrls = [];
-        const slots = document.querySelectorAll('.photo-slot');
+        const firebase = window.__firebase;
+        const user = firebase.getCurrentUser();
         
-        for (let i = 0; i < slots.length; i++) {
-            const slot = slots[i];
-            const imgPreview = slot.querySelector('.photo-preview-img');
-            const fileInput = slot.querySelector('input[type="file"]');
-            
-            if (fileInput.files && fileInput.files[0]) {
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo foto ${i+1}/3...`;
-                
-                const file = fileInput.files[0];
-                const extension = file.name.split('.').pop();
-                const fileName = `fotos/${user.uid}/${Date.now()}_${i}.${extension}`;
-                const storageRef = ref(storage, fileName);
-                
-                // Subir archivo
-                await uploadBytes(storageRef, file);
-                // Obtener URL
-                const url = await getDownloadURL(storageRef);
-                fotosUrls.push(url);
-            }
+        if (!user) {
+            toast('Debes iniciar sesión', 'error');
+            setTimeout(() => window.location.href = 'index-premium.html', 2000);
+            return;
         }
 
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando perfil...';
-
-        // 2. Guardar datos en Firestore
-        const userDocRef = doc(db, 'usuarios', user.uid);
+        // Obtener valores del formulario
+        const edad = parseInt(document.getElementById('edad').value);
+        const altura = parseInt(document.getElementById('altura').value);
+        const peso = parseInt(document.getElementById('peso').value);
+        const complexion = document.getElementById('complexion').value;
+        const tonoPiel = document.getElementById('tonoPiel').value;
+        const busco = document.getElementById('busco').value;
+        const expectativas = document.getElementById('expectativas').value;
+        const ingresos = document.querySelector('input[name="ingresos"]:checked');
         
-        // Datos específicos del perfil
-        const perfilData = {
-            rol: 'sugar_mommy', // Cambiar según el formulario
-            edad: edad,
-            altura: altura,
-            peso: peso,
-            complexion: complexion,
-            tonoPiel: tono,
-            rangoIngresos: ingresos.value,
-            busca: busco,
-            expectativas: expectativas || '',
-            fotos: fotosUrls,
-            perfilCompleto: true,
-            fechaPerfil: new Date().toISOString(),
-            // Datos para verificación
-            verificationStatus: 'pendiente', // Pendiente de revisión manual
-            fechaVerificacion: null
-        };
+        // Validaciones
+        if (!edad || edad < 30) { toast('Edad mínima 30 años', 'error'); return; }
+        if (!altura || altura < 140) { toast('Altura válida requerida', 'error'); return; }
+        if (!peso || peso < 40) { toast('Peso válido requerido', 'error'); return; }
+        if (!complexion) { toast('Selecciona tu complexión', 'error'); return; }
+        if (!tonoPiel) { toast('Selecciona tu tono de piel', 'error'); return; }
+        if (!ingresos) { toast('Selecciona tu rango de ingresos', 'error'); return; }
+        if (!busco) { toast('Indica qué tipo buscas', 'error'); return; }
 
-        // Actualizar el documento del usuario (merge para no borrar datos existentes)
-        await updateDoc(userDocRef, perfilData);
+        const fotosSlots = document.querySelectorAll('.photo-slot.has-photo');
+        if (fotosSlots.length < 3) { toast('Sube las 3 fotos requeridas', 'error'); return; }
 
-        // Éxito
-        btn.innerHTML = '<i class="fas fa-check"></i> ¡Perfil completado!';
-        btn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
-        
-        toast('Perfil guardado correctamente. Será revisado en 24-48 hrs.', 'success');
-        
-        // Redirigir al listing correspondiente
-        setTimeout(() => {
-            window.location.href = 'listing-premium.html?welcome=true';
-        }, 2500);
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo fotos...';
 
-    } catch (error) {
-        console.error('Error al guardar perfil:', error);
-        toast('Error al guardar. Intenta de nuevo.', 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check"></i> Completar perfil';
-    }
-});
-    </script>
+        try {
+            // 1. Subir fotos a Storage
+            const fotosUrls = [];
+            const slots = document.querySelectorAll('.photo-slot');
+            
+            for (let i = 0; i < slots.length; i++) {
+                const slot = slots[i];
+                const fileInput = slot.querySelector('input[type="file"]');
+                
+                if (fileInput.files && fileInput.files[0]) {
+                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo foto ${i+1}/3...`;
+                    const file = fileInput.files[0];
+                    const extension = file.name.split('.').pop();
+                    const fileName = `fotos/${user.uid}/${Date.now()}_${i}.${extension}`;
+                    const storageRef = ref(firebase.storage, fileName);
+                    
+                    await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(storageRef);
+                    fotosUrls.push(url);
+                }
+            }
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando perfil...';
+
+            // 2. Guardar perfil en Firestore (colección "perfiles")
+            const profileRef = doc(firebase.db, 'perfiles', user.uid);
+            await setDoc(profileRef, {
+                userId: user.uid,
+                role: 'daddy',
+                edad: edad,
+                altura: altura,
+                peso: peso,
+                complexion: complexion,
+                tonoPiel: tonoPiel,
+                ciudad: document.getElementById('ciudad')?.value || '',
+                bio: expectativas || '',
+                fotos: fotosUrls,
+                rangoIngresos: ingresos.value,
+                busca: busco,
+                profileCompleted: true,
+                fechaPerfil: new Date().toISOString(),
+                premium: true,
+                verificationStatus: 'pendiente'
+            });
+
+            // 3. Actualizar usuario como perfil completado
+            const userRef = doc(firebase.db, 'usuarios', user.uid);
+            await updateDoc(userRef, {
+                profileCompleted: true,
+                role: 'daddy',
+                premium: true
+            });
+
+            btn.innerHTML = '<i class="fas fa-check"></i> ¡Perfil completado!';
+            btn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+            toast('Perfil guardado correctamente. Será revisado en 24-48 hrs.', 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'listing-premium.html?welcome=true';
+            }, 2500);
+
+        } catch (error) {
+            console.error('Error:', error);
+            toast('Error al guardar. Intenta de nuevo.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Completar perfil';
+        }
+    });
+</script>
 </body>
 </html>
