@@ -297,22 +297,6 @@
             margin-top: 4px;
         }
 
-        
-        <div style="margin-top: 20px; text-align: center;">
-          <div class="divider" style="margin: 16px 0;">
-            <div class="divider-line"></div>
-            <span style="font-size: 11px;">O MODO PRUEBA</span>
-            <div class="divider-line"></div>
-        </div>
-        <button id="simulatePaymentBtn" class="simulate-btn">
-            <i class="fas fa-flask"></i> Simular Pago (Prueba)
-         </button>
-        </div>
-
-        stripe-buy-button {
-            width: 100%;
-        }
-
         .payment-note {
             display: flex; align-items: center; justify-content: center;
             gap: 8px; margin-top: 20px;
@@ -660,6 +644,17 @@
                             publishable-key="pk_test_51SZ0lqRhykjwQyLNhC6THDygZEWrIwzw1VCE7BvDBm6jApWDdRc574p0HxjUZO2rQR6hwvRIlPoNMD9bB5o9dPTl00jiMoPSuJ"
                             client-reference-id=""
                         ></stripe-buy-button>
+                    </div>
+
+                    <div style="margin-top: 24px; text-align: center;">
+                       <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                           <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+                           <span style="font-size: 11px; color: rgba(255,255,255,0.3);">O MODO PRUEBA</span>
+                           <div style="flex: 1; height: 1px; background: rgba(255,255,255,0.1);"></div>
+                       </div>
+                       <button id="simulatePaymentBtn" class="simulate-btn">
+                          <i class="fas fa-flask"></i> Simular Pago (Prueba)
+                       </button>
                     </div>
 
                     <div class="payment-note">
