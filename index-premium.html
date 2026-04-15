@@ -947,24 +947,22 @@ if (simulateBtn) {
         simulateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Simulando...';
         
         try {
-            // Marcar como premium en Firestore
-            const userRef = doc(db, 'usuarios', user.uid);
-            await updateDoc(userRef, {
+            // ✅ CORRECTO: Usar sintaxis compat de Firebase
+            const userRef = db.collection('usuarios').doc(user.uid);
+            await userRef.update({
                 premium: true,
-                isPremium: true,
-                fechaPago: new Date().toISOString()
+                fechaPago: firebase.firestore.FieldValue.serverTimestamp()
             });
             
             window.toast('¡Pago simulado! Membresía premium activada.', 'success');
             
-            // Recargar el estado para que pase al step 3
             setTimeout(() => {
                 window.location.href = window.location.pathname + '?payment=success';
             }, 1500);
             
         } catch (error) {
             console.error('Error al simular pago:', error);
-            window.toast('Error al simular pago', 'error');
+            window.toast('Error al simular pago: ' + error.message, 'error');
             simulateBtn.disabled = false;
             simulateBtn.innerHTML = '<i class="fas fa-flask"></i> Simular Pago (Prueba)';
         }
