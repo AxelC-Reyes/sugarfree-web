@@ -937,31 +937,36 @@
 const simulateBtn = document.getElementById('simulatePaymentBtn');
 if (simulateBtn) {
     simulateBtn.addEventListener('click', async () => {
+        console.log('🔘 Simulación iniciada');
         const user = auth.currentUser;
         if (!user) {
             window.toast('Debes iniciar sesión primero', 'error');
+            console.log('❌ No hay usuario');
             return;
         }
+        console.log('✅ Usuario:', user.uid);
         
         simulateBtn.disabled = true;
         simulateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Simulando...';
         
         try {
-            // ✅ CORRECTO: Usar sintaxis compat de Firebase
+            console.log('📝 Actualizando Firestore...');
             const userRef = db.collection('usuarios').doc(user.uid);
             await userRef.update({
                 premium: true,
                 fechaPago: firebase.firestore.FieldValue.serverTimestamp()
             });
+            console.log('✅ Firestore actualizado');
             
             window.toast('¡Pago simulado! Membresía premium activada.', 'success');
             
+            console.log('🔄 Redirigiendo con payment=success');
             setTimeout(() => {
                 window.location.href = window.location.pathname + '?payment=success';
             }, 1500);
             
         } catch (error) {
-            console.error('Error al simular pago:', error);
+            console.error('❌ Error detallado:', error);
             window.toast('Error al simular pago: ' + error.message, 'error');
             simulateBtn.disabled = false;
             simulateBtn.innerHTML = '<i class="fas fa-flask"></i> Simular Pago (Prueba)';
