@@ -7,7 +7,44 @@
     <title>Sugar Daddy · Sugar Free</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, doc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
+            authDomain: "sugarfree-cbb21.firebaseapp.com",
+            projectId: "sugarfree-cbb21",
+            storageBucket: "sugarfree-cbb21.firebasestorage.app",
+            messagingSenderId: "797632408987",
+            appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                console.log('✅ Usuario autenticado:', user.uid);
+            } else {
+                window.location.href = 'index-premium.html?error=login-required';
+            }
+        });
+
+        window.__firebase = { auth, db, storage, getCurrentUser: () => currentUser };
+    </script>
+
     <style>
+        /* ========== ESTILOS COMPLETOS (igual que tenías) ========== */
         *, *::before, *::after {
             margin: 0; padding: 0;
             box-sizing: border-box;
@@ -47,8 +84,6 @@
             position: relative;
         }
 
-        /* ── FONDO GEOMÉTRICO ESTÁTICO ──────────────────────── */
-        /* SVG inline como background — cero JS, cero canvas */
         .geo-bg {
             position: fixed;
             inset: 0;
@@ -57,7 +92,6 @@
             pointer-events: none;
         }
 
-        /* Grid de puntos */
         .geo-bg::before {
             content: '';
             position: absolute;
@@ -68,25 +102,15 @@
             -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
         }
 
-        /* Líneas diagonales de circuito */
         .geo-bg::after {
             content: '';
             position: absolute;
             inset: 0;
             background-image:
-                repeating-linear-gradient(
-                    -60deg,
-                    transparent 0px, transparent 80px,
-                    rgba(255,59,127,0.04) 80px, rgba(255,59,127,0.04) 81px
-                ),
-                repeating-linear-gradient(
-                    30deg,
-                    transparent 0px, transparent 120px,
-                    rgba(201,169,110,0.03) 120px, rgba(201,169,110,0.03) 121px
-                );
+                repeating-linear-gradient(-60deg, transparent 0px, transparent 80px, rgba(255,59,127,0.04) 80px, rgba(255,59,127,0.04) 81px),
+                repeating-linear-gradient(30deg, transparent 0px, transparent 120px, rgba(201,169,110,0.03) 120px, rgba(201,169,110,0.03) 121px);
         }
 
-        /* Gradientes de ambiente */
         .ambient {
             position: fixed;
             inset: 0;
@@ -98,7 +122,6 @@
                 radial-gradient(ellipse 40% 60% at 50% 50%, rgba(255,59,127,0.03) 0%, transparent 100%);
         }
 
-        /* ── LAYOUT ─────────────────────────────────────────── */
         .page {
             position: relative;
             z-index: 10;
@@ -116,7 +139,6 @@
             padding-bottom: calc(clamp(40px,8vw,80px) + var(--safe-bottom));
         }
 
-        /* ── HEADER ─────────────────────────────────────────── */
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -180,7 +202,6 @@
             max-width: 480px;
         }
 
-        /* Separador decorativo */
         .header-deco {
             display: flex;
             align-items: center;
@@ -199,7 +220,6 @@
             font-size: 14px;
         }
 
-        /* ── SECCIONES ──────────────────────────────────────── */
         .form-block {
             margin-bottom: 44px;
             opacity: 0;
@@ -243,7 +263,6 @@
             background: var(--rose-line);
         }
 
-        /* ── CAMPOS ─────────────────────────────────────────── */
         .field {
             margin-bottom: 20px;
         }
@@ -263,7 +282,6 @@
             color: var(--rose);
         }
 
-        /* Input base */
         .input {
             width: 100%;
             background: var(--w04);
@@ -296,7 +314,6 @@
             }
         }
 
-        /* Select */
         .select-wrap {
             position: relative;
         }
@@ -321,14 +338,12 @@
             color: var(--white);
         }
 
-        /* Textarea */
         textarea.input {
             min-height: 110px;
             resize: vertical;
             line-height: 1.6;
         }
 
-        /* Grid 2 columnas */
         .field-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -339,7 +354,6 @@
             .field-row { grid-template-columns: 1fr; gap: 0; }
         }
 
-        /* ── INCOME RANGE SELECTOR ──────────────────────────── */
         .income-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -375,7 +389,6 @@
             text-align: center;
             min-height: 68px;
             touch-action: manipulation;
-            /* Override label uppercase */
             text-transform: none;
             letter-spacing: 0;
             font-size: 15px;
@@ -409,18 +422,6 @@
 
         .income-option input:checked + label .range-value { color: var(--rose); }
 
-        @media (hover:hover) {
-            .income-option label:hover {
-                border-color: rgba(255,59,127,0.4);
-                background: var(--w08);
-            }
-        }
-
-        .income-option label:active {
-            transform: scale(0.97);
-        }
-
-        /* ── FOTO UPLOAD ────────────────────────────────────── */
         .photos-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -455,7 +456,6 @@
             cursor: pointer;
             width: 100%;
             height: 100%;
-            /* En móvil iOS, el input file sobre el elemento funciona mejor así */
             font-size: 0;
         }
 
@@ -489,16 +489,6 @@
             font-weight: 700;
             pointer-events: none;
         }
-
-        @media (hover:hover) {
-            .photo-slot:hover {
-                border-color: var(--rose);
-                background: rgba(255,59,127,0.05);
-            }
-            .photo-slot:hover .photo-slot-icon { opacity: 1; transform: scale(1.1); }
-        }
-
-        .photo-slot:active { transform: scale(0.97); }
 
         .photo-slot.has-photo {
             border-color: var(--rose);
@@ -546,7 +536,6 @@
             letter-spacing: 0.3px;
         }
 
-        /* ── NOTA INFO ──────────────────────────────────────── */
         .info-note {
             display: flex;
             align-items: flex-start;
@@ -571,7 +560,6 @@
             line-height: 1.5;
         }
 
-        /* ── SUBMIT ─────────────────────────────────────────── */
         .submit-area {
             margin-top: 52px;
             display: flex;
@@ -604,27 +592,6 @@
             overflow: hidden;
         }
 
-        .submit-btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
-            border-radius: inherit;
-        }
-
-        @media (hover:hover) {
-            .submit-btn:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 16px 40px rgba(255,59,127,0.35);
-                background: #ff2070;
-            }
-        }
-
-        .submit-btn:active {
-            transform: scale(0.97);
-            box-shadow: 0 4px 16px rgba(255,59,127,0.3);
-        }
-
         .submit-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
@@ -639,26 +606,6 @@
             line-height: 1.5;
         }
 
-        /* ── PROGRESS BAR ───────────────────────────────────── */
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--rose-line);
-            z-index: 100;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--rose);
-            width: 0%;
-            transition: width 0.4s var(--ease);
-            box-shadow: 0 0 8px var(--rose);
-        }
-
-        /* ── TOAST ──────────────────────────────────────────── */
         .toast {
             position: fixed;
             z-index: 9999;
@@ -685,76 +632,30 @@
             .toast.hidden { transform: translateX(120%); opacity: 0; }
         }
         @media (max-width: 480px) {
-            .toast {
-                top: calc(16px + env(safe-area-inset-top, 0px));
-                left: 16px; right: 16px;
-            }
+            .toast { top: calc(16px + env(safe-area-inset-top, 0px)); left: 16px; right: 16px; }
             .toast.hidden { transform: translateY(-120%); opacity: 0; }
         }
 
-        /* Animación de entrada stagger */
         .form-block:nth-child(1) { transition-delay: 0.05s; }
         .form-block:nth-child(2) { transition-delay: 0.12s; }
         .form-block:nth-child(3) { transition-delay: 0.19s; }
         .form-block:nth-child(4) { transition-delay: 0.26s; }
         .form-block:nth-child(5) { transition-delay: 0.33s; }
     </style>
-
-    <!-- 🔥 FIREBASE SDK -->
-<!-- Firebase SDK -->
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, doc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
-        authDomain: "sugarfree-cbb21.firebaseapp.com",
-        projectId: "sugarfree-cbb21",
-        storageBucket: "sugarfree-cbb21.firebasestorage.app",
-        messagingSenderId: "797632408987",
-        appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    let currentUser = null;
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = user;
-            console.log('✅ Usuario autenticado:', user.uid);
-        } else {
-            window.location.href = 'index-premium.html?error=login-required';
-        }
-    });
-
-    window.__firebase = { auth, db, storage, getCurrentUser: () => currentUser };
-    
-</script>
 </head>
 <body>
 
     <div class="geo-bg"></div>
     <div class="ambient"></div>
 
-    <!-- Barra de progreso de scroll -->
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
-
     <div class="page">
         <div class="container">
 
-            <!-- Back -->
             <a href="index-premium.html" class="back-link">
                 <i class="fas fa-arrow-left"></i>
                 Volver al inicio
             </a>
 
-            <!-- Header -->
             <div class="form-header">
                 <div class="form-header-eyebrow">
                     <div class="eyebrow-line"></div>
@@ -772,10 +673,8 @@
                 </div>
             </div>
 
-            <!-- FORMULARIO -->
             <form id="profileForm" novalidate>
 
-                <!-- BLOQUE 1: Datos básicos -->
                 <div class="form-block">
                     <div class="block-label">
                         <div class="block-number">01</div>
@@ -786,30 +685,18 @@
                     <div class="field-row">
                         <div class="field">
                             <label class="field-required">Edad</label>
-                            <input type="number" id="edad" class="input"
-                                   placeholder="Ej. 38" min="30" max="99" required
-                                   inputmode="numeric">
+                            <input type="number" id="edad" class="input" placeholder="Ej. 38" min="30" max="99" required inputmode="numeric">
                         </div>
                         <div class="field">
                             <label class="field-required">Altura (cm)</label>
-                            <input type="number" id="altura" class="input"
-                                   placeholder="Ej. 178" min="140" max="220" required
-                                   inputmode="numeric">
+                            <input type="number" id="altura" class="input" placeholder="Ej. 178" min="140" max="220" required inputmode="numeric">
                         </div>
                     </div>
 
                     <div class="field-row">
                         <div class="field">
                             <label class="field-required">Peso (kg)</label>
-                            <input type="number" id="peso" class="input"
-                                   placeholder="Ej. 80" min="40" max="200" required
-                                   inputmode="numeric">
-                        </div>
-                    <div class="field">
-                        <label class="field-required">Ciudad</label>
-                        <input type="text" id="ciudad" class="input"
-                               placeholder="Ej. Ciudad de México, Guadalajara, Monterrey"
-                               required>
+                            <input type="number" id="peso" class="input" placeholder="Ej. 80" min="40" max="200" required inputmode="numeric">
                         </div>
                         <div class="field">
                             <label class="field-required">Complexión</label>
@@ -823,6 +710,11 @@
                                 </select>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-required">Ciudad</label>
+                        <input type="text" id="ciudad" class="input" placeholder="Ej. Ciudad de México, Guadalajara, Monterrey" required>
                     </div>
 
                     <div class="field">
@@ -846,7 +738,6 @@
                     </div>
                 </div>
 
-                <!-- BLOQUE 2: Ingresos -->
                 <div class="form-block">
                     <div class="block-label">
                         <div class="block-number">02</div>
@@ -857,60 +748,34 @@
                     <div class="field">
                         <label class="field-required" style="margin-bottom:14px;">Selecciona tu rango</label>
                         <div class="income-grid">
-
                             <div class="income-option">
                                 <input type="radio" name="ingresos" id="inc1" value="40k-80k" required>
-                                <label for="inc1">
-                                    <span class="range-value">$40k – $80k</span>
-                                    <span class="range-sub">mxn / mes</span>
-                                </label>
+                                <label for="inc1"><span class="range-value">$40k – $80k</span><span class="range-sub">mxn / mes</span></label>
                             </div>
-
                             <div class="income-option">
                                 <input type="radio" name="ingresos" id="inc2" value="80k-150k">
-                                <label for="inc2">
-                                    <span class="range-value">$80k – $150k</span>
-                                    <span class="range-sub">mxn / mes</span>
-                                </label>
+                                <label for="inc2"><span class="range-value">$80k – $150k</span><span class="range-sub">mxn / mes</span></label>
                             </div>
-
                             <div class="income-option">
                                 <input type="radio" name="ingresos" id="inc3" value="150k-250k">
-                                <label for="inc3">
-                                    <span class="range-value">$150k – $250k</span>
-                                    <span class="range-sub">mxn / mes</span>
-                                </label>
+                                <label for="inc3"><span class="range-value">$150k – $250k</span><span class="range-sub">mxn / mes</span></label>
                             </div>
-
                             <div class="income-option">
                                 <input type="radio" name="ingresos" id="inc4" value="250k-500k">
-                                <label for="inc4">
-                                    <span class="range-value">$250k – $500k</span>
-                                    <span class="range-sub">mxn / mes</span>
-                                </label>
+                                <label for="inc4"><span class="range-value">$250k – $500k</span><span class="range-sub">mxn / mes</span></label>
                             </div>
-
                             <div class="income-option">
                                 <input type="radio" name="ingresos" id="inc5" value="500k-1M">
-                                <label for="inc5">
-                                    <span class="range-value">$500k – $1M</span>
-                                    <span class="range-sub">mxn / mes</span>
-                                </label>
+                                <label for="inc5"><span class="range-value">$500k – $1M</span><span class="range-sub">mxn / mes</span></label>
                             </div>
-
                             <div class="income-option">
                                 <input type="radio" name="ingresos" id="inc6" value="1M+">
-                                <label for="inc6">
-                                    <span class="range-value">$1M+</span>
-                                    <span class="range-sub">mxn / mes</span>
-                                </label>
+                                <label for="inc6"><span class="range-value">$1M+</span><span class="range-sub">mxn / mes</span></label>
                             </div>
-
                         </div>
                     </div>
                 </div>
 
-                <!-- BLOQUE 3: Fotos -->
                 <div class="form-block">
                     <div class="block-label">
                         <div class="block-number">03</div>
@@ -947,7 +812,6 @@
                     <p class="photo-hint">Sube 3 fotos recientes donde se te vea con claridad · Máximo 10 MB c/u</p>
                 </div>
 
-                <!-- BLOQUE 4: Preferencias -->
                 <div class="form-block">
                     <div class="block-label">
                         <div class="block-number">04</div>
@@ -969,13 +833,10 @@
 
                     <div class="field">
                         <label>Expectativas de la relación</label>
-                        <textarea id="expectativas" class="input"
-                                  placeholder="Comparte qué tipo de conexión buscas, intereses, actividades…"
-                                  rows="4"></textarea>
+                        <textarea id="expectativas" class="input" placeholder="Comparte qué tipo de conexión buscas, intereses, actividades…" rows="4"></textarea>
                     </div>
                 </div>
 
-                <!-- SUBMIT -->
                 <div class="submit-area form-block">
                     <button type="submit" class="submit-btn" id="submitBtn">
                         <i class="fas fa-check"></i>
@@ -991,167 +852,181 @@
     </div>
 
     <script>
-    // ── PROGRESS BAR de scroll ─────────────────────────
-    window.addEventListener('scroll', () => {
-        const el   = document.documentElement;
-        const pct  = el.scrollTop / (el.scrollHeight - el.clientHeight) * 100;
-        document.getElementById('progressFill').style.width = pct + '%';
-    }, { passive: true });
-
-    // ── INTERSECTION OBSERVER para animación stagger ───
-    const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-            if (e.isIntersecting) {
-                e.target.classList.add('visible');
-                io.unobserve(e.target);
-            }
-        });
-    }, { threshold: 0.06 });
-
-    document.querySelectorAll('.form-block').forEach(b => io.observe(b));
-
-    // ── FOTO UPLOAD ────────────────────────────────────
-    document.querySelectorAll('.photo-slot').forEach(slot => {
-        const input   = slot.querySelector('input[type="file"]');
-        const preview = slot.querySelector('.photo-preview-img');
-        const removeBtn = slot.querySelector('.photo-remove');
-
-        // Clic en el slot abre el selector de archivo
-        slot.addEventListener('click', e => {
-            if (e.target === removeBtn || removeBtn.contains(e.target)) return;
-            if (!slot.classList.contains('has-photo')) input.click();
-        });
-
-        input.addEventListener('change', function () {
-            const file = this.files[0];
-            if (!file) return;
-            if (file.size > 10 * 1024 * 1024) {
-                toast('La imagen supera los 10 MB', 'error'); return;
-            }
-            const reader = new FileReader();
-            reader.onload = e => {
-                preview.src = e.target.result;
-                slot.classList.add('has-photo');
-            };
-            reader.readAsDataURL(file);
-        });
-
-        removeBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            preview.src = '';
-            input.value = '';
-            slot.classList.remove('has-photo');
-        });
-    });
-
-    // ── VALIDACIÓN Y SUBMIT ────────────────────────────
-    // ── VALIDACIÓN Y SUBMIT ────────────────────────────
-document.getElementById('profileForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const firebase = window.__firebase;
-        const user = firebase.getCurrentUser();
-        
-        if (!user) {
-            toast('Debes iniciar sesión', 'error');
-            setTimeout(() => window.location.href = 'index-premium.html', 2000);
-            return;
-        }
-
-        // Obtener valores del formulario
-        const edad = parseInt(document.getElementById('edad').value);
-        const altura = parseInt(document.getElementById('altura').value);
-        const peso = parseInt(document.getElementById('peso').value);
-        const complexion = document.getElementById('complexion').value;
-        const tonoPiel = document.getElementById('tonoPiel').value;
-        const busco = document.getElementById('busco').value;
-        const expectativas = document.getElementById('expectativas').value;
-        const ingresos = document.querySelector('input[name="ingresos"]:checked');
-        
-        // Validaciones
-        if (!edad || edad < 30) { toast('Edad mínima 30 años', 'error'); return; }
-        if (!altura || altura < 140) { toast('Altura válida requerida', 'error'); return; }
-        if (!peso || peso < 40) { toast('Peso válido requerido', 'error'); return; }
-        if (!complexion) { toast('Selecciona tu complexión', 'error'); return; }
-        if (!tonoPiel) { toast('Selecciona tu tono de piel', 'error'); return; }
-        if (!ingresos) { toast('Selecciona tu rango de ingresos', 'error'); return; }
-        if (!busco) { toast('Indica qué tipo buscas', 'error'); return; }
-
-        const fotosSlots = document.querySelectorAll('.photo-slot.has-photo');
-        if (fotosSlots.length < 3) { toast('Sube las 3 fotos requeridas', 'error'); return; }
-
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo fotos...';
-
-        try {
-            // 1. Subir fotos a Storage
-            const fotosUrls = [];
-            const slots = document.querySelectorAll('.photo-slot');
-            
-            for (let i = 0; i < slots.length; i++) {
-                const slot = slots[i];
-                const fileInput = slot.querySelector('input[type="file"]');
-                
-                if (fileInput.files && fileInput.files[0]) {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo foto ${i+1}/3...`;
-                    const file = fileInput.files[0];
-                    const extension = file.name.split('.').pop();
-                    const fileName = `fotos/${user.uid}/${Date.now()}_${i}.${extension}`;
-                    const storageRef = ref(firebase.storage, fileName);
-                    
-                    await uploadBytes(storageRef, file);
-                    const url = await getDownloadURL(storageRef);
-                    fotosUrls.push(url);
+        // ============================================
+        // INTERSECTION OBSERVER para animaciones
+        // ============================================
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
                 }
+            });
+        }, { threshold: 0.06 });
+
+        document.querySelectorAll('.form-block').forEach(b => io.observe(b));
+
+        // ============================================
+        // FOTO UPLOAD (previsualización)
+        // ============================================
+        document.querySelectorAll('.photo-slot').forEach(slot => {
+            const input = slot.querySelector('input[type="file"]');
+            const preview = slot.querySelector('.photo-preview-img');
+            const removeBtn = slot.querySelector('.photo-remove');
+
+            slot.addEventListener('click', e => {
+                if (e.target === removeBtn || removeBtn.contains(e.target)) return;
+                if (!slot.classList.contains('has-photo')) input.click();
+            });
+
+            input.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) {
+                    toast('La imagen supera los 10 MB', 'error');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    slot.classList.add('has-photo');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            removeBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                preview.src = '';
+                input.value = '';
+                slot.classList.remove('has-photo');
+            });
+        });
+
+        // ============================================
+        // TOAST
+        // ============================================
+        function toast(msg, type = 'info') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const t = document.createElement('div');
+            t.className = `toast ${type} hidden`;
+            t.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i><span>${msg}</span>`;
+            document.body.appendChild(t);
+            requestAnimationFrame(() => requestAnimationFrame(() => t.classList.remove('hidden')));
+            setTimeout(() => {
+                t.classList.add('hidden');
+                setTimeout(() => t.remove(), 420);
+            }, 4000);
+        }
+
+        // ============================================
+        // SUBMIT DEL FORMULARIO CON FIREBASE
+        // ============================================
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const firebase = window.__firebase;
+            const user = firebase.getCurrentUser();
+            
+            if (!user) {
+                toast('Debes iniciar sesión', 'error');
+                setTimeout(() => window.location.href = 'index-premium.html', 2000);
+                return;
             }
 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando perfil...';
-
-            // 2. Guardar perfil en Firestore (colección "perfiles")
-            const profileRef = doc(firebase.db, 'perfiles', user.uid);
-            await setDoc(profileRef, {
-                userId: user.uid,
-                role: 'daddy',
-                edad: edad,
-                altura: altura,
-                peso: peso,
-                complexion: complexion,
-                tonoPiel: tonoPiel,
-                ciudad: document.getElementById('ciudad')?.value || '',
-                bio: expectativas || '',
-                fotos: fotosUrls,
-                rangoIngresos: ingresos.value,
-                busca: busco,
-                profileCompleted: true,
-                fechaPerfil: new Date().toISOString(),
-                premium: true,
-                verificationStatus: 'pendiente'
-            });
-
-            // 3. Actualizar usuario como perfil completado
-            const userRef = doc(firebase.db, 'usuarios', user.uid);
-            await updateDoc(userRef, {
-                profileCompleted: true,
-                role: 'daddy',
-                premium: true
-            });
-
-            btn.innerHTML = '<i class="fas fa-check"></i> ¡Perfil completado!';
-            btn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
-            toast('Perfil guardado correctamente. Será revisado en 24-48 hrs.', 'success');
+            // Obtener valores
+            const edad = parseInt(document.getElementById('edad').value);
+            const altura = parseInt(document.getElementById('altura').value);
+            const peso = parseInt(document.getElementById('peso').value);
+            const complexion = document.getElementById('complexion').value;
+            const tonoPiel = document.getElementById('tonoPiel').value;
+            const ciudad = document.getElementById('ciudad').value;
+            const busco = document.getElementById('busco').value;
+            const expectativas = document.getElementById('expectativas').value;
+            const ingresos = document.querySelector('input[name="ingresos"]:checked');
             
-            setTimeout(() => {
-                window.location.href = 'listing-premium.html?welcome=true';
-            }, 2500);
+            // Validaciones
+            if (!edad || edad < 30) { toast('Edad mínima 30 años', 'error'); return; }
+            if (!altura || altura < 140) { toast('Altura válida requerida', 'error'); return; }
+            if (!peso || peso < 40) { toast('Peso válido requerido', 'error'); return; }
+            if (!complexion) { toast('Selecciona tu complexión', 'error'); return; }
+            if (!tonoPiel) { toast('Selecciona tu tono de piel', 'error'); return; }
+            if (!ciudad) { toast('Ingresa tu ciudad', 'error'); return; }
+            if (!ingresos) { toast('Selecciona tu rango de ingresos', 'error'); return; }
+            if (!busco) { toast('Indica qué tipo buscas', 'error'); return; }
 
-        } catch (error) {
-            console.error('Error:', error);
-            toast('Error al guardar. Intenta de nuevo.', 'error');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> Completar perfil';
-        }
-    });
-</script>
+            const fotosSlots = document.querySelectorAll('.photo-slot.has-photo');
+            if (fotosSlots.length < 3) { toast('Sube las 3 fotos requeridas', 'error'); return; }
+
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo fotos...';
+
+            try {
+                // 1. Subir fotos a Storage
+                const fotosUrls = [];
+                const slots = document.querySelectorAll('.photo-slot');
+                
+                for (let i = 0; i < slots.length; i++) {
+                    const slot = slots[i];
+                    const fileInput = slot.querySelector('input[type="file"]');
+                    
+                    if (fileInput.files && fileInput.files[0]) {
+                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo foto ${i+1}/3...`;
+                        const file = fileInput.files[0];
+                        const extension = file.name.split('.').pop();
+                        const fileName = `fotos/${user.uid}/${Date.now()}_${i}.${extension}`;
+                        const storageRef = ref(firebase.storage, fileName);
+                        
+                        await uploadBytes(storageRef, file);
+                        const url = await getDownloadURL(storageRef);
+                        fotosUrls.push(url);
+                    }
+                }
+
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando perfil...';
+
+                // 2. Guardar perfil en Firestore (colección "perfiles")
+                const profileRef = doc(firebase.db, 'perfiles', user.uid);
+                await setDoc(profileRef, {
+                    userId: user.uid,
+                    role: 'daddy',
+                    edad: edad,
+                    altura: altura,
+                    peso: peso,
+                    complexion: complexion,
+                    tonoPiel: tonoPiel,
+                    ciudad: ciudad,
+                    bio: expectativas || '',
+                    fotos: fotosUrls,
+                    rangoIngresos: ingresos.value,
+                    busca: busco,
+                    profileCompleted: true,
+                    fechaPerfil: new Date().toISOString(),
+                    verificationStatus: 'pendiente'
+                });
+
+                // 3. Actualizar usuario como perfil completado
+                const userRef = doc(firebase.db, 'usuarios', user.uid);
+                await updateDoc(userRef, {
+                    profileCompleted: true,
+                    role: 'daddy'
+                });
+
+                btn.innerHTML = '<i class="fas fa-check"></i> ¡Perfil completado!';
+                btn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+                toast('Perfil guardado correctamente. Será revisado en 24-48 hrs.', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'listing-premium.html?welcome=true';
+                }, 2500);
+
+            } catch (error) {
+                console.error('Error:', error);
+                toast('Error al guardar. Intenta de nuevo.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Completar perfil';
+            }
+        });
+    </script>
 </body>
 </html>

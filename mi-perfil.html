@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#030305">
+    <title>Mi Perfil · Sugar Free</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
+            authDomain: "sugarfree-cbb21.firebaseapp.com",
+            projectId: "sugarfree-cbb21",
+            storageBucket: "sugarfree-cbb21.firebasestorage.app",
+            messagingSenderId: "797632408987",
+            appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+        let userProfile = null;
+        let userPerfil = null;
+
+        window.__db = db;
+        window.__auth = auth;
+        window.__storage = storage;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await loadUserData();
+                window.dispatchEvent(new CustomEvent('userLoaded', { detail: { user, profile: userProfile, perfil: userPerfil } }));
+            } else {
+                window.location.href = 'index-premium.html';
+            }
+        });
+
+        async function loadUserData() {
+            const userDoc = await getDoc(doc(db, 'usuarios', currentUser.uid));
+            if (userDoc.exists()) {
+                userProfile = userDoc.data();
+            }
+            const perfilDoc = await getDoc(doc(db, 'perfiles', currentUser.uid));
+            if (perfilDoc.exists()) {
+                userPerfil = perfilDoc.data();
+            }
+        }
+
+        window.getCurrentUser = () => currentUser;
+        window.getUserProfile = () => userProfile;
+        window.getUserPerfil = () => userPerfil;
+        window.refreshData = loadUserData;
+    </script>
+
+    <style>
+        *, *::before, *::after {
+            margin: 0; padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg:        #030305;
+            --rose:      #FF3B7F;
+            --rose-dim:  rgba(255,59,127,0.15);
+            --rose-line: rgba(255,59,127,0.12);
+            --gold:      #C9A96E;
+            --white:     #FFFFFF;
+            --w80:       rgba(255,255,255,0.8);
+            --w50:       rgba(255,255,255,0.5);
+            --w20:       rgba(255,255,255,0.2);
+            --w10:       rgba(255,255,255,0.1);
+            --w04:       rgba(255,255,255,0.04);
+            --ease:      cubic-bezier(0.16,1,0.3,1);
+            --nav-h:     70px;
+            --safe-top:    env(safe-area-inset-top, 0px);
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--white);
+            min-height: 100vh;
+        }
+
+        /* Fondo */
+        .geo-bg {
+            position: fixed; inset: 0;
+            z-index: 0;
+            background-image: radial-gradient(circle, rgba(255,59,127,0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        /* Navbar */
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: calc(var(--nav-h) + var(--safe-top));
+            padding-top: var(--safe-top);
+            background: rgba(3,3,5,0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--rose-line);
+            z-index: 200;
+        }
+
+        .navbar-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: var(--nav-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 38px; height: 38px;
+            background: var(--rose-dim);
+            border: 1px solid var(--rose);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--rose);
+        }
+        .nav-logo-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, var(--rose));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .nav-btn {
+            padding: 8px 18px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.25s;
+        }
+        .nav-btn-ghost {
+            background: transparent;
+            border: 1px solid var(--w10);
+            color: var(--w80);
+        }
+        .nav-btn-primary {
+            background: var(--rose);
+            border: none;
+            color: #fff;
+        }
+
+        /* Layout */
+        .page {
+            position: relative;
+            z-index: 10;
+            padding-top: calc(var(--nav-h) + var(--safe-top) + 40px);
+            padding-bottom: 60px;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+
+        /* Grid de dos columnas */
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 32px;
+        }
+
+        /* Sidebar (foto + info básica) */
+        .profile-sidebar {
+            background: var(--w04);
+            border: 1px solid var(--w10);
+            border-radius: 24px;
+            padding: 24px;
+            text-align: center;
+            position: sticky;
+            top: calc(var(--nav-h) + var(--safe-top) + 40px);
+            height: fit-content;
+        }
+
+        .profile-photo {
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            background: var(--rose-dim);
+            border: 3px solid var(--rose);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+        .profile-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .profile-photo i {
+            font-size: 60px;
+            color: var(--rose);
+            opacity: 0.6;
+        }
+        .photo-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.25s;
+            border-radius: 50%;
+        }
+        .profile-photo:hover .photo-overlay {
+            opacity: 1;
+        }
+        .photo-overlay i {
+            font-size: 24px;
+            color: white;
+        }
+
+        .profile-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .profile-role {
+            font-size: 13px;
+            color: var(--rose);
+            margin-bottom: 16px;
+        }
+        .profile-badge {
+            display: inline-block;
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+        .badge-verified {
+            background: rgba(46,204,113,0.15);
+            border: 1px solid #2ecc71;
+            color: #2ecc71;
+        }
+        .badge-pending {
+            background: rgba(201,169,110,0.15);
+            border: 1px solid var(--gold);
+            color: var(--gold);
+        }
+        .badge-premium {
+            background: rgba(255,59,127,0.15);
+            border: 1px solid var(--rose);
+            color: var(--rose);
+        }
+        .badge-free {
+            background: var(--w04);
+            border: 1px solid var(--w20);
+            color: var(--w50);
+        }
+
+        .profile-stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding-top: 16px;
+            border-top: 1px solid var(--w10);
+        }
+        .stat {
+            text-align: center;
+        }
+        .stat-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .stat-label {
+            font-size: 10px;
+            color: var(--w50);
+            text-transform: uppercase;
+        }
+
+        /* Contenido principal (formulario de edición) */
+        .profile-content {
+            background: var(--w04);
+            border: 1px solid var(--w10);
+            border-radius: 24px;
+            padding: 28px;
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .section-title i {
+            color: var(--rose);
+        }
+
+        .edit-mode .info-view { display: none; }
+        .info-view .info-edit { display: none; }
+        .edit-mode .info-edit { display: block; }
+
+        .info-row {
+            margin-bottom: 20px;
+        }
+        .info-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: var(--w50);
+            margin-bottom: 6px;
+        }
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+        }
+        .info-input {
+            width: 100%;
+            background: var(--w04);
+            border: 1px solid var(--w10);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: white;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+        }
+        .info-input:focus {
+            outline: none;
+            border-color: var(--rose);
+        }
+        textarea.info-input {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn-edit {
+            background: var(--rose);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .btn-edit:hover { background: #ff2070; }
+
+        .btn-save {
+            background: #2ecc71;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 12px;
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--w20);
+            padding: 12px 24px;
+            border-radius: 50px;
+            color: var(--w80);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .loading-spinner {
+            text-align: center;
+            padding: 60px;
+        }
+        .loading-spinner i {
+            font-size: 40px;
+            color: var(--rose);
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(8,8,15,0.95);
+            border: 1px solid var(--rose-line);
+            border-radius: 50px;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            font-size: 14px;
+            animation: toastIn 0.3s ease;
+        }
+        .toast.success i { color: #2ecc71; }
+        .toast.error i { color: #ff4444; }
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        @media (max-width: 800px) {
+            .profile-grid { grid-template-columns: 1fr; }
+            .profile-sidebar { position: relative; top: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="geo-bg"></div>
+
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="index-premium.html" class="nav-logo">
+                <div class="nav-logo-icon"><i class="fas fa-crown"></i></div>
+                <span class="nav-logo-text">Sugar Free</span>
+            </a>
+            <div class="nav-actions">
+                <a href="listing-premium.html" class="nav-btn nav-btn-ghost">
+                    <i class="fas fa-compass"></i> Explorar
+                </a>
+                <a href="solicitudes-recibidas.html" class="nav-btn nav-btn-ghost">
+                    <i class="fas fa-bell"></i> Solicitudes
+                </a>
+                <button class="nav-btn nav-btn-ghost" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="page">
+        <div id="loadingSpinner" class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Cargando tu perfil...</p>
+        </div>
+
+        <div id="profileContainer" style="display: none;">
+            <div class="profile-grid">
+                <!-- Sidebar -->
+                <div class="profile-sidebar">
+                    <div class="profile-photo" id="profilePhoto">
+                        <img id="profilePhotoImg" src="" alt="Foto de perfil">
+                        <i id="profilePhotoIcon" class="fas fa-user"></i>
+                        <div class="photo-overlay">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                    </div>
+                    <h2 class="profile-name" id="profileName">Cargando...</h2>
+                    <div class="profile-role" id="profileRole">Cargando...</div>
+                    <div>
+                        <span class="profile-badge" id="verificationBadge">Verificación</span>
+                        <span class="profile-badge" id="premiumBadge">Membresía</span>
+                    </div>
+                    <div class="profile-stats">
+                        <div class="stat">
+                            <div class="stat-value" id="ageValue">-</div>
+                            <div class="stat-label">Edad</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="cityValue">-</div>
+                            <div class="stat-label">Ciudad</div>
+                        </div>
+                        <div class="stat">
+                            <div class="stat-value" id="heightValue">-</div>
+                            <div class="stat-label">Altura</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contenido principal -->
+                <div class="profile-content" id="profileContent">
+                    <div class="info-view">
+                        <div class="section-title">
+                            <i class="fas fa-user-circle"></i> Información personal
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Nombre</div>
+                            <div class="info-value" id="viewNombre">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Edad</div>
+                            <div class="info-value" id="viewEdad">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Ciudad</div>
+                            <div class="info-value" id="viewCiudad">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Altura</div>
+                            <div class="info-value" id="viewAltura">- cm</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Peso</div>
+                            <div class="info-value" id="viewPeso">- kg</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Complexión</div>
+                            <div class="info-value" id="viewComplexion">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Tono de piel</div>
+                            <div class="info-value" id="viewTonoPiel">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Busco</div>
+                            <div class="info-value" id="viewBusco">-</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Sobre mí</div>
+                            <div class="info-value" id="viewBio">-</div>
+                        </div>
+                        <button class="btn-edit" id="editBtn">
+                            <i class="fas fa-pen"></i> Editar perfil
+                        </button>
+                    </div>
+
+                    <div class="info-edit" style="display: none;">
+                        <div class="section-title">
+                            <i class="fas fa-edit"></i> Editar información
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Nombre</div>
+                            <input type="text" id="editNombre" class="info-input">
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Ciudad</div>
+                            <input type="text" id="editCiudad" class="info-input">
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label">Sobre mí (biografía)</div>
+                            <textarea id="editBio" class="info-input" rows="4"></textarea>
+                        </div>
+                        <div>
+                            <button class="btn-save" id="saveBtn">
+                                <i class="fas fa-save"></i> Guardar cambios
+                            </button>
+                            <button class="btn-cancel" id="cancelBtn">
+                                <i class="fas fa-times"></i> Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUserId = null;
+        let userProfile = null;
+        let userPerfil = null;
+        let isEditMode = false;
+
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const profileContainer = document.getElementById('profileContainer');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Función para obtener nombre del rol
+        function getRoleName(role) {
+            const names = { daddy: 'Sugar Daddy', mommy: 'Sugar Mommy', sboy: 'Sugar Boy', sgirl: 'Sugar Girl' };
+            return names[role] || role;
+        }
+
+        // Renderizar perfil
+        function renderProfile() {
+            if (!userProfile || !userPerfil) return;
+
+            const roleName = getRoleName(userPerfil.role);
+            const isVerified = userProfile.verificationStatus === 'verificado';
+            const isPremium = userProfile.premium === true;
+
+            // Sidebar
+            document.getElementById('profileName').textContent = userProfile.nombre || 'Usuario';
+            document.getElementById('profileRole').textContent = roleName;
+            
+            const verificationBadge = document.getElementById('verificationBadge');
+            verificationBadge.textContent = isVerified ? '✓ Verificado' : '⏳ Pendiente';
+            verificationBadge.className = `profile-badge ${isVerified ? 'badge-verified' : 'badge-pending'}`;
+            
+            const premiumBadge = document.getElementById('premiumBadge');
+            premiumBadge.textContent = isPremium ? '✨ Premium' : '⭐ Free';
+            premiumBadge.className = `profile-badge ${isPremium ? 'badge-premium' : 'badge-free'}`;
+            
+            document.getElementById('ageValue').textContent = userPerfil.edad || '-';
+            document.getElementById('cityValue').textContent = userPerfil.ciudad || '-';
+            document.getElementById('heightValue').textContent = userPerfil.altura ? `${userPerfil.altura}cm` : '-';
+            
+            // Foto
+            const fotoUrl = userPerfil.fotos && userPerfil.fotos[0];
+            const photoImg = document.getElementById('profilePhotoImg');
+            const photoIcon = document.getElementById('profilePhotoIcon');
+            if (fotoUrl) {
+                photoImg.src = fotoUrl;
+                photoImg.style.display = 'block';
+                photoIcon.style.display = 'none';
+            } else {
+                photoImg.style.display = 'none';
+                photoIcon.style.display = 'block';
+            }
+
+            // Vista de información
+            document.getElementById('viewNombre').textContent = userProfile.nombre || '-';
+            document.getElementById('viewEdad').textContent = userPerfil.edad || '-';
+            document.getElementById('viewCiudad').textContent = userPerfil.ciudad || '-';
+            document.getElementById('viewAltura').textContent = userPerfil.altura ? `${userPerfil.altura} cm` : '-';
+            document.getElementById('viewPeso').textContent = userPerfil.peso ? `${userPerfil.peso} kg` : '-';
+            document.getElementById('viewComplexion').textContent = userPerfil.complexion || '-';
+            document.getElementById('viewTonoPiel').textContent = userPerfil.tonoPiel || '-';
+            
+            const buscaText = { mujer: 'Sugar Girl', hombre: 'Sugar Boy', ambos: 'Ambos' };
+            document.getElementById('viewBusco').textContent = buscaText[userPerfil.busca] || '-';
+            document.getElementById('viewBio').textContent = userPerfil.bio || 'Sin descripción aún';
+
+            // Campos de edición
+            document.getElementById('editNombre').value = userProfile.nombre || '';
+            document.getElementById('editCiudad').value = userPerfil.ciudad || '';
+            document.getElementById('editBio').value = userPerfil.bio || '';
+        }
+
+        // Guardar cambios
+        async function saveChanges() {
+            const newNombre = document.getElementById('editNombre').value.trim();
+            const newCiudad = document.getElementById('editCiudad').value.trim();
+            const newBio = document.getElementById('editBio').value.trim();
+
+            if (!newNombre) {
+                toast('El nombre no puede estar vacío', 'error');
+                return;
+            }
+
+            try {
+                // Actualizar en Firestore
+                await updateDoc(doc(window.__db, 'usuarios', currentUserId), {
+                    nombre: newNombre
+                });
+                
+                await updateDoc(doc(window.__db, 'perfiles', currentUserId), {
+                    ciudad: newCiudad,
+                    bio: newBio
+                });
+
+                // Recargar datos
+                await window.refreshData();
+                userProfile = window.getUserProfile();
+                userPerfil = window.getUserPerfil();
+                
+                renderProfile();
+                toggleEditMode(false);
+                toast('Perfil actualizado correctamente', 'success');
+                
+            } catch (error) {
+                console.error('Error al guardar:', error);
+                toast('Error al guardar los cambios', 'error');
+            }
+        }
+
+        // Subir foto de perfil
+        async function uploadPhoto(file) {
+            if (!file) return;
+            if (file.size > 5 * 1024 * 1024) {
+                toast('La foto no puede superar los 5MB', 'error');
+                return;
+            }
+
+            try {
+                const extension = file.name.split('.').pop();
+                const fileName = `fotos/${currentUserId}/profile.${extension}`;
+                const storageRef = ref(window.__storage, fileName);
+                
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+                
+                // Actualizar el perfil con la nueva foto
+                const currentFotos = userPerfil.fotos || [];
+                const newFotos = [url, ...currentFotos.slice(1)];
+                
+                await updateDoc(doc(window.__db, 'perfiles', currentUserId), {
+                    fotos: newFotos
+                });
+                
+                await window.refreshData();
+                userPerfil = window.getUserPerfil();
+                renderProfile();
+                toast('Foto actualizada', 'success');
+                
+            } catch (error) {
+                console.error('Error al subir foto:', error);
+                toast('Error al subir la foto', 'error');
+            }
+        }
+
+        // Toggle modo edición
+        function toggleEditMode(edit) {
+            isEditMode = edit;
+            const viewDiv = document.querySelector('.info-view');
+            const editDiv = document.querySelector('.info-edit');
+            
+            if (edit) {
+                viewDiv.style.display = 'none';
+                editDiv.style.display = 'block';
+            } else {
+                viewDiv.style.display = 'block';
+                editDiv.style.display = 'none';
+            }
+        }
+
+        // Cerrar sesión
+        async function logout() {
+            await window.__auth.signOut();
+            window.location.href = 'index-premium.html';
+        }
+
+        // Toast
+        function toast(msg, type = 'info') {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) existingToast.remove();
+            
+            const toastEl = document.createElement('div');
+            toastEl.className = `toast ${type}`;
+            toastEl.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i><span>${msg}</span>`;
+            document.body.appendChild(toastEl);
+            
+            setTimeout(() => {
+                toastEl.remove();
+            }, 3000);
+        }
+
+        // Eventos
+        window.addEventListener('userLoaded', (event) => {
+            currentUserId = event.detail.user.uid;
+            userProfile = event.detail.profile;
+            userPerfil = event.detail.perfil;
+            
+            renderProfile();
+            loadingSpinner.style.display = 'none';
+            profileContainer.style.display = 'block';
+        });
+
+        document.getElementById('editBtn').addEventListener('click', () => toggleEditMode(true));
+        document.getElementById('saveBtn').addEventListener('click', saveChanges);
+        document.getElementById('cancelBtn').addEventListener('click', () => toggleEditMode(false));
+        logoutBtn?.addEventListener('click', logout);
+
+        // Subir foto
+        const profilePhoto = document.getElementById('profilePhoto');
+        const photoInput = document.getElementById('photoInput');
+        
+        profilePhoto.addEventListener('click', () => {
+            photoInput.click();
+        });
+        
+        photoInput.addEventListener('change', (e) => {
+            if (e.target.files && e.target.files[0]) {
+                uploadPhoto(e.target.files[0]);
+            }
+        });
+    </script>
+</body>
+</html>

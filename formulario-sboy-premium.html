@@ -7,20 +7,58 @@
     <title>Sugar Boy · Sugar Free</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, doc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
+            authDomain: "sugarfree-cbb21.firebaseapp.com",
+            projectId: "sugarfree-cbb21",
+            storageBucket: "sugarfree-cbb21.firebasestorage.app",
+            messagingSenderId: "797632408987",
+            appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                console.log('✅ Usuario autenticado:', user.uid);
+            } else {
+                window.location.href = 'index-premium.html?error=login-required';
+            }
+        });
+
+        window.__firebase = { auth, db, storage, getCurrentUser: () => currentUser };
+    </script>
+
     <style>
+        /* ========== ESTILOS COMPLETOS (igual que tenías) ========== */
         *, *::before, *::after {
             margin: 0; padding: 0;
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
-            -webkit-touch-callout: none;
         }
 
         :root {
             --bg:        #030305;
+            --bg2:       #08080f;
             --rose:      #FF3B7F;
-            --rose-dim:  rgba(255,59,127,0.18);
-            --rose-line: rgba(255,59,127,0.12);
+            --rose-dim:  rgba(255, 59, 127, 0.18);
+            --rose-line: rgba(255, 59, 127, 0.12);
             --gold:      #C9A96E;
+            --gold-dim:  rgba(201, 169, 110, 0.12);
             --white:     #FFFFFF;
             --w80:       rgba(255,255,255,0.8);
             --w50:       rgba(255,255,255,0.5);
@@ -46,7 +84,6 @@
             position: relative;
         }
 
-        /* ── FONDO ──────────────────────────────────────────── */
         .geo-bg {
             position: fixed;
             inset: 0;
@@ -71,7 +108,7 @@
             inset: 0;
             background-image:
                 repeating-linear-gradient(-60deg, transparent 0px, transparent 80px, rgba(255,59,127,0.04) 80px, rgba(255,59,127,0.04) 81px),
-                repeating-linear-gradient(30deg,  transparent 0px, transparent 120px, rgba(201,169,110,0.03) 120px, rgba(201,169,110,0.03) 121px);
+                repeating-linear-gradient(30deg, transparent 0px, transparent 120px, rgba(201,169,110,0.03) 120px, rgba(201,169,110,0.03) 121px);
         }
 
         .ambient {
@@ -85,7 +122,6 @@
                 radial-gradient(ellipse 40% 60% at 50% 50%, rgba(255,59,127,0.03) 0%, transparent 100%);
         }
 
-        /* ── LAYOUT ─────────────────────────────────────────── */
         .page {
             position: relative;
             z-index: 10;
@@ -96,15 +132,13 @@
         .container {
             max-width: 720px;
             margin: 0 auto;
-            padding: clamp(20px,5vw,48px);
-            padding-top:    calc(clamp(20px,5vw,48px) + var(--safe-top));
-            padding-left:   calc(clamp(20px,5vw,48px) + var(--safe-left));
-            padding-right:  calc(clamp(20px,5vw,48px) + var(--safe-right));
+            padding: clamp(20px, 5vw, 48px);
+            padding-top: calc(clamp(20px,5vw,48px) + var(--safe-top));
+            padding-left: calc(clamp(20px,5vw,48px) + var(--safe-left));
+            padding-right: calc(clamp(20px,5vw,48px) + var(--safe-right));
             padding-bottom: calc(clamp(40px,8vw,80px) + var(--safe-bottom));
-            width: 100%;
         }
 
-        /* ── HEADER ─────────────────────────────────────────── */
         .back-link {
             display: inline-flex;
             align-items: center;
@@ -121,7 +155,9 @@
         .back-link:active, .back-link:hover { color: var(--rose); }
         .back-link i { font-size: 11px; }
 
-        .form-header { margin-bottom: 48px; }
+        .form-header {
+            margin-bottom: 48px;
+        }
 
         .form-header-eyebrow {
             display: flex;
@@ -129,7 +165,13 @@
             gap: 10px;
             margin-bottom: 14px;
         }
-        .eyebrow-line { width: 32px; height: 1px; background: var(--rose); }
+
+        .eyebrow-line {
+            width: 32px;
+            height: 1px;
+            background: var(--rose);
+        }
+
         .eyebrow-text {
             font-size: 11px;
             letter-spacing: 4px;
@@ -139,7 +181,7 @@
 
         .form-header h1 {
             font-family: 'Syne', sans-serif;
-            font-size: clamp(32px,6vw,52px);
+            font-size: clamp(32px, 6vw, 52px);
             font-weight: 800;
             line-height: 1.05;
             letter-spacing: -0.02em;
@@ -178,7 +220,6 @@
             font-size: 14px;
         }
 
-        /* ── BLOQUES ─────────────────────────────────────────── */
         .form-block {
             margin-bottom: 44px;
             opacity: 0;
@@ -186,12 +227,6 @@
             transition: opacity 0.55s var(--ease), transform 0.55s var(--ease);
         }
         .form-block.visible { opacity: 1; transform: translateY(0); }
-        .form-block:nth-child(1) { transition-delay: 0.05s; }
-        .form-block:nth-child(2) { transition-delay: 0.12s; }
-        .form-block:nth-child(3) { transition-delay: 0.19s; }
-        .form-block:nth-child(4) { transition-delay: 0.26s; }
-        .form-block:nth-child(5) { transition-delay: 0.33s; }
-        .form-block:nth-child(6) { transition-delay: 0.40s; }
 
         .block-label {
             display: flex;
@@ -199,6 +234,7 @@
             gap: 12px;
             margin-bottom: 24px;
         }
+
         .block-number {
             width: 28px; height: 28px;
             border: 1px solid var(--rose);
@@ -212,16 +248,24 @@
             color: var(--rose);
             flex-shrink: 0;
         }
+
         .block-title {
             font-family: 'Syne', sans-serif;
             font-size: 16px;
             font-weight: 600;
             letter-spacing: 0.02em;
+            color: var(--white);
         }
-        .block-line { flex: 1; height: 1px; background: var(--rose-line); }
 
-        /* ── CAMPOS ─────────────────────────────────────────── */
-        .field { margin-bottom: 20px; }
+        .block-line {
+            flex: 1;
+            height: 1px;
+            background: var(--rose-line);
+        }
+
+        .field {
+            margin-bottom: 20px;
+        }
 
         .field label {
             display: block;
@@ -232,7 +276,11 @@
             color: var(--w50);
             margin-bottom: 8px;
         }
-        .field-required::after { content: ' *'; color: var(--rose); }
+
+        .field-required::after {
+            content: ' *';
+            color: var(--rose);
+        }
 
         .input {
             width: 100%;
@@ -249,13 +297,16 @@
             min-height: 52px;
             touch-action: manipulation;
         }
+
         .input::placeholder { color: var(--w20); }
+
         .input:focus {
             outline: none;
             border-color: var(--rose);
             background: rgba(255,59,127,0.04);
             box-shadow: 0 0 0 3px rgba(255,59,127,0.1);
         }
+
         @media (hover:hover) {
             .input:hover:not(:focus) {
                 border-color: rgba(255,59,127,0.35);
@@ -263,7 +314,9 @@
             }
         }
 
-        .select-wrap { position: relative; }
+        .select-wrap {
+            position: relative;
+        }
         .select-wrap::after {
             content: '\f107';
             font-family: 'Font Awesome 6 Free';
@@ -276,137 +329,105 @@
             pointer-events: none;
             font-size: 14px;
         }
-        select.input { cursor: pointer; padding-right: 44px; }
-        select.input option { background: #0d0d18; color: var(--white); }
+        select.input {
+            cursor: pointer;
+            padding-right: 44px;
+        }
+        select.input option {
+            background: #0d0d18;
+            color: var(--white);
+        }
 
-        textarea.input { min-height: 110px; resize: vertical; line-height: 1.6; }
+        textarea.input {
+            min-height: 110px;
+            resize: vertical;
+            line-height: 1.6;
+        }
 
         .field-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 14px;
         }
+
         @media (max-width: 480px) {
             .field-row { grid-template-columns: 1fr; gap: 0; }
         }
 
-        /* ── CARDS DE SELECCIÓN MÚLTIPLE (Intereses / Qué ofrezco) ── */
-        .tag-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 4px;
-        }
-
-        .tag-option { position: relative; }
-        .tag-option input[type="checkbox"] {
-            position: absolute;
-            opacity: 0;
-            width: 0; height: 0;
-        }
-        .tag-option label {
-            display: inline-flex;
-            align-items: center;
-            gap: 7px;
-            padding: 10px 16px;
-            background: var(--w04);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.22s var(--ease);
-            font-size: 13px;
-            font-weight: 400;
-            color: var(--w80);
-            letter-spacing: 0;
-            text-transform: none;
-            min-height: 44px;
-            touch-action: manipulation;
-            margin-bottom: 0;
-            white-space: nowrap;
-        }
-        .tag-option label i { font-size: 12px; color: var(--rose); opacity: 0.5; transition: opacity 0.22s; }
-        .tag-option input:checked + label {
-            border-color: var(--rose);
-            background: rgba(255,59,127,0.1);
-            color: var(--white);
-            box-shadow: 0 0 0 1px var(--rose);
-        }
-        .tag-option input:checked + label i { opacity: 1; }
-        @media (hover:hover) {
-            .tag-option label:hover {
-                border-color: rgba(255,59,127,0.4);
-                background: var(--w08);
-            }
-        }
-        .tag-option label:active { transform: scale(0.96); }
-
-        /* ── TIPO DE RELACIÓN (cards grandes) ──────────────────── */
-        .relation-grid {
+        .income-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
-        }
-        @media (max-width: 380px) {
-            .relation-grid { grid-template-columns: 1fr; }
+            margin-top: 2px;
         }
 
-        .relation-option { position: relative; }
-        .relation-option input[type="checkbox"] {
+        @media (max-width: 480px) {
+            .income-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        .income-option {
+            position: relative;
+        }
+
+        .income-option input[type="radio"] {
             position: absolute;
             opacity: 0;
             width: 0; height: 0;
         }
-        .relation-option label {
+
+        .income-option label {
             display: flex;
             flex-direction: column;
-            gap: 4px;
-            padding: 16px 18px;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 10px;
             background: var(--w04);
             border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 14px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: all 0.22s var(--ease);
-            min-height: 80px;
+            transition: all 0.25s var(--ease);
+            text-align: center;
+            min-height: 68px;
             touch-action: manipulation;
-            letter-spacing: 0;
             text-transform: none;
-            font-size: 14px;
+            letter-spacing: 0;
+            font-size: 15px;
             font-weight: 500;
             color: var(--w80);
             margin-bottom: 0;
         }
-        .relation-option label .rel-title {
+
+        .income-option label .range-value {
             font-family: 'Syne', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
+            font-size: 13px;
+            font-weight: 700;
             color: var(--white);
+            display: block;
+            line-height: 1.2;
         }
-        .relation-option label .rel-desc {
-            font-size: 12px;
+
+        .income-option label .range-sub {
+            font-size: 10px;
             color: var(--w50);
-            font-weight: 400;
-            line-height: 1.4;
+            margin-top: 3px;
+            letter-spacing: 0.5px;
         }
-        .relation-option input:checked + label {
+
+        .income-option input:checked + label {
             border-color: var(--rose);
             background: rgba(255,59,127,0.08);
-            box-shadow: 0 0 0 1px var(--rose), 0 6px 20px rgba(255,59,127,0.12);
+            box-shadow: 0 0 0 1px var(--rose), 0 6px 20px rgba(255,59,127,0.15);
+            color: var(--white);
         }
-        .relation-option input:checked + label .rel-title { color: var(--rose); }
-        @media (hover:hover) {
-            .relation-option label:hover {
-                border-color: rgba(255,59,127,0.4);
-                background: var(--w08);
-            }
-        }
-        .relation-option label:active { transform: scale(0.97); }
 
-        /* ── FOTO UPLOAD ────────────────────────────────────── */
+        .income-option input:checked + label .range-value { color: var(--rose); }
+
         .photos-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 12px;
         }
+
         @media (max-width: 380px) {
             .photos-grid { grid-template-columns: repeat(2, 1fr); }
         }
@@ -427,6 +448,7 @@
             transition: border-color 0.25s, background 0.25s;
             touch-action: manipulation;
         }
+
         .photo-slot input[type="file"] {
             position: absolute;
             inset: 0;
@@ -436,11 +458,12 @@
             height: 100%;
             font-size: 0;
         }
-        .photo-slot-icon {
-            font-size: 24px;
-            color: var(--rose);
+
+        .photo-slot-icon { 
+            font-size: 24px; 
+            color: var(--rose); 
             opacity: 0.6;
-            transition: opacity 0.25s, transform 0.25s;
+            transition: opacity 0.25s, transform 0.25s; 
             pointer-events: none;
         }
         .photo-slot-label {
@@ -451,7 +474,8 @@
         }
         .photo-slot-num {
             position: absolute;
-            top: 10px; left: 10px;
+            top: 10px;
+            left: 10px;
             width: 20px; height: 20px;
             background: rgba(255,59,127,0.15);
             border: 1px solid var(--rose-line);
@@ -465,28 +489,28 @@
             font-weight: 700;
             pointer-events: none;
         }
-        @media (hover:hover) {
-            .photo-slot:hover {
-                border-color: var(--rose);
-                background: rgba(255,59,127,0.05);
-            }
-            .photo-slot:hover .photo-slot-icon { opacity: 1; transform: scale(1.1); }
+
+        .photo-slot.has-photo {
+            border-color: var(--rose);
+            border-style: solid;
         }
-        .photo-slot:active { transform: scale(0.97); }
-        .photo-slot.has-photo { border-color: var(--rose); border-style: solid; }
+
         .photo-preview-img {
             position: absolute;
             inset: 0;
-            width: 100%; height: 100%;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             border-radius: 13px;
             display: none;
         }
+
         .photo-remove {
             position: absolute;
-            top: 8px; right: 8px;
-            width: 26px; height: 26px;
-            background: rgba(0,0,0,0.75);
+            top: 8px;
+            right: 8px;
+            width: 24px; height: 24px;
+            background: rgba(0,0,0,0.7);
             border: none;
             border-radius: 50%;
             color: white;
@@ -498,18 +522,20 @@
             z-index: 2;
             touch-action: manipulation;
         }
+
         .photo-slot.has-photo .photo-preview-img { display: block; }
         .photo-slot.has-photo .photo-remove { display: flex; }
         .photo-slot.has-photo .photo-slot-icon,
         .photo-slot.has-photo .photo-slot-label { display: none; }
+
         .photo-hint {
             font-size: 12px;
             color: var(--w20);
             margin-top: 10px;
             text-align: center;
+            letter-spacing: 0.3px;
         }
 
-        /* ── NOTAS INFO ─────────────────────────────────────── */
         .info-note {
             display: flex;
             align-items: flex-start;
@@ -520,10 +546,20 @@
             padding: 14px 16px;
             margin-top: 8px;
         }
-        .info-note i { color: var(--gold); font-size: 14px; margin-top: 1px; flex-shrink: 0; }
-        .info-note p { font-size: 13px; color: rgba(201,169,110,0.85); line-height: 1.5; }
 
-        /* ── SUBMIT ─────────────────────────────────────────── */
+        .info-note i {
+            color: var(--gold);
+            font-size: 14px;
+            margin-top: 1px;
+            flex-shrink: 0;
+        }
+
+        .info-note p {
+            font-size: 13px;
+            color: rgba(201,169,110,0.85);
+            line-height: 1.5;
+        }
+
         .submit-area {
             margin-top: 52px;
             display: flex;
@@ -531,6 +567,7 @@
             align-items: center;
             gap: 16px;
         }
+
         .submit-btn {
             width: 100%;
             max-width: 360px;
@@ -554,22 +591,13 @@
             position: relative;
             overflow: hidden;
         }
-        .submit-btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%);
-            border-radius: inherit;
+
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
-        @media (hover:hover) {
-            .submit-btn:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 16px 40px rgba(255,59,127,0.35);
-                background: #ff2070;
-            }
-        }
-        .submit-btn:active { transform: scale(0.97); }
-        .submit-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
         .submit-disclaimer {
             font-size: 12px;
             color: var(--w20);
@@ -578,23 +606,6 @@
             line-height: 1.5;
         }
 
-        /* ── PROGRESS BAR ───────────────────────────────────── */
-        .progress-bar {
-            position: fixed;
-            top: 0; left: 0; right: 0;
-            height: 2px;
-            background: var(--rose-line);
-            z-index: 100;
-        }
-        .progress-fill {
-            height: 100%;
-            background: var(--rose);
-            width: 0%;
-            transition: width 0.4s var(--ease);
-            box-shadow: 0 0 8px var(--rose);
-        }
-
-        /* ── TOAST ──────────────────────────────────────────── */
         .toast {
             position: fixed;
             z-index: 9999;
@@ -610,9 +621,10 @@
             max-width: calc(100vw - 32px);
             transition: transform 0.4s var(--ease), opacity 0.4s;
         }
-        .toast.error   { border: 1px solid rgba(255,60,60,0.4); }
+
+        .toast.error  { border: 1px solid rgba(255,60,60,0.4); color: #fff; }
         .toast.error i { color: #ff4444; }
-        .toast.success   { border: 1px solid rgba(255,59,127,0.4); }
+        .toast.success { border: 1px solid rgba(255,59,127,0.4); color: #fff; }
         .toast.success i { color: var(--rose); }
 
         @media (min-width: 481px) {
@@ -620,84 +632,49 @@
             .toast.hidden { transform: translateX(120%); opacity: 0; }
         }
         @media (max-width: 480px) {
-            .toast {
-                top: calc(16px + env(safe-area-inset-top,0px));
-                left: 16px; right: 16px;
-            }
+            .toast { top: calc(16px + env(safe-area-inset-top, 0px)); left: 16px; right: 16px; }
             .toast.hidden { transform: translateY(-120%); opacity: 0; }
         }
+
+        .form-block:nth-child(1) { transition-delay: 0.05s; }
+        .form-block:nth-child(2) { transition-delay: 0.12s; }
+        .form-block:nth-child(3) { transition-delay: 0.19s; }
+        .form-block:nth-child(4) { transition-delay: 0.26s; }
+        .form-block:nth-child(5) { transition-delay: 0.33s; }
     </style>
-
-    <!-- 🔥 FIREBASE SDK -->
-<script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-    import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-    import { getFirestore, doc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-    import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
-        authDomain: "sugarfree-cbb21.firebaseapp.com",
-        projectId: "sugarfree-cbb21",
-        storageBucket: "sugarfree-cbb21.firebasestorage.app",
-        messagingSenderId: "797632408987",
-        appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    let currentUser = null;
-
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            currentUser = user;
-            console.log('✅ Usuario autenticado:', user.uid);
-        } else {
-            window.location.href = 'index-premium.html?error=login-required';
-        }
-    });
-
-    window.__firebase = { auth, db, storage, getCurrentUser: () => currentUser };
-</script>
 </head>
 <body>
 
     <div class="geo-bg"></div>
     <div class="ambient"></div>
-    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
     <div class="page">
         <div class="container">
 
-            <a href="index.html" class="back-link">
+            <a href="index-premium.html" class="back-link">
                 <i class="fas fa-arrow-left"></i>
                 Volver al inicio
             </a>
 
-            <!-- Header -->
             <div class="form-header">
                 <div class="form-header-eyebrow">
                     <div class="eyebrow-line"></div>
-                    <span class="eyebrow-text">Sugar Free· Perfil Baby</span>
+                    <span class="eyebrow-text">Sugar Free· Perfil Elite</span>
                 </div>
                 <h1>
                     Sugar<br>
                     <span class="accent">Boy</span>
                 </h1>
-                <p>Cuéntanos quién eres y qué buscas. Los perfiles completos tienen hasta 8× más conexiones exitosas.</p>
+                <p>Completa tu perfil con información real. Todos los perfiles son verificados manualmente antes de ser activados.</p>
                 <div class="header-deco">
                     <div class="header-deco-line"></div>
-                    <div class="header-deco-icon"><i class="fas fa-user-tie"></i></div>
+                    <div class="header-deco-icon"><i class="fas fa-crown"></i></div>
                     <div class="header-deco-line"></div>
                 </div>
             </div>
 
             <form id="profileForm" novalidate>
 
-                <!-- 01 · Datos personales -->
                 <div class="form-block">
                     <div class="block-label">
                         <div class="block-number">01</div>
@@ -708,37 +685,19 @@
                     <div class="field-row">
                         <div class="field">
                             <label class="field-required">Edad</label>
-                            <input type="number" id="edad" class="input"
-                                   placeholder="Ej. 24" min="18" max="29" required inputmode="numeric">
+                            <input type="number" id="edad" class="input" placeholder="Ej. 22" min="18" max="30" required inputmode="numeric">
                         </div>
-                        <div class="field">
-                            <label class="field-required">Ciudad</label>
-                            <input type="text" id="ciudad" class="input"
-                                   placeholder="Ej. Ciudad de México" required
-                                   autocomplete="address-level2">
-                        </div>
-                    </div>
-
-                    <div class="field-row">
                         <div class="field">
                             <label class="field-required">Altura (cm)</label>
-                            <input type="number" id="altura" class="input"
-                                   placeholder="Ej. 178" min="140" max="220" required inputmode="numeric">
+                            <input type="number" id="altura" class="input" placeholder="Ej. 178" min="140" max="220" required inputmode="numeric">
                         </div>
-                        <div class="field">
-                            <label class="field-required">Peso (kg)</label>
-                            <input type="number" id="peso" class="input"
-                                   placeholder="Ej. 72" min="40" max="200" required inputmode="numeric">
-                        </div>
-                        <div class="field">
-                            <label class="field-required">Ciudad</label>
-                            <input type="text" id="ciudad" class="input"
-                                   placeholder="Ej. Ciudad de México, Guadalajara, Monterrey"
-                                    required>
-                       </div>
                     </div>
 
                     <div class="field-row">
+                        <div class="field">
+                            <label class="field-required">Peso (kg)</label>
+                            <input type="number" id="peso" class="input" placeholder="Ej. 80" min="40" max="200" required inputmode="numeric">
+                        </div>
                         <div class="field">
                             <label class="field-required">Complexión</label>
                             <div class="select-wrap">
@@ -751,32 +710,38 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="field">
-                            <label class="field-required">Tono de piel</label>
-                            <div class="select-wrap">
-                                <select id="tonoPiel" class="input" required>
-                                    <option value="">Seleccionar</option>
-                                    <option>Muy clara</option>
-                                    <option>Clara</option>
-                                    <option>Morena clara</option>
-                                    <option>Morena</option>
-                                    <option>Morena oscura</option>
-                                    <option>Negra</option>
-                                </select>
-                            </div>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-required">Ciudad</label>
+                        <input type="text" id="ciudad" class="input" placeholder="Ej. Ciudad de México, Guadalajara, Monterrey" required>
+                    </div>
+
+                    <div class="field">
+                        <label class="field-required">Tono de piel</label>
+                        <div class="select-wrap">
+                            <select id="tonoPiel" class="input" required>
+                                <option value="">Seleccionar</option>
+                                <option>Muy clara</option>
+                                <option>Clara</option>
+                                <option>Morena clara</option>
+                                <option>Morena</option>
+                                <option>Morena oscura</option>
+                                <option>Negra</option>
+                            </select>
                         </div>
                     </div>
 
                     <div class="info-note">
                         <i class="fas fa-shield-halved"></i>
-                        <p>La edad para Sugar Boys es de <strong>18 a 29 años</strong>. Tu información es privada y nunca se comparte con terceros.</p>
+                        <p>La edad mínima para registrarse como Sugar Boy es de <strong>18 años</strong>. Tu información es privada y segura.</p>
                     </div>
                 </div>
 
-                <!-- 02 · Fotos -->
+
                 <div class="form-block">
                     <div class="block-label">
-                        <div class="block-number">02</div>
+                        <div class="block-number">03</div>
                         <div class="block-title">Fotos recientes</div>
                         <div class="block-line"></div>
                     </div>
@@ -786,7 +751,7 @@
                             <span class="photo-slot-num">1</span>
                             <i class="fas fa-plus photo-slot-icon"></i>
                             <span class="photo-slot-label">SUBIR</span>
-                            <input type="file" accept="image/*">
+                            <input type="file" accept="image/*" capture="environment">
                             <img class="photo-preview-img" alt="">
                             <button type="button" class="photo-remove"><i class="fas fa-times"></i></button>
                         </div>
@@ -807,140 +772,37 @@
                             <button type="button" class="photo-remove"><i class="fas fa-times"></i></button>
                         </div>
                     </div>
-                    <p class="photo-hint">3 fotos donde se vea tu rostro claramente · Máx. 10 MB c/u</p>
+                    <p class="photo-hint">Sube 3 fotos recientes donde se te vea con claridad · Máximo 10 MB c/u</p>
                 </div>
 
-                <!-- 03 · Qué ofrezco -->
-                <div class="form-block">
-                    <div class="block-label">
-                        <div class="block-number">03</div>
-                        <div class="block-title">¿Qué puedo ofrecer?</div>
-                        <div class="block-line"></div>
-                    </div>
-
-                    <div class="field">
-                        <label class="field-required" style="margin-bottom:14px;">
-                            Selecciona todo lo que aplique
-                        </label>
-                        <div class="tag-grid" id="ofrezcoGrid">
-
-                            <div class="tag-option">
-                                <input type="checkbox" id="of1" name="ofrezco" value="compania">
-                                <label for="of1"><i class="fas fa-comments"></i> Compañía y conversación</label>
-                            </div>
-                            <div class="tag-option">
-                                <input type="checkbox" id="of2" name="ofrezco" value="eventos">
-                                <label for="of2"><i class="fas fa-champagne-glasses"></i> Eventos y salidas</label>
-                            </div>
-                            <div class="tag-option">
-                                <input type="checkbox" id="of3" name="ofrezco" value="viajes">
-                                <label for="of3"><i class="fas fa-plane"></i> Viajes</label>
-                            </div>
-                            <div class="tag-option">
-                                <input type="checkbox" id="of4" name="ofrezco" value="fitness">
-                                <label for="of4"><i class="fas fa-dumbbell"></i> Compañía fitness</label>
-                            </div>
-                            <div class="tag-option">
-                                <input type="checkbox" id="of5" name="ofrezco" value="mentoria">
-                                <label for="of5"><i class="fas fa-brain"></i> Escucha activa</label>
-                            </div>
-                            <div class="tag-option">
-                                <input type="checkbox" id="of6" name="ofrezco" value="cultura">
-                                <label for="of6"><i class="fas fa-masks-theater"></i> Cultura y arte</label>
-                            </div>
-                            <div class="tag-option">
-                                <input type="checkbox" id="of7" name="ofrezco" value="gastronomia">
-                                <label for="of7"><i class="fas fa-utensils"></i> Gastronomía</label>
-                            </div>
-                            <div class="tag-option">
-                                <input type="checkbox" id="of8" name="ofrezco" value="discrecion">
-                                <label for="of8"><i class="fas fa-lock"></i> Total discreción</label>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 04 · Tipo de relación -->
                 <div class="form-block">
                     <div class="block-label">
                         <div class="block-number">04</div>
-                        <div class="block-title">Tipo de relación que busco</div>
+                        <div class="block-title">Preferencias</div>
                         <div class="block-line"></div>
                     </div>
 
                     <div class="field">
-                        <label class="field-required" style="margin-bottom:14px;">
-                            Puede ser más de una
-                        </label>
-                        <div class="relation-grid" id="relacionGrid">
-
-                            <div class="relation-option">
-                                <input type="checkbox" id="rel1" name="relacion" value="compania_social">
-                                <label for="rel1">
-                                    <span class="rel-title">Compañía social</span>
-                                    <span class="rel-desc">Eventos, cenas, salidas sin compromiso de continuidad</span>
-                                </label>
-                            </div>
-                            <div class="relation-option">
-                                <input type="checkbox" id="rel2" name="relacion" value="amistad_premium">
-                                <label for="rel2">
-                                    <span class="rel-title">Amistad premium</span>
-                                    <span class="rel-desc">Conexión genuina con beneficios mutuos a largo plazo</span>
-                                </label>
-                            </div>
-                            <div class="relation-option">
-                                <input type="checkbox" id="rel3" name="relacion" value="viajes">
-                                <label for="rel3">
-                                    <span class="rel-title">Compañero de viajes</span>
-                                    <span class="rel-desc">Disponibilidad para escapadas nacionales e internacionales</span>
-                                </label>
-                            </div>
-                            <div class="relation-option">
-                                <input type="checkbox" id="rel4" name="relacion" value="conexion_intima">
-                                <label for="rel4">
-                                    <span class="rel-title">Conexión íntima</span>
-                                    <span class="rel-desc">Relación más cercana entre adultos con acuerdo claro</span>
-                                </label>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 05 · Disponibilidad y expectativas -->
-                <div class="form-block">
-                    <div class="block-label">
-                        <div class="block-number">05</div>
-                        <div class="block-title">Disponibilidad y expectativas</div>
-                        <div class="block-line"></div>
-                    </div>
-
-                    <div class="field">
-                        <label class="field-required">Disponibilidad</label>
+                        <label class="field-required">Busco a un Sugar</label>
                         <div class="select-wrap">
-                            <select id="disponibilidad" class="input" required>
-                                <option value="">Seleccionar</option>
-                                <option value="fines">Fines de semana</option>
-                                <option value="entre_semana">Entre semana</option>
-                                <option value="flexible">Horario flexible</option>
-                                <option value="viajes">Disponible para viajes</option>
+                            <select id="busco" class="input" required>
+                                <option value="mujer">Sugar Daddy </option>
+                                <option value="hombre">Sugar Mommy </option>
+                                <option value="ambos">Ambos</option>
                             </select>
                         </div>
                     </div>
 
                     <div class="field">
-                        <label>Cuéntanos sobre ti</label>
-                        <textarea id="descripcion" class="input" rows="4"
-                                  placeholder="Descríbete: personalidad, intereses, qué te hace diferente y qué esperas de esta experiencia…"></textarea>
+                        <label>Expectativas de la relación</label>
+                        <textarea id="expectativas" class="input" placeholder="Comparte qué tipo de conexión buscas, intereses, actividades…" rows="4"></textarea>
                     </div>
                 </div>
 
-                <!-- SUBMIT -->
                 <div class="submit-area form-block">
                     <button type="submit" class="submit-btn" id="submitBtn">
                         <i class="fas fa-check"></i>
-                        Crear mi perfil
+                        Completar perfil
                     </button>
                     <p class="submit-disclaimer">
                         Al continuar aceptas los Términos de Uso y la Política de Privacidad de Sugar Free.
@@ -952,166 +814,181 @@
     </div>
 
     <script>
-    // ── PROGRESS BAR ───────────────────────────────────
-    window.addEventListener('scroll', () => {
-        const el  = document.documentElement;
-        const pct = el.scrollTop / (el.scrollHeight - el.clientHeight) * 100;
-        document.getElementById('progressFill').style.width = pct + '%';
-    }, { passive: true });
-
-    // ── STAGGER REVEAL ─────────────────────────────────
-    const io = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-            if (e.isIntersecting) {
-                e.target.classList.add('visible');
-                io.unobserve(e.target);
-            }
-        });
-    }, { threshold: 0.06 });
-    document.querySelectorAll('.form-block').forEach(b => io.observe(b));
-
-    // ── FOTO UPLOAD ────────────────────────────────────
-    document.querySelectorAll('.photo-slot').forEach(slot => {
-        const input     = slot.querySelector('input[type="file"]');
-        const preview   = slot.querySelector('.photo-preview-img');
-        const removeBtn = slot.querySelector('.photo-remove');
-
-        slot.addEventListener('click', e => {
-            if (removeBtn.contains(e.target)) return;
-            if (!slot.classList.contains('has-photo')) input.click();
-        });
-
-        input.addEventListener('change', function () {
-            const file = this.files[0];
-            if (!file) return;
-            if (file.size > 10 * 1024 * 1024) {
-                toast('La imagen supera los 10 MB', 'error'); return;
-            }
-            const reader = new FileReader();
-            reader.onload = e => {
-                preview.src = e.target.result;
-                slot.classList.add('has-photo');
-            };
-            reader.readAsDataURL(file);
-        });
-
-        removeBtn.addEventListener('click', e => {
-            e.stopPropagation();
-            preview.src = '';
-            input.value = '';
-            slot.classList.remove('has-photo');
-        });
-    });
-
-    // ── VALIDACIÓN Y SUBMIT ────────────────────────────
-    // ── VALIDACIÓN Y SUBMIT ────────────────────────────
-document.getElementById('profileForm').addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const firebase = window.__firebase;
-        const user = firebase.getCurrentUser();
-        
-        if (!user) {
-            toast('Debes iniciar sesión', 'error');
-            setTimeout(() => window.location.href = 'index-premium.html', 2000);
-            return;
-        }
-
-        // Obtener valores del formulario
-        const edad = parseInt(document.getElementById('edad').value);
-        const altura = parseInt(document.getElementById('altura').value);
-        const peso = parseInt(document.getElementById('peso').value);
-        const complexion = document.getElementById('complexion').value;
-        const tonoPiel = document.getElementById('tonoPiel').value;
-        const busco = document.getElementById('busco').value;
-        const expectativas = document.getElementById('expectativas').value;
-        const ingresos = document.querySelector('input[name="ingresos"]:checked');
-        
-        // Validaciones
-        if (!edad || edad < 30) { toast('Edad mínima 30 años', 'error'); return; }
-        if (!altura || altura < 140) { toast('Altura válida requerida', 'error'); return; }
-        if (!peso || peso < 40) { toast('Peso válido requerido', 'error'); return; }
-        if (!complexion) { toast('Selecciona tu complexión', 'error'); return; }
-        if (!tonoPiel) { toast('Selecciona tu tono de piel', 'error'); return; }
-        if (!ingresos) { toast('Selecciona tu rango de ingresos', 'error'); return; }
-        if (!busco) { toast('Indica qué tipo buscas', 'error'); return; }
-
-        const fotosSlots = document.querySelectorAll('.photo-slot.has-photo');
-        if (fotosSlots.length < 3) { toast('Sube las 3 fotos requeridas', 'error'); return; }
-
-        const btn = document.getElementById('submitBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo fotos...';
-
-        try {
-            // 1. Subir fotos a Storage
-            const fotosUrls = [];
-            const slots = document.querySelectorAll('.photo-slot');
-            
-            for (let i = 0; i < slots.length; i++) {
-                const slot = slots[i];
-                const fileInput = slot.querySelector('input[type="file"]');
-                
-                if (fileInput.files && fileInput.files[0]) {
-                    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo foto ${i+1}/3...`;
-                    const file = fileInput.files[0];
-                    const extension = file.name.split('.').pop();
-                    const fileName = `fotos/${user.uid}/${Date.now()}_${i}.${extension}`;
-                    const storageRef = ref(firebase.storage, fileName);
-                    
-                    await uploadBytes(storageRef, file);
-                    const url = await getDownloadURL(storageRef);
-                    fotosUrls.push(url);
+        // ============================================
+        // INTERSECTION OBSERVER para animaciones
+        // ============================================
+        const io = new IntersectionObserver(entries => {
+            entries.forEach(e => {
+                if (e.isIntersecting) {
+                    e.target.classList.add('visible');
+                    io.unobserve(e.target);
                 }
+            });
+        }, { threshold: 0.06 });
+
+        document.querySelectorAll('.form-block').forEach(b => io.observe(b));
+
+        // ============================================
+        // FOTO UPLOAD (previsualización)
+        // ============================================
+        document.querySelectorAll('.photo-slot').forEach(slot => {
+            const input = slot.querySelector('input[type="file"]');
+            const preview = slot.querySelector('.photo-preview-img');
+            const removeBtn = slot.querySelector('.photo-remove');
+
+            slot.addEventListener('click', e => {
+                if (e.target === removeBtn || removeBtn.contains(e.target)) return;
+                if (!slot.classList.contains('has-photo')) input.click();
+            });
+
+            input.addEventListener('change', function() {
+                const file = this.files[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) {
+                    toast('La imagen supera los 10 MB', 'error');
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = e => {
+                    preview.src = e.target.result;
+                    slot.classList.add('has-photo');
+                };
+                reader.readAsDataURL(file);
+            });
+
+            removeBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                preview.src = '';
+                input.value = '';
+                slot.classList.remove('has-photo');
+            });
+        });
+
+        // ============================================
+        // TOAST
+        // ============================================
+        function toast(msg, type = 'info') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const t = document.createElement('div');
+            t.className = `toast ${type} hidden`;
+            t.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i><span>${msg}</span>`;
+            document.body.appendChild(t);
+            requestAnimationFrame(() => requestAnimationFrame(() => t.classList.remove('hidden')));
+            setTimeout(() => {
+                t.classList.add('hidden');
+                setTimeout(() => t.remove(), 420);
+            }, 4000);
+        }
+
+        // ============================================
+        // SUBMIT DEL FORMULARIO CON FIREBASE
+        // ============================================
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const firebase = window.__firebase;
+            const user = firebase.getCurrentUser();
+            
+            if (!user) {
+                toast('Debes iniciar sesión', 'error');
+                setTimeout(() => window.location.href = 'index-premium.html', 2000);
+                return;
             }
 
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando perfil...';
-
-            // 2. Guardar perfil en Firestore (colección "perfiles")
-            const profileRef = doc(firebase.db, 'perfiles', user.uid);
-            await setDoc(profileRef, {
-                userId: user.uid,
-                role: 'daddy',
-                edad: edad,
-                altura: altura,
-                peso: peso,
-                complexion: complexion,
-                tonoPiel: tonoPiel,
-                ciudad: document.getElementById('ciudad')?.value || '',
-                bio: expectativas || '',
-                fotos: fotosUrls,
-                disponibilidad: 'flexible',
-                busca: busco,
-                profileCompleted: true,
-                fechaPerfil: new Date().toISOString(),
-                premium: true,
-                verificationStatus: 'pendiente'
-            });
-
-            // 3. Actualizar usuario como perfil completado
-            const userRef = doc(firebase.db, 'usuarios', user.uid);
-            await updateDoc(userRef, {
-                profileCompleted: true,
-                role: 'daddy',
-                premium: true
-            });
-
-            btn.innerHTML = '<i class="fas fa-check"></i> ¡Perfil completado!';
-            btn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
-            toast('Perfil guardado correctamente. Será revisado en 24-48 hrs.', 'success');
+            // Obtener valores
+            const edad = parseInt(document.getElementById('edad').value);
+            const altura = parseInt(document.getElementById('altura').value);
+            const peso = parseInt(document.getElementById('peso').value);
+            const complexion = document.getElementById('complexion').value;
+            const tonoPiel = document.getElementById('tonoPiel').value;
+            const ciudad = document.getElementById('ciudad').value;
+            const busco = document.getElementById('busco').value;
+            const expectativas = document.getElementById('expectativas').value;
+            const disponibilidad = document.querySelector('input[name="disponibilidad"]:checked');
             
-            setTimeout(() => {
-                window.location.href = 'listing-premium.html?welcome=true';
-            }, 2500);
+            // Validaciones
+            if (!edad || edad < 18) { toast('Edad mínima 18 años', 'error'); return; }
+            if (!altura || altura < 140) { toast('Altura válida requerida', 'error'); return; }
+            if (!peso || peso < 40) { toast('Peso válido requerido', 'error'); return; }
+            if (!complexion) { toast('Selecciona tu complexión', 'error'); return; }
+            if (!tonoPiel) { toast('Selecciona tu tono de piel', 'error'); return; }
+            if (!ciudad) { toast('Ingresa tu ciudad', 'error'); return; }
+            if (!disponibilidad) { toast('Selecciona tu disponibilidad', 'error'); return; }
+            if (!busco) { toast('Indica qué tipo buscas', 'error'); return; }
 
-        } catch (error) {
-            console.error('Error:', error);
-            toast('Error al guardar. Intenta de nuevo.', 'error');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> Completar perfil';
-        }
-    });
-</script>
+            const fotosSlots = document.querySelectorAll('.photo-slot.has-photo');
+            if (fotosSlots.length < 3) { toast('Sube las 3 fotos requeridas', 'error'); return; }
 
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Subiendo fotos...';
+
+            try {
+                // 1. Subir fotos a Storage
+                const fotosUrls = [];
+                const slots = document.querySelectorAll('.photo-slot');
+                
+                for (let i = 0; i < slots.length; i++) {
+                    const slot = slots[i];
+                    const fileInput = slot.querySelector('input[type="file"]');
+                    
+                    if (fileInput.files && fileInput.files[0]) {
+                        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Subiendo foto ${i+1}/3...`;
+                        const file = fileInput.files[0];
+                        const extension = file.name.split('.').pop();
+                        const fileName = `fotos/${user.uid}/${Date.now()}_${i}.${extension}`;
+                        const storageRef = ref(firebase.storage, fileName);
+                        
+                        await uploadBytes(storageRef, file);
+                        const url = await getDownloadURL(storageRef);
+                        fotosUrls.push(url);
+                    }
+                }
+
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando perfil...';
+
+                // 2. Guardar perfil en Firestore (colección "perfiles")
+                const profileRef = doc(firebase.db, 'perfiles', user.uid);
+                await setDoc(profileRef, {
+                    userId: user.uid,
+                    role: 'sboy',
+                    edad: edad,
+                    altura: altura,
+                    peso: peso,
+                    complexion: complexion,
+                    tonoPiel: tonoPiel,
+                    ciudad: ciudad,
+                    bio: expectativas || '',
+                    fotos: fotosUrls,
+                    disponibilidad: disponibilidad.value,
+                    busca: busco,
+                    profileCompleted: true,
+                    fechaPerfil: new Date().toISOString(),
+                    verificationStatus: 'pendiente'
+                });
+
+                // 3. Actualizar usuario como perfil completado
+                const userRef = doc(firebase.db, 'usuarios', user.uid);
+                await updateDoc(userRef, {
+                    profileCompleted: true,
+                    role: 'sboy'
+                });
+
+                btn.innerHTML = '<i class="fas fa-check"></i> ¡Perfil completado!';
+                btn.style.background = 'linear-gradient(135deg, #2ecc71, #27ae60)';
+                toast('Perfil guardado correctamente. Será revisado en 24-48 hrs.', 'success');
+                
+                setTimeout(() => {
+                    window.location.href = 'listing-premium.html?welcome=true';
+                }, 2500);
+
+            } catch (error) {
+                console.error('Error:', error);
+                toast('Error al guardar. Intenta de nuevo.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Completar perfil';
+            }
+        });
+    </script>
 </body>
 </html>
