@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#030305">
+    <title>Admin Panel · Sugar Free</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getStorage, ref, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
+            authDomain: "sugarfree-cbb21.firebaseapp.com",
+            projectId: "sugarfree-cbb21",
+            storageBucket: "sugarfree-cbb21.firebasestorage.app",
+            messagingSenderId: "797632408987",
+            appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        // SOLO ADMIN: Cambia este correo por el tuyo
+        const ADMIN_EMAILS = ['axelcazaresreyes@gmail.com', 'tucorreo@ejemplo.com']; // <-- AGREGA TU CORREO AQUÍ
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user && ADMIN_EMAILS.includes(user.email)) {
+                currentUser = user;
+                document.getElementById('adminContent').style.display = 'block';
+                document.getElementById('loadingSpinner').style.display = 'none';
+                loadStats();
+                loadPendingVerifications();
+                loadIncomeVerifications();
+                loadReports();
+            } else if (user) {
+                document.getElementById('loadingSpinner').style.display = 'none';
+                document.getElementById('accessDenied').style.display = 'block';
+            } else {
+                window.location.href = 'index-premium.html';
+            }
+        });
+
+        window.__db = db;
+        window.__storage = storage;
+
+        async function loadStats() {
+            try {
+                const usuariosSnapshot = await getDocs(collection(db, 'usuarios'));
+                const totalUsuarios = usuariosSnapshot.size;
+                
+                const perfilesSnapshot = await getDocs(collection(db, 'perfiles'));
+                const totalPerfiles = perfilesSnapshot.size;
+                
+                const premiumQuery = query(collection(db, 'usuarios'), where('premium', '==', true));
+                const premiumSnapshot = await getDocs(premiumQuery);
+                const totalPremium = premiumSnapshot.size;
+                
+                const solicitudesSnapshot = await getDocs(collection(db, 'solicitudes'));
+                const totalSolicitudes = solicitudesSnapshot.size;
+                
+                const matchesSnapshot = await getDocs(collection(db, 'matches'));
+                const totalMatches = matchesSnapshot.size;
+                
+                document.getElementById('totalUsuarios').textContent = totalUsuarios;
+                document.getElementById('totalPerfiles').textContent = totalPerfiles;
+                document.getElementById('totalPremium').textContent = totalPremium;
+                document.getElementById('totalSolicitudes').textContent = totalSolicitudes;
+                document.getElementById('totalMatches').textContent = totalMatches;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        async function loadPendingVerifications() {
+            const container = document.getElementById('pendingVerificationsList');
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+            
+            try {
+                const usuariosRef = collection(db, 'usuarios');
+                const q = query(usuariosRef, where('verificationStatus', '==', 'pendiente'));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No hay verificaciones pendientes</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                for (const docSnap of querySnapshot.docs) {
+                    const userData = docSnap.data();
+                    const perfilDoc = await getDoc(doc(db, 'perfiles', docSnap.id));
+                    const perfilData = perfilDoc.exists() ? perfilDoc.data() : {};
+                    
+                    // Buscar documentos de identidad (si los hay)
+                    let ineUrl = null;
+                    let selfieUrl = null;
+                    try {
+                        const ineRef = ref(storage, `documentos/${docSnap.id}/ine.jpg`);
+                        ineUrl = await getDownloadURL(ineRef);
+                    } catch(e) {}
+                    try {
+                        const selfieRef = ref(storage, `documentos/${docSnap.id}/selfie.jpg`);
+                        selfieUrl = await getDownloadURL(selfieRef);
+                    } catch(e) {}
+                    
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+                    card.innerHTML = `
+                        <div class="user-card-header">
+                            <div class="user-avatar">${(userData.nombre || 'U').charAt(0)}</div>
+                            <div class="user-info">
+                                <div class="user-name">${escapeHtml(userData.nombre || 'Sin nombre')}</div>
+                                <div class="user-email">${escapeHtml(userData.email)}</div>
+                                <div class="user-role">${perfilData.role ? getRoleName(perfilData.role) : 'Sin rol'}</div>
+                            </div>
+                        </div>
+                        <div class="user-documents">
+                            ${ineUrl ? `<a href="${ineUrl}" target="_blank" class="doc-link"><i class="fas fa-id-card"></i> Ver INE</a>` : '<span class="doc-missing"><i class="fas fa-times"></i> INE no subida</span>'}
+                            ${selfieUrl ? `<a href="${selfieUrl}" target="_blank" class="doc-link"><i class="fas fa-camera"></i> Ver Selfie</a>` : '<span class="doc-missing"><i class="fas fa-times"></i> Selfie no subida</span>'}
+                        </div>
+                        <div class="user-actions">
+                            <button class="btn-approve" onclick="approveUser('${docSnap.id}')">
+                                <i class="fas fa-check"></i> Aprobar
+                            </button>
+                            <button class="btn-reject" onclick="rejectUser('${docSnap.id}')">
+                                <i class="fas fa-times"></i> Rechazar
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+            } catch (error) {
+                console.error('Error loading verifications:', error);
+                container.innerHTML = '<div class="error-state"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar</p></div>';
+            }
+        }
+
+        async function loadIncomeVerifications() {
+            const container = document.getElementById('incomeVerificationsList');
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+            
+            try {
+                // Buscar perfiles de Sugar Daddies/Mommies sin ingresos verificados
+                const perfilesRef = collection(db, 'perfiles');
+                const q = query(perfilesRef, where('role', 'in', ['daddy', 'mommy']));
+                const querySnapshot = await getDocs(q);
+                
+                const pending = [];
+                for (const docSnap of querySnapshot.docs) {
+                    const perfilData = docSnap.data();
+                    const userDoc = await getDoc(doc(db, 'usuarios', docSnap.id));
+                    const userData = userDoc.exists() ? userDoc.data() : {};
+                    
+                    if (userData.incomeStatus !== 'verificado') {
+                        let comprobanteUrl = null;
+                        try {
+                            const compRef = ref(storage, `documentos/${docSnap.id}/comprobante_ingresos.pdf`);
+                            comprobanteUrl = await getDownloadURL(compRef);
+                        } catch(e) {}
+                        
+                        pending.push({
+                            userId: docSnap.id,
+                            nombre: userData.nombre || 'Sin nombre',
+                            email: userData.email,
+                            role: perfilData.role,
+                            rangoIngresos: perfilData.rangoIngresos || 'No especificado',
+                            comprobanteUrl
+                        });
+                    }
+                }
+                
+                if (pending.length === 0) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No hay verificaciones de ingresos pendientes</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                pending.forEach(user => {
+                    const card = document.createElement('div');
+                    card.className = 'user-card';
+                    card.innerHTML = `
+                        <div class="user-card-header">
+                            <div class="user-avatar">${(user.nombre || 'U').charAt(0)}</div>
+                            <div class="user-info">
+                                <div class="user-name">${escapeHtml(user.nombre)}</div>
+                                <div class="user-email">${escapeHtml(user.email)}</div>
+                                <div class="user-role">${user.role === 'daddy' ? 'Sugar Daddy' : 'Sugar Mommy'}</div>
+                                <div class="user-income">💰 ${user.rangoIngresos} MXN/mes</div>
+                            </div>
+                        </div>
+                        <div class="user-documents">
+                            ${user.comprobanteUrl ? `<a href="${user.comprobanteUrl}" target="_blank" class="doc-link"><i class="fas fa-file-pdf"></i> Ver comprobante</a>` : '<span class="doc-missing"><i class="fas fa-times"></i> Sin comprobante</span>'}
+                        </div>
+                        <div class="user-actions">
+                            <button class="btn-approve" onclick="approveIncome('${user.userId}')">
+                                <i class="fas fa-check"></i> Aprobar ingresos
+                            </button>
+                            <button class="btn-reject" onclick="rejectIncome('${user.userId}')">
+                                <i class="fas fa-times"></i> Rechazar
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                console.error('Error loading income verifications:', error);
+                container.innerHTML = '<div class="error-state"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar</p></div>';
+            }
+        }
+
+        async function loadReports() {
+            const container = document.getElementById('reportsList');
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+            
+            try {
+                const reportsRef = collection(db, 'reportes');
+                const q = query(reportsRef, orderBy('createdAt', 'desc'), limit(20));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-check-circle"></i><p>No hay reportes</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                for (const docSnap of querySnapshot.docs) {
+                    const report = docSnap.data();
+                    const reportedUser = await getDoc(doc(db, 'usuarios', report.reportedUserId));
+                    const reportedName = reportedUser.exists() ? reportedUser.data().nombre : 'Usuario';
+                    
+                    const card = document.createElement('div');
+                    card.className = 'report-card';
+                    card.innerHTML = `
+                        <div class="report-header">
+                            <span class="report-user">👤 ${escapeHtml(reportedName)}</span>
+                            <span class="report-date">${new Date(report.createdAt).toLocaleDateString()}</span>
+                        </div>
+                        <div class="report-reason">📝 ${escapeHtml(report.reason)}</div>
+                        <div class="report-actions">
+                            <button class="btn-warn" onclick="warnUser('${report.reportedUserId}')">
+                                <i class="fas fa-exclamation-triangle"></i> Advertir
+                            </button>
+                            <button class="btn-block" onclick="blockUser('${report.reportedUserId}')">
+                                <i class="fas fa-ban"></i> Bloquear
+                            </button>
+                            <button class="btn-resolve" onclick="resolveReport('${docSnap.id}')">
+                                <i class="fas fa-check"></i> Resolver
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+            } catch (error) {
+                console.error('Error loading reports:', error);
+                container.innerHTML = '<div class="error-state"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar</p></div>';
+            }
+        }
+
+        window.approveUser = async (userId) => {
+            if (confirm('¿Aprobar la verificación de identidad de este usuario?')) {
+                await updateDoc(doc(db, 'usuarios', userId), {
+                    verificationStatus: 'verificado',
+                    verificationMethod: 'manual',
+                    verificationDate: new Date().toISOString(),
+                    verifiedBy: currentUser?.email
+                });
+                toast('Usuario verificado', 'success');
+                loadPendingVerifications();
+                loadStats();
+            }
+        };
+
+        window.rejectUser = async (userId) => {
+            if (confirm('¿Rechazar la verificación de identidad de este usuario?')) {
+                await updateDoc(doc(db, 'usuarios', userId), {
+                    verificationStatus: 'rechazado'
+                });
+                toast('Usuario rechazado', 'warning');
+                loadPendingVerifications();
+            }
+        };
+
+        window.approveIncome = async (userId) => {
+            if (confirm('¿Aprobar la verificación de ingresos de este usuario?')) {
+                await updateDoc(doc(db, 'usuarios', userId), {
+                    incomeStatus: 'verificado',
+                    incomeVerifiedAt: new Date().toISOString(),
+                    incomeVerifiedBy: currentUser?.email
+                });
+                toast('Ingresos verificados', 'success');
+                loadIncomeVerifications();
+            }
+        };
+
+        window.rejectIncome = async (userId) => {
+            if (confirm('¿Rechazar la verificación de ingresos de este usuario?')) {
+                await updateDoc(doc(db, 'usuarios', userId), {
+                    incomeStatus: 'rechazado'
+                });
+                toast('Ingresos rechazados', 'warning');
+                loadIncomeVerifications();
+            }
+        };
+
+        window.warnUser = async (userId) => {
+            await updateDoc(doc(db, 'usuarios', userId), {
+                warnings: firebase.firestore.FieldValue.increment(1)
+            });
+            toast('Usuario advertido', 'warning');
+        };
+
+        window.blockUser = async (userId) => {
+            if (confirm('¿Bloquear a este usuario?')) {
+                await updateDoc(doc(db, 'usuarios', userId), {
+                    blocked: true,
+                    blockedAt: new Date().toISOString(),
+                    blockedBy: currentUser?.email
+                });
+                toast('Usuario bloqueado', 'error');
+            }
+        };
+
+        window.resolveReport = async (reportId) => {
+            await updateDoc(doc(db, 'reportes', reportId), {
+                resolved: true,
+                resolvedAt: new Date().toISOString(),
+                resolvedBy: currentUser?.email
+            });
+            toast('Reporte resuelto', 'success');
+            loadReports();
+        };
+
+        function getRoleName(role) {
+            const names = { daddy: 'Sugar Daddy', mommy: 'Sugar Mommy', sboy: 'Sugar Boy', sgirl: 'Sugar Girl' };
+            return names[role] || role;
+        }
+
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function toast(msg, type = 'info') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i><span>${msg}</span>`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+
+        window.loadStats = loadStats;
+        window.loadPendingVerifications = loadPendingVerifications;
+        window.loadIncomeVerifications = loadIncomeVerifications;
+        window.loadReports = loadReports;
+    </script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #030305;
+            --rose: #FF3B7F;
+            --gold: #C9A96E;
+            --white: #FFFFFF;
+            --w80: rgba(255,255,255,0.8);
+            --w50: rgba(255,255,255,0.5);
+            --w20: rgba(255,255,255,0.2);
+            --w10: rgba(255,255,255,0.1);
+            --nav-h: 70px;
+            --safe-top: env(safe-area-inset-top, 0px);
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--white);
+        }
+        .stars-bg {
+            position: fixed; inset: 0;
+            z-index: 0;
+            background-image: radial-gradient(circle, rgba(255,59,127,0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .navbar {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            height: calc(var(--nav-h) + var(--safe-top));
+            padding-top: var(--safe-top);
+            background: rgba(3,3,5,0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--w10);
+            z-index: 200;
+        }
+        .navbar-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            height: var(--nav-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+        .nav-logo-icon {
+            width: 38px; height: 38px;
+            background: rgba(255,59,127,0.15);
+            border: 1px solid var(--rose);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--rose);
+        }
+        .nav-logo-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff, var(--rose));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .page {
+            position: relative;
+            z-index: 10;
+            padding-top: calc(var(--nav-h) + var(--safe-top) + 30px);
+            max-width: 1400px;
+            margin: 0 auto;
+            padding-left: 24px;
+            padding-right: 24px;
+            padding-bottom: 60px;
+        }
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: var(--w50);
+            margin-bottom: 32px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--w10);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--rose);
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--w50);
+            margin-top: 8px;
+        }
+        .section {
+            margin-bottom: 48px;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .section-header h2 {
+            font-family: 'Syne', sans-serif;
+            font-size: 22px;
+        }
+        .refresh-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--w20);
+            border-radius: 50px;
+            padding: 8px 16px;
+            color: var(--w80);
+            cursor: pointer;
+        }
+        .user-card, .report-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--w10);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .user-card-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: var(--rose-dim);
+            border: 1px solid var(--rose);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+        .user-info {
+            flex: 1;
+        }
+        .user-name {
+            font-weight: 600;
+        }
+        .user-email {
+            font-size: 12px;
+            color: var(--w50);
+        }
+        .user-role {
+            font-size: 11px;
+            color: var(--rose);
+        }
+        .user-income {
+            font-size: 12px;
+            color: var(--gold);
+            margin-top: 4px;
+        }
+        .user-documents {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .doc-link {
+            background: rgba(255,255,255,0.05);
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            color: var(--w80);
+            text-decoration: none;
+        }
+        .doc-missing {
+            background: rgba(255,60,60,0.1);
+            padding: 5px 12px;
+            border-radius: 50px;
+            font-size: 12px;
+            color: #ff4444;
+        }
+        .user-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .btn-approve {
+            background: #2ecc71;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-reject {
+            background: transparent;
+            border: 1px solid #ff4444;
+            padding: 8px 20px;
+            border-radius: 50px;
+            color: #ff4444;
+            cursor: pointer;
+        }
+        .btn-warn {
+            background: #f39c12;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-block {
+            background: #e74c3c;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-resolve {
+            background: #3498db;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .loading, .empty-state, .error-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--w50);
+        }
+        .stripe-block {
+            background: linear-gradient(135deg, rgba(255,59,127,0.1), rgba(201,169,110,0.05));
+            border: 1px dashed var(--rose);
+            border-radius: 16px;
+            padding: 24px;
+            margin-top: 32px;
+        }
+        .stripe-block h3 {
+            font-family: 'Syne', sans-serif;
+            margin-bottom: 12px;
+        }
+        .stripe-block ul {
+            margin-left: 20px;
+            margin-bottom: 16px;
+            color: var(--w80);
+        }
+        .btn-disabled {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            padding: 10px 24px;
+            border-radius: 50px;
+            color: var(--w50);
+            cursor: not-allowed;
+        }
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(8,8,15,0.95);
+            border-radius: 50px;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1000;
+            font-size: 14px;
+            animation: fadeIn 0.3s ease;
+        }
+        .toast.success { border: 1px solid #2ecc71; }
+        .toast.warning { border: 1px solid #f39c12; }
+        .toast.error { border: 1px solid #e74c3c; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @media (max-width: 700px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .page { padding-left: 16px; padding-right: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stars-bg"></div>
+
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <a href="index-premium.html" class="nav-logo">
+                <div class="nav-logo-icon"><i class="fas fa-crown"></i></div>
+                <span class="nav-logo-text">Sugar Free</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="page">
+        <div id="loadingSpinner" style="text-align: center; padding: 60px;">
+            <i class="fas fa-spinner fa-spin" style="font-size: 40px; color: var(--rose);"></i>
+            <p>Cargando panel de administración...</p>
+        </div>
+
+        <div id="accessDenied" style="display: none; text-align: center; padding: 60px;">
+            <i class="fas fa-lock" style="font-size: 64px; color: var(--w20); margin-bottom: 20px;"></i>
+            <h2>Acceso denegado</h2>
+            <p>No tienes permisos para acceder al panel de administración.</p>
+        </div>
+
+        <div id="adminContent" style="display: none;">
+            <h1>Panel de Administración</h1>
+            <p class="subtitle">Gestiona usuarios, verificaciones y reportes</p>
+
+            <!-- Estadísticas -->
+            <div class="stats-grid">
+                <div class="stat-card"><div class="stat-value" id="totalUsuarios">0</div><div class="stat-label">Usuarios totales</div></div>
+                <div class="stat-card"><div class="stat-value" id="totalPerfiles">0</div><div class="stat-label">Perfiles completos</div></div>
+                <div class="stat-card"><div class="stat-value" id="totalPremium">0</div><div class="stat-label">Premium activos</div></div>
+                <div class="stat-card"><div class="stat-value" id="totalSolicitudes">0</div><div class="stat-label">Solicitudes enviadas</div></div>
+                <div class="stat-card"><div class="stat-value" id="totalMatches">0</div><div class="stat-label">Matches exitosos</div></div>
+            </div>
+
+            <!-- Verificación de identidad pendiente -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-id-card"></i> Verificación de identidad pendiente</h2>
+                    <button class="refresh-btn" onclick="loadPendingVerifications()"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                </div>
+                <div id="pendingVerificationsList"></div>
+            </div>
+
+            <!-- Verificación de ingresos pendiente -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-chart-line"></i> Verificación de ingresos pendiente</h2>
+                    <button class="refresh-btn" onclick="loadIncomeVerifications()"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                </div>
+                <div id="incomeVerificationsList"></div>
+            </div>
+
+            <!-- Reportes de usuarios -->
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fas fa-flag"></i> Reportes recientes</h2>
+                    <button class="refresh-btn" onclick="loadReports()"><i class="fas fa-sync-alt"></i> Actualizar</button>
+                </div>
+                <div id="reportsList"></div>
+            </div>
+
+            <!-- Bloque reservado para Stripe Identity -->
+            <div class="stripe-block">
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+                    <i class="fas fa-fingerprint" style="font-size: 28px; color: var(--rose);"></i>
+                    <h3 style="margin: 0;">Verificación automática de identidad</h3>
+                    <span style="background: rgba(255,59,127,0.15); padding: 4px 12px; border-radius: 50px; font-size: 11px; color: var(--rose);">Próximamente</span>
+                </div>
+                <p style="color: var(--w80); margin-bottom: 16px;">Activa Stripe Identity para verificar automáticamente:</p>
+                <ul style="margin-left: 20px; margin-bottom: 20px; color: var(--w70);">
+                    <li>✅ INE / Pasaporte / Licencia de conducir (2,500+ tipos de documentos)</li>
+                    <li>✅ Selfie + comparación facial</li>
+                    <li>✅ Resultado en segundos</li>
+                    <li>✅ Cobertura global (cualquier país)</li>
+                </ul>
+                <button class="btn-disabled" disabled>
+                    <i class="fas fa-lock"></i> Activar (requiere cuenta Stripe)
+                </button>
+                <small style="display: block; margin-top: 12px; color: var(--w50);">Costo: $0.50 USD por verificación exitosa. No cobra si falla.</small>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

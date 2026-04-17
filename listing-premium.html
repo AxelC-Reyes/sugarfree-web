@@ -553,6 +553,9 @@
             <div class="nav-logo-icon"><i class="fas fa-crown"></i></div>
             <span class="nav-logo-text">Sugar Free</span>
         </a>
+        <a href="admin-panel.html" class="nav-btn nav-btn-ghost">
+               <i class="fas fa-shield-halved"></i> Admin
+            </a>
         <div class="nav-actions">
             <a href="solicitudes-recibidas.html" class="nav-btn nav-btn-ghost">
                 <i class="fas fa-bell"></i> Solicitudes
@@ -562,6 +565,9 @@
             </button>
             <a href="mi-perfil.html" class="nav-btn nav-btn-ghost">
                 <i class="fas fa-user"></i> Mi Perfil
+            </a>
+            <a href="chats.html" class="nav-btn nav-btn-ghost">
+                <i class="fas fa-comment-dots"></i> Chats
             </a>
             <a href="index-premium.html" class="nav-btn nav-btn-primary">
                 <i class="fas fa-home"></i> Inicio
@@ -913,6 +919,15 @@
         });
 
         window.showProfileDetail = showProfileDetail;
+
+        const adminEmails = ['axelcazaresreyes@gmail.com']; // Cambia por tu correo
+
+        onAuthStateChanged(auth, (user) => {
+        if (user && adminEmails.includes(user.email)) {
+            const adminLink = document.getElementById('adminLink');
+            if (adminLink) adminLink.style.display = 'flex';
+        }
+     });
     </script>
 </body>
 </html>

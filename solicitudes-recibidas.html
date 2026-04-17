@@ -423,6 +423,9 @@
         <a href="mi-perfil.html" class="nav-btn nav-btn-ghost">
                 <i class="fas fa-user"></i> Mi Perfil
         </a>
+        <a href="chat.html" class="nav-btn nav-btn-ghost">
+               <i class="fas fa-comment-dots"></i> Chats
+        </a>
             <button class="nav-btn nav-btn-ghost" id="logoutBtn">
                 <i class="fas fa-sign-out-alt"></i> Salir
             </button>
@@ -659,6 +662,16 @@
         });
 
         logoutBtn?.addEventListener('click', logout);
+
+        const adminEmails = ['axelcazaresreyes@gmail.com']; // Cambia por tu correo
+
+        onAuthStateChanged(auth, (user) => {
+        if (user && adminEmails.includes(user.email)) {
+           const adminLink = document.getElementById('adminLink');
+           if (adminLink) adminLink.style.display = 'flex';
+        }
+   });
     </script>
+    
 </body>
 </html>

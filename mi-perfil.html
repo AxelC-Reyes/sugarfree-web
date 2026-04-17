@@ -318,6 +318,7 @@
             border: 1px solid var(--w10);
             border-radius: 24px;
             padding: 28px;
+            
         }
 
         .section-title {
@@ -456,12 +457,18 @@
                 <div class="nav-logo-icon"><i class="fas fa-crown"></i></div>
                 <span class="nav-logo-text">Sugar Free</span>
             </a>
+            <a href="admin-panel.html" class="nav-btn nav-btn-ghost">
+                    <i class="fas fa-shield-halved"></i> Admin
+                </a>
             <div class="nav-actions">
                 <a href="listing-premium.html" class="nav-btn nav-btn-ghost">
                     <i class="fas fa-compass"></i> Explorar
                 </a>
                 <a href="solicitudes-recibidas.html" class="nav-btn nav-btn-ghost">
                     <i class="fas fa-bell"></i> Solicitudes
+                </a>
+                <a href="chat.html" class="nav-btn nav-btn-ghost">
+                    <i class="fas fa-comment-dots"></i> Chats
                 </a>
                 <button class="nav-btn nav-btn-ghost" id="logoutBtn">
                     <i class="fas fa-sign-out-alt"></i> Salir
@@ -551,6 +558,19 @@
                         <div class="info-row">
                             <div class="info-label">Sobre mí</div>
                             <div class="info-value" id="viewBio">-</div>
+                        </div>
+                        <div id="incomeVerificationBlock" style="display: none; margin-top: 24px;">
+                            <div class="section-title">
+                                 <i class="fas fa-chart-line"></i> Verificación de ingresos
+                            </div>
+                        <div class="info-row">
+                             <div class="info-label">Estado actual</div>
+                             <div class="info-value" id="incomeStatusText">No verificada</div>
+                            </div>
+                        <a href="verificacion-ingresos.html" class="btn-edit" style="background: var(--gold);">
+                                 <i class="fas fa-upload"></i> Subir comprobante de ingresos
+                        </a>
+                        </div>
                         </div>
                         <button class="btn-edit" id="editBtn">
                             <i class="fas fa-pen"></i> Editar perfil
@@ -657,6 +677,22 @@
             document.getElementById('editNombre').value = userProfile.nombre || '';
             document.getElementById('editCiudad').value = userPerfil.ciudad || '';
             document.getElementById('editBio').value = userPerfil.bio || '';
+
+            // Mostrar bloque de verificación de ingresos solo si es Sugar Daddy/Mommy
+            const isSugarRole = userPerfil.role === 'daddy' || userPerfil.role === 'mommy';
+            const incomeBlock = document.getElementById('incomeVerificationBlock');
+            if (incomeBlock) {
+                incomeBlock.style.display = isSugarRole ? 'block' : 'none';
+            }
+            const incomeStatus = userProfile.incomeStatus || 'no_verificado';
+            const statusText = {
+            'no_verificado': '❌ No verificada',
+            'pendiente': '⏳ En revisión',
+            'verificado': '✅ Verificada',
+            'rechazado': '❌ Rechazada'
+            };
+            document.getElementById('incomeStatusText').textContent = statusText[incomeStatus] || 'No verificada';
+            }
         }
 
         // Guardar cambios
@@ -796,6 +832,15 @@
                 uploadPhoto(e.target.files[0]);
             }
         });
+        const adminEmails = ['axelcazaresreyes@gmail.com']; // Cambia por tu correo
+
+        onAuthStateChanged(auth, (user) => {
+        if (user && adminEmails.includes(user.email)) {
+           const adminLink = document.getElementById('adminLink');
+           if (adminLink) adminLink.style.display = 'flex';
+        }
+    
+    });
     </script>
 </body>
 </html>
