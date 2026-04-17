@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Solicitudes · Sugar Free</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc, orderBy } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
+            authDomain: "sugarfree-cbb21.firebaseapp.com",
+            projectId: "sugarfree-cbb21",
+            storageBucket: "sugarfree-cbb21.firebasestorage.app",
+            messagingSenderId: "797632408987",
+            appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                cargarSolicitudes();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function cargarSolicitudes() {
+            const container = document.getElementById('requestsList');
+            container.innerHTML = '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+            
+            try {
+                const solicitudesRef = collection(db, 'solicitudes');
+                const q = query(solicitudesRef, where('receptorId', '==', currentUser.uid), where('estado', '==', 'pendiente'), orderBy('createdAt', 'desc'));
+                const snapshot = await getDocs(q);
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="empty-state"><i class="fas fa-inbox"></i><p>No tienes solicitudes pendientes</p></div>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                for (const docSnap of snapshot.docs) {
+                    const data = docSnap.data();
+                    const fecha = new Date(data.createdAt).toLocaleDateString('es-MX');
+                    const card = document.createElement('div');
+                    card.className = 'request-card';
+                    card.innerHTML = `
+                        <div class="request-header">
+                            <div class="request-user">
+                                <div class="request-avatar"><i class="fas fa-user"></i></div>
+                                <div>
+                                    <div class="request-name">${escapeHtml(data.emisorNombre)}</div>
+                                    <div class="request-date">${fecha}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="request-message">"${escapeHtml(data.mensaje)}"</div>
+                        <div class="request-actions">
+                            <button class="btn-accept" data-id="${docSnap.id}" data-emisor="${data.emisorId}" data-nombre="${escapeHtml(data.emisorNombre)}">Aceptar</button>
+                            <button class="btn-reject" data-id="${docSnap.id}">Rechazar</button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+                
+                // Event listeners
+                document.querySelectorAll('.btn-accept').forEach(btn => {
+                    btn.addEventListener('click', () => aceptarSolicitud(btn.dataset.id, btn.dataset.emisor, btn.dataset.nombre));
+                });
+                document.querySelectorAll('.btn-reject').forEach(btn => {
+                    btn.addEventListener('click', () => rechazarSolicitud(btn.dataset.id));
+                });
+            } catch (error) {
+                console.error(error);
+                container.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-triangle"></i><p>Error al cargar solicitudes</p></div>';
+            }
+        }
+        
+        async function aceptarSolicitud(requestId, emisorId, emisorNombre) {
+            try {
+                // Actualizar solicitud
+                await updateDoc(doc(db, 'solicitudes', requestId), { estado: 'aceptada', updatedAt: new Date().toISOString() });
+                // Crear match
+                await addDoc(collection(db, 'matches'), {
+                    userId1: currentUser.uid,
+                    userId2: emisorId,
+                    createdAt: new Date().toISOString(),
+                    lastMessageAt: new Date().toISOString()
+                });
+                alert(`¡Aceptaste la solicitud de ${emisorNombre}! Ahora pueden chatear.`);
+                cargarSolicitudes();
+            } catch (error) {
+                console.error(error);
+                alert('Error al aceptar solicitud');
+            }
+        }
+        
+        async function rechazarSolicitud(requestId) {
+            if (confirm('¿Rechazar esta solicitud?')) {
+                await updateDoc(doc(db, 'solicitudes', requestId), { estado: 'rechazada', updatedAt: new Date().toISOString() });
+                cargarSolicitudes();
+            }
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #0f0f14;
+            color: white;
+            padding: 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { font-family: 'Syne', sans-serif; margin-bottom: 20px; }
+        .request-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+        .request-header { display: flex; gap: 12px; margin-bottom: 12px; align-items: center; }
+        .request-avatar {
+            width: 48px; height: 48px; border-radius: 50%;
+            background: rgba(255,59,127,0.2);
+            display: flex; align-items: center; justify-content: center;
+            color: #FF3B7F;
+        }
+        .request-name { font-weight: 600; }
+        .request-date { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .request-message {
+            background: rgba(255,255,255,0.03);
+            padding: 12px;
+            border-radius: 12px;
+            margin: 12px 0;
+            font-style: italic;
+        }
+        .request-actions { display: flex; gap: 12px; }
+        .btn-accept, .btn-reject {
+            padding: 8px 20px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-accept { background: #2ecc71; color: white; }
+        .btn-reject { background: transparent; border: 1px solid #ff4444; color: #ff4444; }
+        .loading, .empty-state { text-align: center; padding: 40px; color: rgba(255,255,255,0.5); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Solicitudes recibidas</h1>
+        <div id="requestsList"></div>
+    </div>
+</body>
+</html>

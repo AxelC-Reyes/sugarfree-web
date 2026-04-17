@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil · Sugar Free</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans&display=swap" rel="stylesheet">
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, doc, getDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
+            authDomain: "sugarfree-cbb21.firebaseapp.com",
+            projectId: "sugarfree-cbb21",
+            storageBucket: "sugarfree-cbb21.firebasestorage.app",
+            messagingSenderId: "797632408987",
+            appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+        let perfilData = null;
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await cargarPerfil();
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        async function cargarPerfil() {
+            const userDoc = await getDoc(doc(db, 'usuarios', currentUser.uid));
+            const perfilDoc = await getDoc(doc(db, 'perfiles', currentUser.uid));
+            if (perfilDoc.exists()) perfilData = perfilDoc.data();
+            document.getElementById('nombre').textContent = userDoc.data().nombre || 'Usuario';
+            document.getElementById('email').textContent = userDoc.data().email;
+            document.getElementById('rol').textContent = perfilData?.role || 'No definido';
+            document.getElementById('edad').textContent = perfilData?.edad || '-';
+            document.getElementById('ciudad').textContent = perfilData?.ciudad || '-';
+            document.getElementById('bio').textContent = perfilData?.bio || 'Sin descripción';
+            const foto = perfilData?.fotos?.[0];
+            if (foto) document.getElementById('avatar').src = foto;
+            // Modo edición
+            document.getElementById('editNombre').value = userDoc.data().nombre || '';
+            document.getElementById('editCiudad').value = perfilData?.ciudad || '';
+            document.getElementById('editBio').value = perfilData?.bio || '';
+        }
+
+        window.guardarCambios = async function() {
+            const nuevoNombre = document.getElementById('editNombre').value;
+            const nuevaCiudad = document.getElementById('editCiudad').value;
+            const nuevaBio = document.getElementById('editBio').value;
+            await updateDoc(doc(db, 'usuarios', currentUser.uid), { nombre: nuevoNombre });
+            await updateDoc(doc(db, 'perfiles', currentUser.uid), { ciudad: nuevaCiudad, bio: nuevaBio });
+            alert('Perfil actualizado');
+            location.reload();
+        };
+    </script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: #0f0f14;
+            color: white;
+            padding: 20px;
+        }
+        .container { max-width: 600px; margin: 0 auto; }
+        h1 { font-family: 'Syne', sans-serif; margin-bottom: 20px; }
+        .profile-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 16px;
+            border: 2px solid #FF3B7F;
+        }
+        .field { margin-bottom: 12px; }
+        .label { font-size: 12px; color: rgba(255,255,255,0.5); }
+        .value { font-size: 16px; }
+        input, textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            margin-top: 5px;
+        }
+        .btn {
+            background: #FF3B7F;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Mi Perfil</h1>
+        <div class="profile-card">
+            <img id="avatar" class="avatar" src="https://via.placeholder.com/100" alt="Avatar">
+            <div class="field"><div class="label">Nombre</div><div class="value" id="nombre"></div></div>
+            <div class="field"><div class="label">Email</div><div class="value" id="email"></div></div>
+            <div class="field"><div class="label">Rol</div><div class="value" id="rol"></div></div>
+            <div class="field"><div class="label">Edad</div><div class="value" id="edad"></div></div>
+            <div class="field"><div class="label">Ciudad</div><div class="value" id="ciudad"></div></div>
+            <div class="field"><div class="label">Biografía</div><div class="value" id="bio"></div></div>
+            <button class="btn" onclick="document.getElementById('editForm').style.display='block'">Editar perfil</button>
+        </div>
+        <div id="editForm" style="display:none;" class="profile-card">
+            <h3>Editar perfil</h3>
+            <input type="text" id="editNombre" placeholder="Nombre">
+            <input type="text" id="editCiudad" placeholder="Ciudad">
+            <textarea id="editBio" rows="3" placeholder="Biografía"></textarea>
+            <button class="btn" onclick="guardarCambios()">Guardar cambios</button>
+            <button class="btn" style="background:gray;" onclick="document.getElementById('editForm').style.display='none'">Cancelar</button>
+        </div>
+    </div>
+</body>
+</html>
