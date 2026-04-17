@@ -338,7 +338,7 @@
             const busco = document.getElementById('busco').value;
             const expectativas = document.getElementById('expectativas').value;
 
-            if (edad < 30) { showNotification('Edad mínima 30 años', 'error'); return; }
+            if (edad < 18 ) { showNotification('Edad mínima 18 años', 'error'); return; }
             if (!altura || !peso || !complexion || !tonoPiel || !busco) { showNotification('Completa todos los campos', 'error'); return; }
 
             const fotosSlots = document.querySelectorAll('.photo-preview[style*="display: block"]');
