@@ -8,19 +8,16 @@
     <meta name="keywords" content="sugar daddy, sugar mommy, sugar baby, conexiones, citas premium">
     <meta property="og:title" content="Sugar Free">
     <meta property="og:description" content="Conexiones premium con verificación real">
-    <meta property="og:image" content="https://tusitio.com/logosugarblanco.png">
     <title>Sugar-Free · Conexiones Premium</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
     
-    <!-- 🔥 FIREBASE SDK (versión modular) -->
+    <!-- Firebase SDK (versión modular) -->
     <script type="module">
-        // Importar Firebase de forma modular (mejor práctica)
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js';
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js';
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+        import { getAuth, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-        // Tu configuración de Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
             authDomain: "sugarfree-cbb21.firebaseapp.com",
@@ -30,54 +27,65 @@
             appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
         };
 
-        // Inicializar Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // Hacer disponibles auth y db globalmente (para debug, opcional)
-        window.firebaseAuth = auth;
-        window.firebaseDb = db;
+        window.auth = auth;
+        window.db = db;
 
-        // ════════════════════════════════════════════════════════════════
-        //  LOGIN CON GOOGLE (unificado)
-        // ════════════════════════════════════════════════════════════════
-        document.getElementById('googleSignIn').addEventListener('click', async function() {
-            if (this.disabled) return;
+        // Elementos DOM
+        const googleBtn = document.getElementById('googleSignIn');
+        const heroSection = document.getElementById('heroSection');
+        const profileSection = document.getElementById('profileSection');
+
+        // Función toast
+        window.toast = function(msg, type = 'info') {
+            document.querySelectorAll('.toast').forEach(t => t.remove());
+            const toast = document.createElement('div');
+            toast.className = `toast ${type} hidden`;
+            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
+            toast.innerHTML = `<i class="fas fa-${icon}"></i><span>${msg}</span>`;
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.remove('hidden')));
+            setTimeout(() => {
+                toast.classList.add('hidden');
+                setTimeout(() => toast.remove(), 420);
+            }, 4000);
+        };
+
+        // Login con Google
+        googleBtn?.addEventListener('click', async () => {
+            if (googleBtn.disabled) return;
             
-            const btn = this;
-            const originalText = btn.innerHTML;
+            googleBtn.disabled = true;
+            googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
             
             try {
-                // Mostrar loading
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="color:#FF3B7F"></i> Conectando…';
-                btn.disabled = true;
-
-                // 1. Autenticar con Google
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
                 
-                // 2. Verificar si el usuario YA EXISTE en Firestore
-                const userDocRef = doc(db, 'users', user.uid);
-                const userDoc = await getDoc(userDocRef);
+                // IMPORTANTE: Usar "usuarios" (plural) para coincidir con premium
+                const userRef = doc(db, 'usuarios', user.uid);
+                const userDoc = await getDoc(userRef);
                 
                 if (!userDoc.exists()) {
-                    // 3. Es NUEVO usuario free → crear documento
-                    await setDoc(userDocRef, {
+                    // Usuario nuevo free
+                    await setDoc(userRef, {
+                        uid: user.uid,
                         email: user.email,
                         nombre: user.displayName || 'Usuario',
                         foto: user.photoURL || '',
                         freeUser: true,
                         premium: false,
-                        sinAnuncios: false,
                         verificationStatus: 'no_verificado',
-                        fechaRegistro: new Date().toISOString(),
-                        uid: user.uid
+                        profileCompleted: false,
+                        createdAt: new Date().toISOString(),
+                        lastLogin: new Date().toISOString()
                     });
-                    console.log('✅ Nuevo usuario free creado:', user.uid);
+                    console.log('✅ Nuevo usuario free creado');
                 } else {
-                    // 4. Usuario EXISTENTE (puede ser free o premium)
                     const userData = userDoc.data();
                     console.log('👤 Usuario existente:', userData);
                     
@@ -88,55 +96,31 @@
                     }
                 }
                 
-                // 5. Mostrar sección de selección de perfil
-                const hero = document.getElementById('heroSection');
-                const section = document.getElementById('profileSection');
-                
-                hero.style.transition = 'opacity 0.3s ease';
-                hero.style.opacity = '0';
+                // Mostrar selección de perfil
+                heroSection.style.transition = 'opacity 0.3s ease';
+                heroSection.style.opacity = '0';
                 
                 setTimeout(() => {
-                    hero.style.display = 'none';
-                    section.style.display = 'block';
-                    section.classList.add('anim-in');
+                    heroSection.style.display = 'none';
+                    profileSection.style.display = 'block';
+                    profileSection.classList.add('anim-in');
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     toast('¡Bienvenido! Elige tu perfil.', 'success');
                 }, 300);
                 
             } catch (error) {
-                console.error('❌ Error en login:', error);
-                btn.innerHTML = originalText;
-                btn.disabled = false;
-                toast('Error al conectar. Intenta de nuevo.', 'error');
+                console.error('Error en login:', error);
+                let errorMsg = 'Error al conectar. Intenta de nuevo.';
+                if (error.code === 'auth/popup-closed-by-user') errorMsg = 'Cerraste la ventana de Google.';
+                if (error.code === 'auth/popup-blocked') errorMsg = 'Tu navegador bloqueó el popup. Permite popups para este sitio.';
+                toast(errorMsg, 'error');
+                googleBtn.disabled = false;
+                googleBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Continuar con Google';
             }
         });
-
-        // ════════════════════════════════════════════════════════════════
-        //  FUNCIÓN TOAST (mejorada)
-        // ════════════════════════════════════════════════════════════════
-        window.toast = function(msg, type = 'info') {
-            document.querySelectorAll('.toast').forEach(t => t.remove());
-            const t = document.createElement('div');
-            t.className = `toast ${type} hidden`;
-            
-            let icon = 'info-circle';
-            if (type === 'success') icon = 'check-circle';
-            if (type === 'error') icon = 'exclamation-circle';
-            
-            t.innerHTML = `<i class="fas fa-${icon}"></i><span>${msg}</span>`;
-            document.body.appendChild(t);
-            
-            requestAnimationFrame(() => requestAnimationFrame(() => t.classList.remove('hidden')));
-            
-            setTimeout(() => {
-                t.classList.add('hidden');
-                setTimeout(() => t.remove(), 420);
-            }, 4000);
-        };
     </script>
 
     <style>
-        /* ... TU MISMO CSS (lo dejas igual) ... */
         *, *::before, *::after {
             margin: 0; padding: 0;
             box-sizing: border-box;
@@ -154,7 +138,7 @@
             --w12:     rgba(255,255,255,0.12);
             --w06:     rgba(255,255,255,0.06);
             --ease:    cubic-bezier(0.16,1,0.3,1);
-            --safe-top:    env(safe-area-inset-top,    0px);
+            --safe-top:    env(safe-area-inset-top, 0px);
             --safe-bottom: env(safe-area-inset-bottom, 0px);
         }
 
@@ -286,10 +270,9 @@
             cursor: pointer;
             display: flex; align-items: center; justify-content: center; gap: 12px;
             transition: all 0.25s var(--ease);
-            min-height: 52px; touch-action: manipulation;
+            min-height: 52px;
             margin-bottom: 0;
         }
-        @media (hover:hover) { .google-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); } }
         .google-btn:active { transform: scale(0.97); }
 
         .divider {
@@ -310,11 +293,10 @@
             font-family: 'DM Sans', sans-serif;
             font-size: 15px; font-weight: 600;
             cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            gap: 0;
+            display: flex;
+            align-items: center; justify-content: center;
             text-decoration: none;
             min-height: 52px;
-            touch-action: manipulation;
             position: relative;
             overflow: hidden;
             transition: all 0.25s var(--ease);
@@ -328,19 +310,7 @@
             background: linear-gradient(90deg, transparent, rgba(201,169,110,0.25), transparent);
             transition: left 0.55s var(--ease);
         }
-        @media (hover:hover) {
-            .premium-btn:hover {
-                background: #ff2070;
-                border-color: #e0c080;
-                transform: translateY(-2px);
-                box-shadow: 0 8px 28px rgba(255,59,127,0.35);
-            }
-            .premium-btn:hover::after { left: 140%; }
-        }
-        .premium-btn:active {
-            transform: scale(0.97);
-            box-shadow: 0 3px 14px rgba(255,59,127,0.3);
-        }
+        .premium-btn:active { transform: scale(0.97); }
 
         #profileSection {
             display: none;
@@ -373,31 +343,36 @@
             border: 1px solid var(--w12);
             border-radius: 16px;
             padding: 20px 14px;
-            text-align: center; text-decoration: none;
-            color: var(--white); cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+            color: var(--white);
+            cursor: pointer;
             transition: all 0.25s var(--ease);
-            touch-action: manipulation;
-        }
-        @media (hover:hover) {
-            .profile-opt:hover { border-color: var(--rose); background: var(--rose-l); }
         }
         .profile-opt:active { transform: scale(0.96); border-color: var(--rose); }
 
         .profile-opt-icon {
-            width: 44px; height: 44px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 18px; margin: 0 auto 10px;
-            background: var(--rose-d); color: var(--rose);
+            width: 44px; height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin: 0 auto 10px;
+            background: var(--rose-d);
+            color: var(--rose);
             border: 1px solid rgba(255,59,127,0.2);
         }
         .profile-opt span {
             font-family: 'Syne', sans-serif;
             font-size: 13px; font-weight: 600;
-            display: block; margin-bottom: 3px;
+            display: block;
+            margin-bottom: 3px;
         }
         .profile-opt small {
             font-size: 10px; color: var(--w40);
-            line-height: 1.3; display: block;
+            line-height: 1.3;
+            display: block;
         }
 
         footer {
@@ -406,27 +381,35 @@
             margin-top: auto;
         }
         footer .container {
-            display: flex; align-items: center;
+            display: flex;
+            align-items: center;
             justify-content: space-between;
-            flex-wrap: wrap; gap: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
         .footer-copy { font-size: 11px; color: var(--w40); }
         .footer-links { display: flex; gap: 16px; }
         .footer-links a {
             font-size: 11px; color: var(--w40);
             text-decoration: none;
-            min-height: 44px; display: flex; align-items: center;
+            min-height: 44px;
+            display: flex;
+            align-items: center;
             transition: color 0.2s;
         }
         .footer-links a:active { color: var(--rose); }
-        @media (hover:hover) { .footer-links a:hover { color: var(--rose); } }
 
         .toast {
-            position: fixed; z-index: 9999;
-            font-family: 'DM Sans', sans-serif; font-size: 14px;
+            position: fixed;
+            z-index: 9999;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
             background: rgba(8,8,15,0.97);
-            border-radius: 50px; padding: 12px 20px;
-            display: flex; align-items: center; gap: 9px;
+            border-radius: 50px;
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
             box-shadow: 0 8px 28px rgba(0,0,0,0.5);
             transition: transform 0.4s var(--ease), opacity 0.4s;
             max-width: calc(100vw - 32px);
@@ -446,7 +429,7 @@
 
         @keyframes fadeUp {
             from { opacity: 0; transform: translateY(14px); }
-            to   { opacity: 1; transform: translateY(0); }
+            to { opacity: 1; transform: translateY(0); }
         }
         .anim-in { animation: fadeUp 0.45s var(--ease) both; }
     </style>
@@ -466,12 +449,9 @@
             </div>
         </header>
 
-        <!-- HERO -->
         <section class="hero" id="heroSection">
             <div class="container">
-
                 <div class="hero-tagline">literalmente sugar FREE</div>
-
                 <h1>Conecta.<br><em>g r a t i s :)</em></h1>
                 <p>Entra con Google y elige tu perfil para empezar.</p>
 
@@ -494,16 +474,13 @@
                 <a href="index-premium.html" class="premium-btn">
                     Premium
                 </a>
-
             </div>
         </section>
 
-        <!-- SELECCIÓN DE PERFIL (post-login) -->
         <section id="profileSection">
             <div class="container">
                 <h2>¿Cuál es tu perfil?</h2>
                 <p>Elige tu categoría para continuar</p>
-
                 <div class="profile-grid">
                     <a href="formulario-daddy-premium.html" class="profile-opt">
                         <div class="profile-opt-icon"><i class="fas fa-crown"></i></div>
@@ -541,9 +518,6 @@
         </footer>
 
     </div>
-
-    <!-- NOTA: El script de Firebase está dentro de <script type="module"> al inicio del head -->
-    <!-- Ya no necesitas el script antiguo al final -->
 
 </body>
 </html>
