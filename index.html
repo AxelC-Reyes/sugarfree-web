@@ -1,523 +1,374 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0f0f14">
-    <meta name="description" content="Sugar Free - Plataforma exclusiva para conexiones sugar daddy, sugar mommy y sugar babies. Verificación de identidad y ingresos.">
-    <meta name="keywords" content="sugar daddy, sugar mommy, sugar baby, conexiones, citas premium">
-    <meta property="og:title" content="Sugar Free">
-    <meta property="og:description" content="Conexiones premium con verificación real">
-    <title>Sugar-Free · Conexiones Premium</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDK (versión modular) -->
-    <script type="module">
-        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-        import { getFirestore, doc, setDoc, getDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#030305" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="description" content="εtεrεo · colmena-hub · sugar babies, sugar daddies, sugar mommies, dating, citas, servicios de oficio, servicios de profesión. Plataforma exclusiva." />
+  <meta name="keywords" content="colmena-hub, sugar babies, sugar daddies, sugar mommies, dating, citas, servicios de oficio, servicios de profesión, conexiones premium, εtεrεo" />
+  <meta property="og:title" content="εtεrεo" />
+  <meta property="og:description" content="colmena-hub · sugar dating · servicios profesionales · conexiones verificadas." />
+  <meta property="og:image" content="https://tusitio.com/logosugarblanco.png" />
+  <title>εtεrεo · colmena-hub</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAmG0T27phC-DtXbtg7bP5JgmmyEeNJ-8A",
-            authDomain: "sugarfree-cbb21.firebaseapp.com",
-            projectId: "sugarfree-cbb21",
-            storageBucket: "sugarfree-cbb21.firebasestorage.app",
-            messagingSenderId: "797632408987",
-            appId: "1:797632408987:web:c96cbbdcf34885d631c53e"
-        };
+  <style>
+    *, *::before, *::after {
+      margin: 0; padding: 0; box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const provider = new GoogleAuthProvider();
+    :root {
+      --bg-deep: #030305;
+      --rose: #FF3B7F;
+      --white: #FFFFFF;
+      --w80: rgba(255,255,255,0.8);
+      --w50: rgba(255,255,255,0.5);
+      --ease: cubic-bezier(0.16,1,0.3,1);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+    }
 
-        window.auth = auth;
-        window.db = db;
+    html { overflow-x: hidden; }
 
-        // Elementos DOM
-        const googleBtn = document.getElementById('googleSignIn');
-        const heroSection = document.getElementById('heroSection');
-        const profileSection = document.getElementById('profileSection');
+    body {
+      font-family: 'Space Grotesk', sans-serif;
+      background: var(--bg-deep);
+      color: var(--white);
+      min-height: 100vh; min-height: 100dvh;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
 
-        // Función toast
-        window.toast = function(msg, type = 'info') {
-            document.querySelectorAll('.toast').forEach(t => t.remove());
-            const toast = document.createElement('div');
-            toast.className = `toast ${type} hidden`;
-            const icon = type === 'success' ? 'check-circle' : 'exclamation-circle';
-            toast.innerHTML = `<i class="fas fa-${icon}"></i><span>${msg}</span>`;
-            document.body.appendChild(toast);
-            requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.remove('hidden')));
-            setTimeout(() => {
-                toast.classList.add('hidden');
-                setTimeout(() => toast.remove(), 420);
-            }, 4000);
-        };
+    #starsCanvas {
+      position: fixed; inset: 0; width: 100%; height: 100%;
+      z-index: 0; pointer-events: none;
+    }
+    .chip-lines {
+      position: fixed; inset: 0;
+      background-image:
+        repeating-linear-gradient(45deg, transparent 0, transparent 45px, rgba(255,59,127,0.02) 45px, rgba(255,59,127,0.02) 46px),
+        repeating-linear-gradient(-45deg, transparent 0, transparent 45px, rgba(255,59,127,0.02) 45px, rgba(255,59,127,0.02) 46px);
+      pointer-events: none; z-index: 1; opacity: 0.5;
+    }
 
-        // Login con Google
-        googleBtn?.addEventListener('click', async () => {
-            if (googleBtn.disabled) return;
-            
-            googleBtn.disabled = true;
-            googleBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Conectando...';
-            
-            try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-                
-                // IMPORTANTE: Usar "usuarios" (plural) para coincidir con premium
-                const userRef = doc(db, 'usuarios', user.uid);
-                const userDoc = await getDoc(userRef);
-                
-                if (!userDoc.exists()) {
-                    // Usuario nuevo free
-                    await setDoc(userRef, {
-                        uid: user.uid,
-                        email: user.email,
-                        nombre: user.displayName || 'Usuario',
-                        foto: user.photoURL || '',
-                        freeUser: true,
-                        premium: false,
-                        verificationStatus: 'no_verificado',
-                        profileCompleted: false,
-                        createdAt: new Date().toISOString(),
-                        lastLogin: new Date().toISOString()
-                    });
-                    console.log('✅ Nuevo usuario free creado');
-                } else {
-                    const userData = userDoc.data();
-                    console.log('👤 Usuario existente:', userData);
-                    
-                    // Si ya es premium, redirigir a listing premium
-                    if (userData.premium === true) {
-                        window.location.href = 'listing.html';
-                        return;
-                    }
-                }
-                
-                // Mostrar selección de perfil
-                heroSection.style.transition = 'opacity 0.3s ease';
-                heroSection.style.opacity = '0';
-                
-                setTimeout(() => {
-                    heroSection.style.display = 'none';
-                    profileSection.style.display = 'block';
-                    profileSection.classList.add('anim-in');
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    toast('¡Bienvenido! Elige tu perfil.', 'success');
-                }, 300);
-                
-            } catch (error) {
-                console.error('Error en login:', error);
-                let errorMsg = 'Error al conectar. Intenta de nuevo.';
-                if (error.code === 'auth/popup-closed-by-user') errorMsg = 'Cerraste la ventana de Google.';
-                if (error.code === 'auth/popup-blocked') errorMsg = 'Tu navegador bloqueó el popup. Permite popups para este sitio.';
-                toast(errorMsg, 'error');
-                googleBtn.disabled = false;
-                googleBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Continuar con Google';
-            }
-        });
-    </script>
+    .page {
+      position: relative; z-index: 10;
+      width: 100%; max-width: 800px;
+      padding: clamp(16px, 5vw, 40px);
+      padding-left: calc(clamp(16px,4vw,40px) + var(--safe-left));
+      padding-right: calc(clamp(16px,4vw,40px) + var(--safe-right));
+      padding-bottom: calc(clamp(20px,5vw,48px) + var(--safe-bottom));
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center;
+    }
 
-    <style>
-        *, *::before, *::after {
-            margin: 0; padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+    /* TÍTULO 8BITS */
+    .pixel-title {
+      font-family: 'Press Start 2P', cursive;
+      font-size: clamp(26px, 8vw, 60px);
+      color: var(--white);
+      text-shadow: 0 0 12px rgba(255,59,127,0.8), 0 0 24px rgba(255,59,127,0.5);
+      letter-spacing: 3px;
+      margin-bottom: 28px;
+      word-break: break-word;
+      line-height: 1.3;
+    }
 
-        :root {
-            --bg:      #0f0f14;
-            --rose:    #FF3B7F;
-            --rose-d:  rgba(255,59,127,0.15);
-            --rose-l:  rgba(255,59,127,0.1);
-            --white:   #ffffff;
-            --w70:     rgba(255,255,255,0.7);
-            --w40:     rgba(255,255,255,0.4);
-            --w12:     rgba(255,255,255,0.12);
-            --w06:     rgba(255,255,255,0.06);
-            --ease:    cubic-bezier(0.16,1,0.3,1);
-            --safe-top:    env(safe-area-inset-top, 0px);
-            --safe-bottom: env(safe-area-inset-bottom, 0px);
-        }
+    /* LOGO PRINCIPAL (IMAGEN COMO BOTÓN) */
+    .logo-main {
+      height: auto;
+      width: 80px;           /* ~3cm en pantallas */
+      max-width: 100%;
+      margin-bottom: 32px;
+      cursor: pointer;
+      filter: drop-shadow(0 0 14px rgba(255,59,127,0.5));
+      transition: transform 0.3s var(--ease), filter 0.3s;
+      user-select: none;
+      background: transparent;
+      border: none;
+      padding: 0;
+    }
+    .logo-main:hover {
+      transform: scale(1.06);
+      filter: drop-shadow(0 0 20px rgba(255,59,127,0.8));
+    }
 
-        html { overflow-x: hidden; }
+    /* SECCIÓN MINI JUEGO */
+    .mini-game-section {
+      margin: 18px 0 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+    .mini-game-label {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 5px;
+      color: var(--rose);
+      margin-bottom: 18px;
+    }
 
-        body {
-            font-family: 'DM Sans', sans-serif;
-            background: var(--bg);
-            color: var(--white);
-            min-height: 100vh;
-            min-height: 100dvh;
-            -webkit-overflow-scrolling: touch;
-        }
+    /* BOTÓN JUGAR: TRANSPARENTE, BORDES BLANCOS, SIN EMOJI */
+    .play-game-btn {
+      background: transparent;
+      color: var(--white);
+      border: 2px solid var(--white);
+      border-radius: 60px;
+      padding: 18px 52px;
+      font-size: 34px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.3s var(--ease);
+      backdrop-filter: blur(4px);
+      margin-bottom: 50px;   /* ~5 cm visuales */
+      background: rgba(255,255,255,0.02);
+      text-transform: uppercase;
+      box-shadow: 0 8px 20px rgba(255,255,255,0.08);
+    }
+    .play-game-btn:hover {
+      background: rgba(255,59,127,0.08);
+      border-color: var(--rose);
+      transform: translateY(-4px);
+      box-shadow: 0 16px 32px rgba(255,59,127,0.2);
+    }
+    .play-game-btn:active {
+      transform: scale(0.96);
+      background: rgba(255,255,255,0.05);
+    }
 
-        .bg-glow {
-            position: fixed; inset: 0;
-            z-index: 0; pointer-events: none;
-            background:
-                radial-gradient(ellipse 70% 50% at 50% -10%, rgba(255,59,127,0.08) 0%, transparent 70%),
-                radial-gradient(ellipse 40% 40% at 100% 100%, rgba(255,59,127,0.04) 0%, transparent 60%);
-        }
+    /* BANNERS INFERIORES: LAS IMÁGENES SON LOS BOTONES (SIN AURA, SIN FONDO) */
+    .banners-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 36px;
+      width: 100%;
+      margin-top: 8px;
+    }
 
-        .page {
-            position: relative;
-            z-index: 10;
-            min-height: 100vh;
-            min-height: 100dvh;
-            display: flex;
-            flex-direction: column;
-        }
+    /* Cada botón es únicamente la imagen, sin decoración extra */
+    .banner-img-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      transition: transform 0.25s ease, filter 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 90px;            /* tamaño base ~3cm */
+      max-width: 30vw;
+    }
+    .banner-img-btn img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6));
+      transition: filter 0.2s;
+    }
+    .banner-img-btn:hover {
+      transform: translateY(-5px);
+    }
+    .banner-img-btn:hover img {
+      filter: drop-shadow(0 6px 16px rgba(255,59,127,0.45));
+    }
+    .banner-label {
+      font-family: 'Syne', sans-serif;
+      font-weight: 600;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      color: var(--w80);
+    }
+    .banner-sub {
+      font-size: 10px;
+      color: var(--w50);
+      letter-spacing: 1px;
+      margin-top: -6px;
+    }
 
-        .container {
-            max-width: 440px;
-            margin: 0 auto;
-            padding: 0 24px;
-            width: 100%;
-        }
+    /* OCULTAR ELEMENTOS ANTIGUOS */
+    .header, .steps-indicator, .step, .hero, .google-btn, .premium-badge, .user-pill {
+      display: none !important;
+    }
 
-        header {
-            padding: calc(20px + var(--safe-top)) 0 0;
-        }
-        header .container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    /* TOAST */
+    .toast-el {
+      position: fixed; z-index: 10001; font-family: 'Space Grotesk', sans-serif; font-size: 14px;
+      background: rgba(8,8,12,0.97); border-radius: 50px; padding: 13px 20px;
+      display: flex; align-items: center; gap: 10px; box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+      transition: transform 0.4s var(--ease), opacity 0.4s; max-width: calc(100vw - 32px);
+    }
+    .toast-el.success { border: 1px solid rgba(46,204,113,0.4); }
+    .toast-el.success i { color: #2ecc71; }
+    .toast-el.error { border: 1px solid rgba(255,60,60,0.4); }
+    .toast-el.error i { color: #ff4444; }
+    .toast-el.info { border: 1px solid rgba(255,59,127,0.3); }
+    .toast-el.info i { color: var(--rose); }
+    @media (min-width:481px) {
+      .toast-el { top: 24px; right: 20px; }
+      .toast-el.hidden { transform: translateX(120%); opacity: 0; }
+    }
+    @media (max-width:480px) {
+      .toast-el { bottom: calc(20px + var(--safe-bottom)); left:16px; right:16px; border-radius:14px; }
+      .toast-el.hidden { transform: translateY(120%); opacity: 0; }
+    }
 
-        .logo {
-            display: flex; align-items: center;
-            text-decoration: none;
-            touch-action: manipulation;
-        }
-        .logo-img {
-            height: 130px;
-            width: auto;
-            display: block;
-            transition: transform 0.35s var(--ease), opacity 0.25s;
-            -webkit-user-drag: none;
-            user-select: none;
-        }
-        .logo:active .logo-img {
-            transform: scale(0.9);
-            opacity: 0.8;
-        }
-        @media (hover:hover) {
-            .logo:hover .logo-img {
-                transform: scale(1.06);
-                opacity: 0.9;
-            }
-        }
-
-        .header-badge {
-            font-size: 11px; color: var(--w40);
-            border: 1px solid rgba(255,255,255,0.1);
-            padding: 5px 11px; border-radius: 50px;
-            letter-spacing: 0.5px;
-        }
-
-        .hero {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 48px 0 32px;
-        }
-        .hero .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        .hero-tagline {
-            font-family: 'Syne', sans-serif;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: 4px;
-            text-transform: uppercase;
-            color: var(--rose);
-            margin-bottom: 20px;
-            opacity: 0.85;
-        }
-
-        .hero h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: clamp(28px, 7vw, 40px);
-            font-weight: 800;
-            line-height: 1.1;
-            letter-spacing: -0.02em;
-            margin-bottom: 12px;
-        }
-        .hero h1 em { font-style: normal; color: var(--rose); }
-
-        .hero p {
-            font-size: 15px; color: var(--w70);
-            line-height: 1.6; max-width: 300px;
-            margin-bottom: 34px;
-        }
-
-        .google-btn {
-            width: 100%; max-width: 320px;
-            padding: 15px 24px;
-            background: var(--white);
-            border: none; border-radius: 14px;
-            color: #333;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px; font-weight: 600;
-            cursor: pointer;
-            display: flex; align-items: center; justify-content: center; gap: 12px;
-            transition: all 0.25s var(--ease);
-            min-height: 52px;
-            margin-bottom: 0;
-        }
-        .google-btn:active { transform: scale(0.97); }
-
-        .divider {
-            width: 100%; max-width: 320px;
-            display: flex; align-items: center; gap: 12px;
-            margin: 20px 0;
-        }
-        .divider-line { flex: 1; height: 1px; background: var(--w12); }
-        .divider span { font-size: 12px; color: var(--w40); white-space: nowrap; }
-
-        .premium-btn {
-            width: 100%; max-width: 320px;
-            padding: 15px 24px;
-            background: var(--rose);
-            border: 2px solid #C9A96E;
-            border-radius: 14px;
-            color: #fff;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 15px; font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center; justify-content: center;
-            text-decoration: none;
-            min-height: 52px;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.25s var(--ease);
-            letter-spacing: 0.2px;
-        }
-        .premium-btn::after {
-            content: '';
-            position: absolute;
-            top: 0; left: -100%;
-            width: 60%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(201,169,110,0.25), transparent);
-            transition: left 0.55s var(--ease);
-        }
-        .premium-btn:active { transform: scale(0.97); }
-
-        #profileSection {
-            display: none;
-            flex: 1;
-            padding: 48px 0 32px;
-        }
-        #profileSection .container {
-            display: flex; flex-direction: column;
-            align-items: center; text-align: center;
-        }
-        #profileSection h2 {
-            font-family: 'Syne', sans-serif;
-            font-size: 24px; font-weight: 700;
-            margin-bottom: 6px;
-        }
-        #profileSection > .container > p {
-            font-size: 14px; color: var(--w40);
-            margin-bottom: 28px;
-        }
-
-        .profile-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            width: 100%; max-width: 320px;
-        }
-
-        .profile-opt {
-            background: var(--w06);
-            border: 1px solid var(--w12);
-            border-radius: 16px;
-            padding: 20px 14px;
-            text-align: center;
-            text-decoration: none;
-            color: var(--white);
-            cursor: pointer;
-            transition: all 0.25s var(--ease);
-        }
-        .profile-opt:active { transform: scale(0.96); border-color: var(--rose); }
-
-        .profile-opt-icon {
-            width: 44px; height: 44px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            margin: 0 auto 10px;
-            background: var(--rose-d);
-            color: var(--rose);
-            border: 1px solid rgba(255,59,127,0.2);
-        }
-        .profile-opt span {
-            font-family: 'Syne', sans-serif;
-            font-size: 13px; font-weight: 600;
-            display: block;
-            margin-bottom: 3px;
-        }
-        .profile-opt small {
-            font-size: 10px; color: var(--w40);
-            line-height: 1.3;
-            display: block;
-        }
-
-        footer {
-            padding: 18px 0 calc(18px + var(--safe-bottom));
-            border-top: 1px solid var(--w12);
-            margin-top: auto;
-        }
-        footer .container {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .footer-copy { font-size: 11px; color: var(--w40); }
-        .footer-links { display: flex; gap: 16px; }
-        .footer-links a {
-            font-size: 11px; color: var(--w40);
-            text-decoration: none;
-            min-height: 44px;
-            display: flex;
-            align-items: center;
-            transition: color 0.2s;
-        }
-        .footer-links a:active { color: var(--rose); }
-
-        .toast {
-            position: fixed;
-            z-index: 9999;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 14px;
-            background: rgba(8,8,15,0.97);
-            border-radius: 50px;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            box-shadow: 0 8px 28px rgba(0,0,0,0.5);
-            transition: transform 0.4s var(--ease), opacity 0.4s;
-            max-width: calc(100vw - 32px);
-        }
-        .toast.success { border: 1px solid rgba(46,204,113,0.4); }
-        .toast.success i { color: #2ecc71; }
-        .toast.error { border: 1px solid rgba(255,59,59,0.4); }
-        .toast.error i { color: #ff3b3b; }
-        @media (min-width: 481px) {
-            .toast { top: 24px; right: 20px; }
-            .toast.hidden { transform: translateX(120%); opacity: 0; }
-        }
-        @media (max-width: 480px) {
-            .toast { bottom: calc(20px + var(--safe-bottom)); left: 16px; right: 16px; border-radius: 14px; }
-            .toast.hidden { transform: translateY(120%); opacity: 0; }
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(14px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .anim-in { animation: fadeUp 0.45s var(--ease) both; }
-    </style>
+    /* Ajustes móviles */
+    @media (max-width: 600px) {
+      .banners-row { gap: 22px; }
+      .banner-img-btn { width: 80px; }
+      .play-game-btn { padding: 16px 40px; font-size: 28px; }
+    }
+  </style>
 </head>
 <body>
+  <!-- CAPA SEO INVISIBLE -->
+  <div style="position:absolute;opacity:0;pointer-events:none;height:0;overflow:hidden;" aria-hidden="true">
+    colmena-hub sugar babies sugar daddies sugar mommies dating citas servicios de oficio servicios de profesión sugar free conexiones premium εtεrεo
+  </div>
 
-    <div class="bg-glow"></div>
+  <canvas id="starsCanvas"></canvas>
+  <div class="chip-lines"></div>
 
-    <div class="page">
+  <div class="page">
+    <!-- LOGO PRINCIPAL (BOTÓN DE IMAGEN) -->
+    <img src="logosugarblanco.png" alt="εtεrεo App" class="logo-main" id="logoRedirect" title="Abrir εtεrεo App" />
 
-        <header>
-            <div class="container">
-                <a href="index-premium.html" class="logo">
-                    <img src="logosugarblanco.png" alt="Sugar-Free" class="logo-img">
-                </a>
-                <span class="header-badge">Free</span>
-            </div>
-        </header>
+    <!-- TÍTULO 8BITS -->
+    <h1 class="pixel-title">εtεrεo</h1>
 
-        <section class="hero" id="heroSection">
-            <div class="container">
-                <div class="hero-tagline">literalmente sugar FREE</div>
-                <h1>Conecta.<br><em>g r a t i s :)</em></h1>
-                <p>Entra con Google y elige tu perfil para empezar.</p>
+    <!-- MINI JUEGO -->
+    <div class="mini-game-section">
+      <div class="mini-game-label">mini juego</div>
+      <button class="play-game-btn" id="playGameBtn">JUGAR</button>
 
-                <button class="google-btn" id="googleSignIn">
-                    <svg width="18" height="18" viewBox="0 0 48 48">
-                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-                    </svg>
-                    Continuar con Google
-                </button>
+      <!-- BANNERS: SOLO IMÁGENES COMO BOTONES -->
+      <div class="banners-row">
+        <!-- SugarFree -->
+        <button class="banner-img-btn" id="bannerSugarFree">
+          <img src="logosugarblanco.png" alt="SugarFree" />
+          <span class="banner-label">SugarFree</span>
+          <span class="banner-sub">Comunidad</span>
+        </button>
 
-                <div class="divider">
-                    <div class="divider-line"></div>
-                    <span>¿Quieres más?</span>
-                    <div class="divider-line"></div>
-                </div>
-
-                <a href="index-premium.html" class="premium-btn">
-                    Premium
-                </a>
-            </div>
-        </section>
-
-        <section id="profileSection">
-            <div class="container">
-                <h2>¿Cuál es tu perfil?</h2>
-                <p>Elige tu categoría para continuar</p>
-                <div class="profile-grid">
-                    <a href="formulario-daddy.html" class="profile-opt">
-                        <div class="profile-opt-icon"><i class="fas fa-crown"></i></div>
-                        <span>Sugar Daddy</span>
-                        <small>≥ 30 años</small>
-                    </a>
-                    <a href="formulario-mommy.html" class="profile-opt">
-                        <div class="profile-opt-icon"><i class="fas fa-gem"></i></div>
-                        <span>Sugar Mommy</span>
-                        <small>≥ 30 años</small>
-                    </a>
-                    <a href="formulario-sboy.html" class="profile-opt">
-                        <div class="profile-opt-icon"><i class="fas fa-user-tie"></i></div>
-                        <span>Sugar Boy</span>
-                        <small>&lt; 30 años</small>
-                    </a>
-                    <a href="formulario-sgirl.html" class="profile-opt">
-                        <div class="profile-opt-icon"><i class="fas fa-user-heart"></i></div>
-                        <span>Sugar Girl</span>
-                        <small>&lt; 30 años</small>
-                    </a>
-                </div>
-            </div>
-        </section>
-
-        <footer>
-            <div class="container">
-                <span class="footer-copy">© 2026 Sugar-Free · +18</span>
-                <div class="footer-links">
-                    <a href="#">Términos</a>
-                    <a href="#">Privacidad</a>
-                    <a href="#">Contacto</a>
-                </div>
-            </div>
-        </footer>
-
+        <!-- Colmena-Hub -->
+        <button class="banner-img-btn" id="bannerColmenaHub">
+          <img src="colmena-hubLOGOblanco.png" alt="Colmena Hub" />
+          <span class="banner-label">Colmena-Hub</span>
+          <span class="banner-sub">colmena-hub.com</span>
+        </button>
+      </div>
     </div>
+  </div>
 
+  <script>
+    (function() {
+      // ========== ESTRELLAS ==========
+      const canvas = document.getElementById('starsCanvas');
+      const ctx = canvas.getContext('2d');
+      const isMobile = () => window.innerWidth <= 768;
+      const LAYOUT_DESKTOP = [
+        {count:500, speedMin:.04, speedMax:.11, sizeMin:.3, sizeMax:.75, opMin:.2, opMax:.45},
+        {count:300, speedMin:.13, speedMax:.26, sizeMin:.7, sizeMax:1.2, opMin:.4, opMax:.75},
+        {count:100, speedMin:.28, speedMax:.48, sizeMin:1.1, sizeMax:1.7, opMin:.7, opMax:1}
+      ];
+      const LAYOUT_MOBILE = [
+        {count:180, speedMin:.04, speedMax:.10, sizeMin:.3, sizeMax:.7, opMin:.2, opMax:.4},
+        {count:90,  speedMin:.12, speedMax:.24, sizeMin:.6, sizeMax:1.1, opMin:.4, opMax:.7},
+        {count:30,  speedMin:.26, speedMax:.44, sizeMin:1,  sizeMax:1.5, opMin:.7, opMax:1}
+      ];
+      let stars = [], animationFrame;
+      const random = (min, max) => min + Math.random() * (max - min);
+
+      function createStar(l) {
+        return {
+          x: random(0, canvas.width), y: random(0, canvas.height),
+          size: random(l.sizeMin, l.sizeMax), speed: random(l.speedMin, l.speedMax),
+          opacity: random(l.opMin, l.opMax), phase: Math.random() * Math.PI * 2,
+          pulseSpeed: 0.0003 + Math.random() * 0.0004, pulseAmount: 0.05 + Math.random() * 0.05,
+          isPink: Math.random() < 0.07
+        };
+      }
+      function initStars() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        stars = [];
+        (isMobile() ? LAYOUT_MOBILE : LAYOUT_DESKTOP).forEach(l => {
+          for (let i = 0; i < l.count; i++) stars.push(createStar(l));
+        });
+      }
+      function drawStars(t) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        stars.forEach(s => {
+          s.x -= s.speed;
+          if (s.x < -4) { s.x = canvas.width + 2; s.y = random(0, canvas.height); }
+          const a = Math.min(1, Math.max(0, s.opacity + Math.sin(t * s.pulseSpeed + s.phase) * s.pulseAmount));
+          ctx.beginPath(); ctx.arc(s.x, s.y, s.size * 0.5, 0, Math.PI * 2);
+          ctx.fillStyle = s.isPink ? `rgba(255,180,200,${a})` : `rgba(255,255,255,${a})`;
+          ctx.fill();
+          if (!isMobile() && s.size > 1.4) {
+            const g = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.size * 1.8);
+            g.addColorStop(0, s.isPink ? `rgba(255,100,150,${a * 0.22})` : `rgba(255,255,255,${a * 0.16})`);
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.beginPath(); ctx.arc(s.x, s.y, s.size * 1.8, 0, Math.PI * 2);
+            ctx.fillStyle = g; ctx.fill();
+          }
+        });
+        animationFrame = requestAnimationFrame(drawStars);
+      }
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) cancelAnimationFrame(animationFrame);
+        else animationFrame = requestAnimationFrame(drawStars);
+      });
+      window.addEventListener('resize', () => {
+        clearTimeout(window._resizeT); window._resizeT = setTimeout(initStars, 180);
+      });
+      initStars(); animationFrame = requestAnimationFrame(drawStars);
+
+      // ========== TOAST ==========
+      function toast(msg, type = 'info') {
+        document.querySelectorAll('.toast-el').forEach(t => t.remove());
+        const icons = { success: 'check-circle', error: 'exclamation-circle', info: 'info-circle' };
+        const el = document.createElement('div');
+        el.className = `toast-el ${type} hidden`;
+        el.innerHTML = `<i class="fas fa-${icons[type] || 'info-circle'}"></i><span>${msg}</span>`;
+        document.body.appendChild(el);
+        requestAnimationFrame(() => { requestAnimationFrame(() => el.classList.remove('hidden')); });
+        setTimeout(() => { el.classList.add('hidden'); setTimeout(() => el.remove(), 420); }, 4500);
+      }
+
+      // ========== EVENTOS ==========
+      document.getElementById('playGameBtn')?.addEventListener('click', () => {
+        toast('El mini juego estará disponible pronto en la app.', 'info');
+      });
+
+      document.getElementById('logoRedirect')?.addEventListener('click', () => {
+        toast('La app de εtεrεo llegará pronto.', 'info');
+      });
+
+      document.getElementById('bannerSugarFree')?.addEventListener('click', () => {
+        toast('SugarFree: próximamente más contenido.', 'info');
+      });
+
+      document.getElementById('bannerColmenaHub')?.addEventListener('click', () => {
+        window.open('https://colmena-hub.com', '_blank');
+      });
+    })();
+  </script>
 </body>
 </html>
