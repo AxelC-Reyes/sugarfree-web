@@ -90,7 +90,16 @@
         character: personaje,
         msgElement: document.getElementById('msg'),
         onPortal: () => {
-          // aquí, más adelante, se conecta el siguiente episodio automáticamente
+          const siguiente = episodeData.siguiente;
+          if(siguiente){
+            setTimeout(() => {
+              window.location.href = `game.html?ep=${siguiente}&personaje=${personaje}`;
+            }, 2200);
+          } else {
+            setTimeout(() => {
+              document.getElementById('msg').innerText = 'PORTAL ACTIVADO\n\n(el siguiente episodio\naún no existe)';
+            }, 300);
+          }
         },
         onGameOver: (reason) => {
           // hook disponible para analytics/estadísticas a futuro

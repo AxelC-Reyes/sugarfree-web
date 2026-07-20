@@ -194,8 +194,11 @@ window.GameEngine = (function(){
       if(t===T.SPIKE){
         triggerGameOver('caíste en una trampa');
       } else if(t===T.PORTAL){
-        showMessage('PORTAL ACTIVADO\n(aquí conecta el próximo episodio)', 2500);
-        if(opts.onPortal) opts.onPortal();
+        if(gameState==='playing'){
+          gameState='portal';
+          showMessage('PORTAL ACTIVADO', 999999);
+          if(opts.onPortal) opts.onPortal();
+        }
       } else if(t===T.ITEM){
         level[r][c]=T.EMPTY;
         player.poweredUp=true; player.powerTimer=POWERUP_DURATION;
@@ -230,7 +233,7 @@ window.GameEngine = (function(){
     if(episodeData.intro) showMessage(episodeData.intro, 3200);
 
     function update(){
-      if(gameState==='gameover') return;
+      if(gameState!=='playing') return;
 
       if(player.poweredUp){
         player.powerTimer--;

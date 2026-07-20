@@ -3,6 +3,7 @@
   "titulo": "EPISODIO 1 — Colinas Nocturnas",
   "meta": "🎯 Llega al portal turquesa",
   "capitulo": "I — Dark Fantasy",
+  "siguiente": "002",
   "fondo": ["#1a0f2e", "#0d2818"],
   "parallax": [
     { "tipo": "colinas",    "color": "#150a24", "velocidad": 0.15, "altura": 0.82 },
