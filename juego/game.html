@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>εtεrεo — Portal Runner</title>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:#0a0a12;
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Courier New', monospace;
+    overflow:hidden;
+  }
+  #wrap{ position:relative; }
+  canvas{
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    background:#1a1a2e;
+    border:4px solid #3a3a5a;
+    box-shadow: 0 0 40px rgba(0,255,255,0.15);
+    display:block;
+    max-width:96vw; height:auto;
+  }
+  #hud{
+    position:absolute; top:0; left:0; right:0;
+    padding:10px 16px;
+    color:#eaeaff;
+    font-size:14px;
+    text-shadow:2px 2px 0 #000;
+    display:flex; justify-content:space-between;
+    pointer-events:none;
+  }
+  #msg{
+    position:absolute; top:42%; left:50%; transform:translate(-50%,-50%);
+    color:#fff; font-family:'Press Start 2P', 'Courier New', monospace;
+    font-size:11px; line-height:1.8; text-shadow:2px 2px 0 #000;
+    display:none; text-align:center; letter-spacing:1px;
+    white-space:pre; pointer-events:none;
+  }
+  #msg.gameover{ color:#ff3b3b; font-size:16px; }
+  #controls{
+    position:absolute; bottom:6px; left:0; right:0;
+    text-align:center; color:#8888aa; font-size:11px;
+    pointer-events:none;
+  }
+  #backLink{
+    position:absolute; top:10px; right:16px;
+    color:#8888aa; font-size:11px; text-decoration:none;
+    pointer-events:auto;
+  }
+  #loading{ color:#8888aa; font-family:'Press Start 2P',monospace; font-size:12px; }
+</style>
+</head>
+<body>
+<div id="wrap">
+  <canvas id="game" width="480" height="288" style="display:none"></canvas>
+  <div id="loading">Cargando episodio...</div>
+  <div id="hud" style="display:none">
+    <span id="hud-title"></span>
+    <span id="hud-goal"></span>
+  </div>
+  <div id="msg"></div>
+  <div id="controls" style="display:none">← → mover · ↑ / ESPACIO saltar · X romper bloque</div>
+  <a id="backLink" href="../index.html">← salir</a>
+</div>
+
+<script src="sprites.js"></script>
+<script src="engine.js"></script>
+<script>
+  // lee parámetros de la URL: ?ep=001&personaje=boy
+  const params = new URLSearchParams(location.search);
+  const epId = (params.get('ep') || '001').padStart(3, '0');
+  const personaje = params.get('personaje') === 'girl' ? 'girl' : 'boy';
+
+  fetch(`niveles/episodio-${epId}.json`)
+    .then(res => {
+      if(!res.ok) throw new Error('No se encontró el episodio ' + epId);
+      return res.json();
+    })
+    .then(episodeData => {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('game').style.display = 'block';
+      document.getElementById('hud').style.display = 'flex';
+      document.getElementById('controls').style.display = 'block';
+      document.getElementById('hud-title').innerText = episodeData.titulo;
+      document.getElementById('hud-goal').innerText = episodeData.meta;
+
+      window.GameEngine.start(document.getElementById('game'), episodeData, {
+        character: personaje,
+        msgElement: document.getElementById('msg'),
+        onPortal: () => {
+          // aquí, más adelante, se conecta el siguiente episodio automáticamente
+        },
+        onGameOver: (reason) => {
+          // hook disponible para analytics/estadísticas a futuro
+        }
+      });
+    })
+    .catch(err => {
+      document.getElementById('loading').innerText =
+        'No se pudo cargar el episodio.\nSi lo abriste con doble clic, usa un servidor local (ver nota).';
+      console.error(err);
+    });
+</script>
+</body>
+</html>

@@ -17,6 +17,84 @@ window.GameEngine = (function(){
 
   const T = { EMPTY:0, SOLID:1, BRICK:2, SPIKE:3, PORTAL:4, ITEM:5 };
 
+  // ==================================================
+  // FONDO CON PARALLAX — capas de silueta por código
+  // ==================================================
+  function hash(i){ const x = Math.sin(i*127.1)*43758.5453; return x - Math.floor(x); }
+
+  function drawColinas(ctx, pcam, baseY, VIEW_W, VIEW_H, color){
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(0, VIEW_H);
+    for(let sx=0; sx<=VIEW_W; sx+=4){
+      const wx = sx + pcam;
+      const y = baseY + Math.sin(wx*0.015)*8 + Math.sin(wx*0.007+2)*14;
+      ctx.lineTo(sx, y);
+    }
+    ctx.lineTo(VIEW_W, VIEW_H);
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawCastillos(ctx, pcam, baseY, VIEW_W, VIEW_H, color){
+    const P = 140;
+    ctx.fillStyle = color;
+    const startI = Math.floor(pcam/P)-1, endI = Math.ceil((pcam+VIEW_W)/P)+1;
+    for(let i=startI; i<=endI; i++){
+      const sx = i*P - pcam;
+      const seed = hash(i);
+      const towerH = 26 + seed*18;
+      ctx.fillRect(sx, baseY-towerH, 16, towerH+VIEW_H);
+      for(let k=0;k<4;k++) ctx.fillRect(sx+k*4.5-2, baseY-towerH-5, 2.5, 5);
+      const sideH = towerH*0.55;
+      ctx.fillRect(sx-13, baseY-sideH, 9, sideH+VIEW_H);
+      ctx.fillRect(sx+19, baseY-sideH*0.8, 9, sideH*0.8+VIEW_H);
+    }
+  }
+
+  function drawColumnas(ctx, pcam, baseY, VIEW_W, VIEW_H, color){
+    const P = 220;
+    ctx.fillStyle = color;
+    const startI = Math.floor(pcam/P)-1, endI = Math.ceil((pcam+VIEW_W)/P)+1;
+    for(let i=startI; i<=endI; i++){
+      const sx = i*P - pcam;
+      const h = 55;
+      ctx.fillRect(sx-6, baseY-h, 12, h+VIEW_H); // fuste
+      ctx.fillRect(sx-9, baseY-h-5, 18, 5);       // capitel
+      ctx.fillRect(sx-9, baseY-2, 18, 5);         // base
+    }
+  }
+
+  function drawVegetacion(ctx, pcam, baseY, VIEW_W, color, glow){
+    const P = 34;
+    const startI = Math.floor(pcam/P)-1, endI = Math.ceil((pcam+VIEW_W)/P)+1;
+    for(let i=startI; i<=endI; i++){
+      const sx = i*P - pcam;
+      const seed = hash(i);
+      const h = 6 + seed*9;
+      if(glow){
+        ctx.fillStyle = glow;
+        ctx.beginPath(); ctx.arc(sx, baseY-h*0.5, h*0.9, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.moveTo(sx-3, baseY); ctx.lineTo(sx, baseY-h); ctx.lineTo(sx+3, baseY);
+      ctx.closePath(); ctx.fill();
+    }
+  }
+
+  function drawParallax(ctx, camX, VIEW_W, VIEW_H, layers){
+    if(!layers) return;
+    for(const layer of layers){
+      const pcam = camX * layer.velocidad;
+      const baseY = VIEW_H * layer.altura;
+      if(layer.tipo==='colinas') drawColinas(ctx, pcam, baseY, VIEW_W, VIEW_H, layer.color);
+      else if(layer.tipo==='castillos') drawCastillos(ctx, pcam, baseY, VIEW_W, VIEW_H, layer.color);
+      else if(layer.tipo==='columnas') drawColumnas(ctx, pcam, baseY, VIEW_W, VIEW_H, layer.color);
+      else if(layer.tipo==='vegetacion') drawVegetacion(ctx, pcam, baseY, VIEW_W, layer.color, layer.glow);
+    }
+  }
+
   function parseLevel(filas){
     return filas.map(row => row.split('').map(ch=>{
       if(ch==='1') return T.SOLID;
@@ -201,6 +279,9 @@ window.GameEngine = (function(){
 
       let camX=player.x+player.w/2-VIEW_W/2;
       camX=Math.max(0,Math.min(camX,LEVEL_PX_W-VIEW_W));
+
+      drawParallax(ctx, camX, VIEW_W, VIEW_H, episodeData.parallax);
+
       ctx.translate(-Math.round(camX),0);
 
       const startCol=Math.floor(camX/TILE), endCol=Math.ceil((camX+VIEW_W)/TILE);
