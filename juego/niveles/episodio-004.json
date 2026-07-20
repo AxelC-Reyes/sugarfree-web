@@ -1,0 +1,55 @@
+{
+  "id": "episodio-004",
+  "titulo": "EPISODIO 4 — El Mago Ermitaño",
+  "meta": "🎯 Escucha al mago y llega al portal",
+  "capitulo": "I — Dark Fantasy",
+  "siguiente": "005",
+  "intro": "Una figura encapuchada aguarda entre las ruinas,\nrodeada de un débil resplandor azul.",
+  "fondo": [
+    "#1a0f2e",
+    "#0d2818"
+  ],
+  "parallax": [
+    {
+      "tipo": "colinas",
+      "color": "#150a24",
+      "velocidad": 0.15,
+      "altura": 0.82
+    },
+    {
+      "tipo": "castillos",
+      "color": "#0e0618",
+      "velocidad": 0.35,
+      "altura": 0.78
+    },
+    {
+      "tipo": "columnas",
+      "color": "#1f1030",
+      "velocidad": 0.55,
+      "altura": 0.9
+    },
+    {
+      "tipo": "vegetacion",
+      "color": "#39ff8f",
+      "velocidad": 0.85,
+      "altura": 0.94,
+      "glow": "rgba(57,255,143,0.18)"
+    }
+  ],
+  "spawn": {
+    "col": 3,
+    "row": 5
+  },
+  "lore": {
+    "4,10": "EL MAGO ERMITAÑO:\n\"Toma esto, viajero... una pequeña\nllama que te acompañará. La llamo Chispa.\n\nCuídala. En estos tiempos,\nno todo lo que brilla es amistoso.\""
+  },
+  "filas": [
+    "................................................................................",
+    "................................................................................",
+    "................................................................................",
+    "....................5.................................................4.........",
+    "..........6...................2222...........333......................4.........",
+    "11111111111111111111111111111111111111111111111111111111111111111111111111111111",
+    "11111111111111111111111111111111111111111111111111111111111111111111111111111111"
+  ]
+}
