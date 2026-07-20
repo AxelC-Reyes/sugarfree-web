@@ -50,6 +50,24 @@
     pointer-events:auto;
   }
   #loading{ color:#8888aa; font-family:'Press Start 2P',monospace; font-size:12px; }
+
+  /* Aviso para girar el teléfono en vertical */
+  #rotateOverlay{
+    display:none; position:fixed; inset:0; z-index:9999;
+    background:#0a0a12; color:#eaeaff;
+    align-items:center; justify-content:center; flex-direction:column;
+    text-align:center; padding:24px; gap:16px;
+  }
+  #rotateOverlay .icon{ font-size:48px; animation:rotatePhone 1.6s ease-in-out infinite; }
+  #rotateOverlay p{ font-family:'Press Start 2P', monospace; font-size:12px; line-height:1.8; }
+  @keyframes rotatePhone{
+    0%,100%{ transform:rotate(0deg); }
+    50%{ transform:rotate(90deg); }
+  }
+  @media (max-width:900px) and (orientation:portrait){
+    #rotateOverlay{ display:flex; }
+    #wrap{ display:none; }
+  }
 </style>
 </head>
 <body>
@@ -65,9 +83,32 @@
   <a id="backLink" href="../index.html">← salir</a>
 </div>
 
+<div id="rotateOverlay">
+  <div class="icon">📱</div>
+  <p>GIRA TU TELÉFONO<br>PARA JUGAR</p>
+</div>
+
 <script src="sprites.js"></script>
 <script src="engine.js"></script>
 <script>
+  // ---- Escalado responsivo: el canvas llena la pantalla manteniendo proporción 5:3 ----
+  function resizeCanvas(){
+    const canvas = document.getElementById('game');
+    const wrap = document.getElementById('wrap');
+    const aspect = 480/288;
+    const maxW = window.innerWidth * 0.98;
+    const maxH = window.innerHeight * 0.94;
+    let w = maxW, h = w/aspect;
+    if(h > maxH){ h = maxH; w = h*aspect; }
+    canvas.style.width = w+'px';
+    canvas.style.height = h+'px';
+    wrap.style.width = w+'px';
+    wrap.style.height = h+'px';
+  }
+  window.addEventListener('resize', resizeCanvas);
+  window.addEventListener('orientationchange', resizeCanvas);
+  resizeCanvas();
+
   // lee parámetros de la URL: ?ep=001&personaje=boy
   const params = new URLSearchParams(location.search);
   const epId = (params.get('ep') || '001').padStart(3, '0');

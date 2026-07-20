@@ -15,7 +15,7 @@ window.GameEngine = (function(){
   const PLAYER_H = 26;
   const PLAYER_W = 12;
 
-  const T = { EMPTY:0, SOLID:1, BRICK:2, SPIKE:3, PORTAL:4, ITEM:5 };
+  const T = { EMPTY:0, SOLID:1, BRICK:2, SPIKE:3, PORTAL:4, ITEM:5, LORE:6 };
 
   // ==================================================
   // FONDO CON PARALLAX — capas de silueta por código
@@ -102,6 +102,7 @@ window.GameEngine = (function(){
       if(ch==='3') return T.SPIKE;
       if(ch==='4') return T.PORTAL;
       if(ch==='5') return T.ITEM;
+      if(ch==='6') return T.LORE;
       return T.EMPTY;
     }));
   }
@@ -132,11 +133,12 @@ window.GameEngine = (function(){
       poweredUp:false, powerTimer:0
     };
 
-    const enemyCfg = episodeData.enemigo;
-    const enemy = enemyCfg ? {
-      x: enemyCfg.col*TILE, y: enemyCfg.row*TILE - 14, w:12, h:14, vx:0.5,
-      minX: enemyCfg.minCol*TILE, maxX: enemyCfg.maxCol*TILE
-    } : null;
+    // soporta "enemigos": [...] (varios) o el antiguo "enemigo": {...} (uno solo), por compatibilidad
+    const enemyConfigs = episodeData.enemigos || (episodeData.enemigo ? [episodeData.enemigo] : []);
+    const enemies = enemyConfigs.map(cfg => ({
+      x: cfg.col*TILE, y: cfg.row*TILE - 14, w:12, h:14, vx: cfg.vx || 0.5,
+      minX: cfg.minCol*TILE, maxX: cfg.maxCol*TILE
+    }));
 
     let gameState = 'playing';
     const keys = {};
@@ -154,6 +156,7 @@ window.GameEngine = (function(){
     function restart(){
       level = parseLevel(episodeData.filas);
       player.poweredUp=false; player.powerTimer=0;
+      loreShown.clear();
       resetPlayer();
       gameState='playing';
       hideMessage();
@@ -186,6 +189,8 @@ window.GameEngine = (function(){
       if(opts.onGameOver) opts.onGameOver(reason);
     }
 
+    const loreShown = new Set();
+
     function checkSpecialTiles(){
       const cx=player.x+player.w/2, cy=player.y+player.h/2;
       const c=Math.floor(cx/TILE), r=Math.floor(cy/TILE);
@@ -203,18 +208,28 @@ window.GameEngine = (function(){
         level[r][c]=T.EMPTY;
         player.poweredUp=true; player.powerTimer=POWERUP_DURATION;
         showMessage('¡AGUA DE ALMENDRAS!\nplayera dorada activada', 1500);
+      } else if(t===T.LORE){
+        const key = r+','+c;
+        if(!loreShown.has(key)){
+          loreShown.add(key);
+          const texto = (episodeData.lore && episodeData.lore[key]) || '...';
+          showMessage(texto, 3200);
+        }
       }
     }
 
-    function updateEnemy(){
-      if(!enemy) return;
-      enemy.x+=enemy.vx;
-      if(enemy.x<enemy.minX||enemy.x>enemy.maxX) enemy.vx*=-1;
+    function updateEnemies(){
+      for(const enemy of enemies){
+        enemy.x += enemy.vx;
+        if(enemy.x < enemy.minX || enemy.x > enemy.maxX) enemy.vx *= -1;
+      }
     }
-    function enemyHitsPlayer(){
-      if(!enemy) return false;
-      return player.x<enemy.x+enemy.w && player.x+player.w>enemy.x &&
-             player.y<enemy.y+enemy.h && player.y+player.h>enemy.y;
+    function anyEnemyHitsPlayer(){
+      for(const enemy of enemies){
+        if(player.x<enemy.x+enemy.w && player.x+player.w>enemy.x &&
+           player.y<enemy.y+enemy.h && player.y+player.h>enemy.y) return true;
+      }
+      return false;
     }
 
     let msgTimeout=null;
@@ -240,8 +255,8 @@ window.GameEngine = (function(){
         if(player.powerTimer<=0) player.poweredUp=false;
       }
 
-      updateEnemy();
-      if(enemyHitsPlayer()) triggerGameOver('te atrapó un enemigo');
+      updateEnemies();
+      if(anyEnemyHitsPlayer()) triggerGameOver('te atrapó un enemigo');
 
       let accel=0;
       if(keys['ArrowLeft']||keys['KeyA']){ accel=-MOVE_SPEED; player.facing=-1; }
@@ -308,6 +323,19 @@ window.GameEngine = (function(){
             const bob=Math.sin(Date.now()/200)*1.5;
             ctx.fillStyle='#d8b6ff'; ctx.fillRect(x+6,y+4+bob,4,8);
             ctx.fillStyle='#8a4fd8'; ctx.fillRect(x+6,y+2+bob,4,2);
+          } else if(t===T.LORE){
+            const pulse = 0.5 + 0.5*Math.sin(Date.now()/300);
+            ctx.fillStyle = `rgba(255,215,120,${0.5+pulse*0.5})`;
+            ctx.beginPath();
+            ctx.moveTo(x+TILE/2, y+2);
+            ctx.lineTo(x+TILE-2, y+TILE/2);
+            ctx.lineTo(x+TILE/2, y+TILE-2);
+            ctx.lineTo(x+2, y+TILE/2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#ffe9b0';
+            ctx.lineWidth = 0.5;
+            ctx.stroke();
           } else if(t===T.PORTAL){
             const glow=0.6+0.4*Math.sin(Date.now()/150);
             ctx.fillStyle=`rgba(64,255,230,${glow})`;
@@ -317,7 +345,7 @@ window.GameEngine = (function(){
         }
       }
 
-      if(enemy){
+      for(const enemy of enemies){
         ctx.fillStyle='#6a1b9a'; ctx.fillRect(enemy.x,enemy.y,enemy.w,enemy.h);
         ctx.fillStyle='#e040fb'; ctx.fillRect(enemy.x+2,enemy.y+3,3,3); ctx.fillRect(enemy.x+7,enemy.y+3,3,3);
       }
