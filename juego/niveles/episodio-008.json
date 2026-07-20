@@ -1,0 +1,55 @@
+{
+  "id": "episodio-008",
+  "titulo": "EPISODIO 8 — Los Caballeros",
+  "meta": "🎯 Escucha a los caballeros y llega al portal",
+  "capitulo": "II — Bright Fantasy",
+  "siguiente": "009",
+  "intro": "Figuras de armadura reluciente se acercan,\nel metal reflejando cada color del cielo.",
+  "fondo": [
+    "#6fa8ff",
+    "#ffb3e0"
+  ],
+  "parallax": [
+    {
+      "tipo": "nubes",
+      "color": "rgba(255,255,255,0.75)",
+      "velocidad": 0.1,
+      "altura": 0.25
+    },
+    {
+      "tipo": "castillos",
+      "color": "#dceeff",
+      "velocidad": 0.3,
+      "altura": 0.75
+    },
+    {
+      "tipo": "columnas",
+      "color": "#fff3d6",
+      "velocidad": 0.5,
+      "altura": 0.9
+    },
+    {
+      "tipo": "vegetacion",
+      "color": "#ff9ed6",
+      "velocidad": 0.85,
+      "altura": 0.94,
+      "glow": "rgba(255,158,214,0.25)"
+    }
+  ],
+  "spawn": {
+    "col": 3,
+    "row": 5
+  },
+  "lore": {
+    "4,15": "CABALLERO:\n\"Viajero, nuestra princesa ha desaparecido.\nSi la ayudas a encontrarla,\ntendrás nuestra gratitud eterna.\""
+  },
+  "filas": [
+    "................................................................................",
+    "................................................................................",
+    "................................................................................",
+    "..........................................................................4.....",
+    "...............6...................2222...................................4.....",
+    "11111111111111111111111111111111111111111111111111111111111111111111111111111111",
+    "11111111111111111111111111111111111111111111111111111111111111111111111111111111"
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "id": "episodio-010",
+  "titulo": "EPISODIO 10 — El Miedo de los Caballeros",
+  "meta": "🎯 Avanza pese al miedo y llega al portal",
+  "capitulo": "II — Bright Fantasy",
+  "siguiente": "011",
+  "intro": "Los caballeros ya no hablan con orgullo.\nAlgo los ha asustado de verdad.",
+  "fondo": [
+    "#5f8fff",
+    "#e88fd0"
+  ],
+  "parallax": [
+    {
+      "tipo": "nubes",
+      "color": "rgba(255,255,255,0.75)",
+      "velocidad": 0.1,
+      "altura": 0.25
+    },
+    {
+      "tipo": "castillos",
+      "color": "#dceeff",
+      "velocidad": 0.3,
+      "altura": 0.75
+    },
+    {
+      "tipo": "columnas",
+      "color": "#fff3d6",
+      "velocidad": 0.5,
+      "altura": 0.9
+    },
+    {
+      "tipo": "vegetacion",
+      "color": "#ff9ed6",
+      "velocidad": 0.85,
+      "altura": 0.94,
+      "glow": "rgba(255,158,214,0.25)"
+    }
+  ],
+  "spawn": {
+    "col": 3,
+    "row": 5
+  },
+  "lore": {
+    "4,12": "CABALLERO:\n\"Ya no es solo una leyenda...\nlo hemos VISTO. Un ojo enorme,\nobservando desde entre los portales.\""
+  },
+  "enemigos": [
+    {
+      "col": 50,
+      "row": 5,
+      "minCol": 46,
+      "maxCol": 56
+    },
+    {
+      "col": 75,
+      "row": 5,
+      "minCol": 70,
+      "maxCol": 85
+    }
+  ],
+  "filas": [
+    "...............................................................................................",
+    "...............................................................................................",
+    "...............................................................................................",
+    "..........................................................................................4....",
+    "............6.............................3333.........22222..............................4....",
+    "111111111111111111111111111111...11111111111111111111111111111111111111111111111111111111111111",
+    "111111111111111111111111111111...11111111111111111111111111111111111111111111111111111111111111"
+  ]
+}

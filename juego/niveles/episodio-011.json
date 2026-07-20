@@ -1,0 +1,69 @@
+{
+  "id": "episodio-011",
+  "titulo": "EPISODIO 11 — La Revelación",
+  "meta": "🎯 Enfréntalo y llega al portal",
+  "capitulo": "II — Bright Fantasy",
+  "siguiente": "012",
+  "intro": "El cielo se oscurece por un instante.\nChispa se apaga casi por completo del miedo.",
+  "fondo": [
+    "#4a6fd8",
+    "#c95fb0"
+  ],
+  "parallax": [
+    {
+      "tipo": "nubes",
+      "color": "rgba(255,255,255,0.75)",
+      "velocidad": 0.1,
+      "altura": 0.25
+    },
+    {
+      "tipo": "castillos",
+      "color": "#dceeff",
+      "velocidad": 0.3,
+      "altura": 0.75
+    },
+    {
+      "tipo": "columnas",
+      "color": "#fff3d6",
+      "velocidad": 0.5,
+      "altura": 0.9
+    },
+    {
+      "tipo": "vegetacion",
+      "color": "#ff9ed6",
+      "velocidad": 0.85,
+      "altura": 0.94,
+      "glow": "rgba(255,158,214,0.25)"
+    }
+  ],
+  "spawn": {
+    "col": 3,
+    "row": 5
+  },
+  "lore": {
+    "4,65": "Un silencio total.\nPor un segundo, el cielo entero\nse convierte en un ojo.\n\nDespués, nada. Como si nunca\nhubiera pasado."
+  },
+  "enemigos": [
+    {
+      "col": 45,
+      "row": 5,
+      "minCol": 40,
+      "maxCol": 50
+    },
+    {
+      "col": 85,
+      "row": 5,
+      "minCol": 80,
+      "maxCol": 92
+    }
+  ],
+  "filas": [
+    "....................................................................................................",
+    "....................................................................................................",
+    "....................................................................................................",
+    "................................................5..............................................4....",
+    ".........................3333.........22222......................6.........3333................4....",
+    "111111111111111..11111111111111111111111111111111111111...111111111111111111111111111111111111111111",
+    "111111111111111..11111111111111111111111111111111111111...111111111111111111111111111111111111111111"
+  ]
+}

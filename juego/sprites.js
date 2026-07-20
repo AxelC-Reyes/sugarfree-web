@@ -56,7 +56,11 @@ window.SPRITE_GIRL = [
 "00050500", // zapatos rojos
 ];
 
-// dibuja un sprite (array de filas de 8 caracteres) en el canvas dado
+// imágenes reales (Pixelorama) — se usan en cuanto cargan; si no, se usa el dibujo por código de respaldo
+window.IMG_BOY = new Image();  window.IMG_BOY.src  = 'assets/personajes/chico.png';
+window.IMG_GIRL = new Image(); window.IMG_GIRL.src = 'assets/personajes/chica.png';
+
+// dibuja un sprite (array de filas de 8 caracteres) en el canvas dado — respaldo si la imagen no cargó
 window.drawSprite = function(ctx, sprite, palette, x, y, w, h, facing){
   const rows = sprite.length;
   const cols = sprite[0].length;

@@ -1,4 +1,4 @@
-// ======================================================
+ // ======================================================
 // ENGINE.JS — motor reutilizable para los 117 episodios
 // No conoce el contenido de ningún episodio: todo llega vía episodeData (JSON)
 // ======================================================
@@ -21,6 +21,30 @@ window.GameEngine = (function(){
   // FONDO CON PARALLAX — capas de silueta por código
   // ==================================================
   function hash(i){ const x = Math.sin(i*127.1)*43758.5453; return x - Math.floor(x); }
+
+  // caché de imágenes para capas de fondo con arte real (PNG)
+  const imageCache = {};
+  function loadImage(src){
+    if(!imageCache[src]){
+      const img = new Image();
+      img.src = src;
+      imageCache[src] = img;
+    }
+    return imageCache[src];
+  }
+
+  function drawTextura(ctx, pcam, VIEW_W, VIEW_H, layer){
+    const img = loadImage(layer.src);
+    if(!img.complete || img.naturalWidth===0) return; // aún cargando, se omite este frame
+    const scale = layer.escala || 1;
+    const tileW = img.naturalWidth*scale, tileH = img.naturalHeight*scale;
+    const offsetX = ((pcam % tileW) + tileW) % tileW;
+    for(let x = -offsetX; x < VIEW_W; x += tileW){
+      for(let y = 0; y < VIEW_H; y += tileH){
+        ctx.drawImage(img, x, y, tileW, tileH);
+      }
+    }
+  }
 
   function drawColinas(ctx, pcam, baseY, VIEW_W, VIEW_H, color){
     ctx.fillStyle = color;
@@ -83,6 +107,37 @@ window.GameEngine = (function(){
     }
   }
 
+  function drawNubes(ctx, pcam, baseY, VIEW_W, VIEW_H, color){
+    const P = 110;
+    ctx.fillStyle = color;
+    const startI = Math.floor(pcam/P)-1, endI = Math.ceil((pcam+VIEW_W)/P)+1;
+    for(let i=startI; i<=endI; i++){
+      const sx = i*P - pcam;
+      const seed = hash(i);
+      const y = baseY + seed*10;
+      ctx.beginPath();
+      ctx.arc(sx,     y,     9, 0, Math.PI*2);
+      ctx.arc(sx+9,   y-4,   11, 0, Math.PI*2);
+      ctx.arc(sx+20,  y,     8, 0, Math.PI*2);
+      ctx.arc(sx+9,   y+4,   10, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+
+  function drawHorizonte(ctx, pcam, VIEW_H, layer){
+    const img = loadImage(layer.src);
+    if(!img.complete || img.naturalWidth===0) return;
+    const dh = layer.alturaPx || 70;
+    const scale = dh / img.naturalHeight;
+    const dw = img.naturalWidth * scale;
+    const baseY = VIEW_H * (layer.altura!=null ? layer.altura : 1);
+    const startI = Math.floor(pcam/dw)-1, endI = Math.ceil((pcam+480)/dw)+1;
+    for(let i=startI; i<=endI; i++){
+      const sx = i*dw - pcam;
+      ctx.drawImage(img, sx, baseY-dh, dw, dh);
+    }
+  }
+
   function drawParallax(ctx, camX, VIEW_W, VIEW_H, layers){
     if(!layers) return;
     for(const layer of layers){
@@ -92,6 +147,9 @@ window.GameEngine = (function(){
       else if(layer.tipo==='castillos') drawCastillos(ctx, pcam, baseY, VIEW_W, VIEW_H, layer.color);
       else if(layer.tipo==='columnas') drawColumnas(ctx, pcam, baseY, VIEW_W, VIEW_H, layer.color);
       else if(layer.tipo==='vegetacion') drawVegetacion(ctx, pcam, baseY, VIEW_W, layer.color, layer.glow);
+      else if(layer.tipo==='nubes') drawNubes(ctx, pcam, baseY, VIEW_W, VIEW_H, layer.color);
+      else if(layer.tipo==='textura') drawTextura(ctx, pcam, VIEW_W, VIEW_H, layer);
+      else if(layer.tipo==='horizonte') drawHorizonte(ctx, pcam, VIEW_H, layer);
     }
   }
 
@@ -320,27 +378,48 @@ window.GameEngine = (function(){
             ctx.fillStyle='#c62828';
             ctx.beginPath(); ctx.moveTo(x,y+TILE); ctx.lineTo(x+TILE/2,y+2); ctx.lineTo(x+TILE,y+TILE); ctx.closePath(); ctx.fill();
           } else if(t===T.ITEM){
-            const bob=Math.sin(Date.now()/200)*1.5;
-            ctx.fillStyle='#d8b6ff'; ctx.fillRect(x+6,y+4+bob,4,8);
-            ctx.fillStyle='#8a4fd8'; ctx.fillRect(x+6,y+2+bob,4,2);
+            const itemImg = loadImage('assets/items/agua-almendras.png');
+            const bob = Math.sin(Date.now()/200)*1.5;
+            if(itemImg.complete && itemImg.naturalWidth){
+              ctx.drawImage(itemImg, x, y+bob, TILE, TILE);
+            } else {
+              ctx.fillStyle='#d8b6ff'; ctx.fillRect(x+6,y+4+bob,4,8);
+              ctx.fillStyle='#8a4fd8'; ctx.fillRect(x+6,y+2+bob,4,2);
+            }
           } else if(t===T.LORE){
-            const pulse = 0.5 + 0.5*Math.sin(Date.now()/300);
-            ctx.fillStyle = `rgba(255,215,120,${0.5+pulse*0.5})`;
-            ctx.beginPath();
-            ctx.moveTo(x+TILE/2, y+2);
-            ctx.lineTo(x+TILE-2, y+TILE/2);
-            ctx.lineTo(x+TILE/2, y+TILE-2);
-            ctx.lineTo(x+2, y+TILE/2);
-            ctx.closePath();
-            ctx.fill();
-            ctx.strokeStyle = '#ffe9b0';
-            ctx.lineWidth = 0.5;
-            ctx.stroke();
+            const key = r+','+c;
+            const npcSrc = episodeData.loreImagenes && episodeData.loreImagenes[key];
+            const npcImg = npcSrc ? loadImage(npcSrc) : null;
+            if(npcImg && npcImg.complete && npcImg.naturalWidth){
+              const dh = 48, dw = npcImg.naturalWidth * (dh/npcImg.naturalHeight);
+              ctx.drawImage(npcImg, x+TILE/2-dw/2, y+TILE-dh, dw, dh);
+            } else {
+              const pulse = 0.5 + 0.5*Math.sin(Date.now()/300);
+              ctx.fillStyle = `rgba(255,215,120,${0.5+pulse*0.5})`;
+              ctx.beginPath();
+              ctx.moveTo(x+TILE/2, y+2);
+              ctx.lineTo(x+TILE-2, y+TILE/2);
+              ctx.lineTo(x+TILE/2, y+TILE-2);
+              ctx.lineTo(x+2, y+TILE/2);
+              ctx.closePath();
+              ctx.fill();
+              ctx.strokeStyle = '#ffe9b0';
+              ctx.lineWidth = 0.5;
+              ctx.stroke();
+            }
           } else if(t===T.PORTAL){
-            const glow=0.6+0.4*Math.sin(Date.now()/150);
-            ctx.fillStyle=`rgba(64,255,230,${glow})`;
-            ctx.beginPath(); ctx.ellipse(x+TILE/2,y+TILE/2,TILE/2,TILE/2,0,0,Math.PI*2); ctx.fill();
-            ctx.strokeStyle='#ffffff'; ctx.lineWidth=0.5; ctx.stroke();
+            const portalImg = loadImage('assets/fx/portal1.png');
+            if(portalImg.complete && portalImg.naturalWidth){
+              const frames = 4, fw = portalImg.naturalWidth/frames, fh = portalImg.naturalHeight;
+              const frame = Math.floor(Date.now()/150) % frames;
+              const dh = TILE*1.6, dw = fw*(dh/fh);
+              ctx.drawImage(portalImg, frame*fw, 0, fw, fh, x+TILE/2-dw/2, y+TILE-dh, dw, dh);
+            } else {
+              const glow=0.6+0.4*Math.sin(Date.now()/150);
+              ctx.fillStyle=`rgba(64,255,230,${glow})`;
+              ctx.beginPath(); ctx.ellipse(x+TILE/2,y+TILE/2,TILE/2,TILE/2,0,0,Math.PI*2); ctx.fill();
+              ctx.strokeStyle='#ffffff'; ctx.lineWidth=0.5; ctx.stroke();
+            }
           }
         }
       }
@@ -350,10 +429,32 @@ window.GameEngine = (function(){
         ctx.fillStyle='#e040fb'; ctx.fillRect(enemy.x+2,enemy.y+3,3,3); ctx.fillRect(enemy.x+7,enemy.y+3,3,3);
       }
 
-      const sprite = player.character==='boy' ? window.SPRITE_BOY : window.SPRITE_GIRL;
-      let palette = player.character==='boy' ? window.PAL_BOY : window.PAL_GIRL;
+      const img = player.character==='boy' ? window.IMG_BOY : window.IMG_GIRL;
+      if(img && img.complete && img.naturalWidth){
+        const dw = img.naturalWidth, dh = img.naturalHeight;
+        const dx = player.x + player.w/2 - dw/2;
+        const dy = player.y + player.h - dh; // pies alineados con la base del jugador
+        ctx.save();
+        if(player.facing===-1){
+          ctx.translate(dx+dw, dy);
+          ctx.scale(-1,1);
+          ctx.drawImage(img, 0, 0, dw, dh);
+        } else {
+          ctx.drawImage(img, dx, dy, dw, dh);
+        }
+        if(player.poweredUp){
+          ctx.globalCompositeOperation = 'source-atop';
+          ctx.fillStyle = 'rgba(255,215,0,0.35)';
+          ctx.fillRect(0,0,dw,dh);
+        }
+        ctx.restore();
+      } else {
+        const sprite = player.character==='boy' ? window.SPRITE_BOY : window.SPRITE_GIRL;
+        let palette = player.character==='boy' ? window.PAL_BOY : window.PAL_GIRL;
+        if(player.poweredUp) palette = Object.assign({}, palette, {3:'#ffd700'});
+        window.drawSprite(ctx, sprite, palette, player.x, player.y, player.w+4, player.h, player.facing);
+      }
       if(player.poweredUp){
-        palette = Object.assign({}, palette, {3:'#ffd700'});
         for(let i=0;i<5;i++){
           const ang=(Date.now()/150 + i*(Math.PI*2/5));
           const rx=player.x+player.w/2+Math.cos(ang)*10;
@@ -361,7 +462,6 @@ window.GameEngine = (function(){
           ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fillRect(rx,ry,1.5,1.5);
         }
       }
-      window.drawSprite(ctx, sprite, palette, player.x, player.y, player.w+4, player.h, player.facing);
 
       ctx.restore();
     }
